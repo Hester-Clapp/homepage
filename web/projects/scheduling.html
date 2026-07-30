@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<style>
+  canvas { background: #ddd; }
+  button { background: green; color: white; padding: 10px; border: none; cursor: pointer; display: block; margin: 10px; }
+  fieldset { max-width: 300px; margin-bottom: 10px; display: inline-block; }
+  legend { font-weight: bold; }
+  label { display: block; padding: 5px; }
+</style>
+<h1>Processor scheduling</h1>
+<fieldset>
+  <legend>Scheduler type</legend>
+  <label><input type="radio" name="schedulerType" value="FCFS" checked>First come first served</label>
+  <label><input type="radio" name="schedulerType" value="RR">Round robin</label>
+  <label><input type="radio" name="schedulerType" value="SRT">Shortest remaining time</label>
+  <label><input type="radio" name="schedulerType" value="SJF">Shortest job first</label>
+  <label><input type="radio" name="schedulerType" value="MLFQ">Multi-level feedback queue</label>
+</fieldset>
+<fieldset>
+  <legend>Max time slice</legend>
+  <label><input type="radio" name="timeSliceInput" value="200">200 cycles</label>
+  <label><input type="radio" name="timeSliceInput" value="100">100 cycles</label>
+  <label><input type="radio" name="timeSliceInput" value="50" checked>50 cycles</label>
+  <label><input type="radio" name="timeSliceInput" value="20">20 cycles</label>
+  <label><input type="radio" name="timeSliceInput" value="5">5 cycles</label>
+</fieldset>
+<fieldset>
+  <legend>Speed</legend>
+  <label><input type="radio" name="speedInput" value="5">Fast</label>
+  <label><input type="radio" name="speedInput" value="1" checked>Medium</label>
+  <label><input type="radio" name="speedInput" value="0.2">Slow</label>
+</fieldset>
+<fieldset>
+  <legend>Number of CPU Cores</legend>
+  <label><input type="radio" name="numCoresInput" value="1" checked>1</label>
+  <label><input type="radio" name="numCoresInput" value="2">2</label>
+  <label><input type="radio" name="numCoresInput" value="4">4</label>
+  <label><input type="radio" name="numCoresInput" value="8">8</label>
+</fieldset>
+<button id="randomJobButton">Add random job</button>
+<button id="randomJobButton10">Add 10 random jobs</button>
+<button id="IRQButton">Add interrupt request</button>
+<canvas width="1000" height="400"></canvas>
+
+<script>
+
+let canvas = document.querySelector('canvas')
+let ctx = canvas.getContext('2d')
+ctx.lineWidth = 2
+
+class Core {
+  constructor (y) {
+    this.x = 1000
+    this.y = y
+    this.currentJob = false
+    this.stack = []
+  }
+
+  cpuCycle() {
+    if (this.currentJob) {
+
+      // if (state.IO && this.currentJob.isIOBound) {
+      //   this.stack.push(this.currentJob)
+      //   this.currentJob = false
+      // }
+      state.IO = this.currentJob.isIOBound || state.IO
+
+      // do a little bit of the job (ie an FDE cycle)
+      this.currentJob.cyclesComplete += state.speed
+      state.timeSliceUsed += state.speed
+
+      // see if we need the job to leave the CPU
+      if (this.currentJob.cyclesComplete >= this.currentJob.cyclesEstimate) {
+        // the job is finished
+        state.IO = (this.currentJob.isIOBound) ? false : state.IO
+        this.currentJob = false
+      } 
+      if (state.scheduler !== 'FCFS' && state.timeSliceUsed >= state.timeSliceMax && !this.currentJob.isISR) {
+        // job has taken its max alloted time, so add back to the queue
+        enqueueJob(this.currentJob)
+        state.IO = (this.currentJob.isIOBound) ? false : state.IO
+        this.currentJob = false
+      }
+    } else if (state.jobQueue.length) {
+      // fetch next task from stack
+      if (this.stack.length && !state.jobQueue[0].isISR && !state.IO) {
+        this.currentJob = this.stack.pop()
+      }
+      // fetch next non-I/O task from queue
+      else {
+        if (state.IO && state.jobQueue[0].isIOBound) {
+          this.stack.push(state.jobQueue.shift())
+        }
+        this.currentJob = state.jobQueue.shift()
+      }
+      state.timeSliceUsed = 0
+    } else if (this.stack.length && !state.IO) {
+      this.currentJob = this.stack.pop()
+    }
+  }
+
+  drawStack() {
+    let x2 = this.x + 40
+    ctx.strokeStyle = 'black'
+    for (let i = 0; i < this.stack.length; i++) {
+      drawJob(this.stack[i], x2, this.y + 300)
+      x2 += state.jobWidth + 10
+    }
+  }
+}
+
+let state = {
+  jobQueue: [],
+  cores: [new Core(0)],
+  numCores: 1,
+  IO: false,
+  scheduler: 'FCFS',
+  timeSliceMax: 50,
+  timeSliceUsed: 0,
+  jobWidth: 30,
+  speed: 1,
+  paused: true
+}
+
+window.requestAnimationFrame(gameLoop)
+randomJobButton.onclick = addRandomJob
+randomJobButton10.onclick = () => {for (let i=0;i<10;i++) {addRandomJob()}}
+IRQButton.onclick = addInterruptRequest
+canvas.onclick = () => state.paused = !state.paused
+addInitialJobs()
+document.querySelectorAll('[name=schedulerType]').forEach(el => el.onchange = (e) => {
+  state.scheduler = e.target.value
+  addInitialJobs()
+})
+document.querySelectorAll('[name=speedInput]').forEach(el => el.onchange = (e) => {
+  state.speed = Number(e.target.value)
+})
+document.querySelectorAll('[name=timeSliceInput]').forEach(el => el.onchange = (e) => {
+  state.timeSliceMax = Number(e.target.value)
+})
+document.querySelectorAll('[name=numCoresInput]').forEach(el => el.onchange = (e) => {
+  let wasPaused = state.paused
+  state.paused = true
+  state.numCores = Number(e.target.value)
+  // console.log(state.cores.reduce((acc,v) => acc.push(v.currentJob),state.jobQueue))
+  state.cores.map(v => v.currentJob).forEach(v => {if (v) state.jobQueue.unshift(v)})
+  // state.jobQueue
+  state.cores = []
+  for (let i=0;i<state.numCores;i++) {
+    state.cores.push(new Core(i*300))
+  }
+  state.paused = wasPaused
+})
+
+// How we enqueue a job depends on the scheduler being used
+function enqueueJob (job) {
+  if (state.scheduler === 'FCFS' || state.scheduler === 'RR') {
+    // First come first served
+    if (job.isISR) {
+      state.jobQueue.unshift(job)
+      let core = state.cores.sort((a,b) => {return a.stack.length - b.stack.length})[0]
+      core.stack.push(core.currentJob)
+      core.currentJob = false
+    } else state.jobQueue.push(job)
+  }
+
+  else if (state.scheduler === 'SRT') {
+    // Shortest remaining time
+    if (job.isISR) {
+      state.jobQueue.unshift(job)
+      for (let core of state.cores) {
+        if (core.currentJob) {
+          core.stack.push(core.currentJob)
+          core.currentJob = false
+        }
+      }
+    } else {
+      let jobAdded = false
+      for (let i = 0; i < state.jobQueue.length; i++) {
+        if (job.cyclesEstimate - job.cyclesComplete < state.jobQueue[i].cyclesEstimate - state.jobQueue[i].cyclesComplete) {
+          state.jobQueue.splice(i, 0, job)
+          jobAdded = true
+          break
+        }
+      }
+      if (!jobAdded) state.jobQueue.push(job)
+    }
+  }
+
+  else if (state.scheduler === "SJF") {
+    // Shortest remaining time
+    if (job.isISR) {
+      state.jobQueue.unshift(job)
+      for (let core of state.cores) {
+        if (core.currentJob) {
+          core.stack.push(core.currentJob)
+          core.currentJob = false
+        }
+      }
+    } else {
+      let jobAdded = false
+      for (let i = 0; i < state.jobQueue.length; i++) {
+        if (job.cyclesEstimate < state.jobQueue[i].cyclesEstimate - state.jobQueue[i].cyclesComplete) {
+          state.jobQueue.splice(i, 0, job)
+          jobAdded = true
+          break
+        }
+      }
+      if (!jobAdded) state.jobQueue.push(job)
+    }
+  }
+  
+  else if (state.scheduler === 'MLFQ') {
+    // Multi-level feedback queue
+    // NOTE: this would be much harder to implement
+  }
+
+  return job
+}
+
+function addInitialJobs () {
+  state.jobQueue = []
+  state.currentJob = false
+  for (let i = 0; i < 20; i++) addRandomJob()
+}
+
+function gameLoop () {
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  updateState()
+  drawState()
+  window.requestAnimationFrame(gameLoop)
+}
+
+function updateState () {
+  if (!state.paused) {
+    for (let core of state.cores) {
+      core.cpuCycle()
+    }
+  }
+}
+
+function drawState () {
+  if (state.paused) {
+    ctx.font = '30px sans-serif'
+    ctx.fillStyle = 'red'
+    ctx.fillText('Paused - click to play', canvas.width / 2, canvas.height - 20)
+  }
+
+  // resize canvas
+  canvas.height = 100 + 300 * state.cores.length
+  canvas.width = 1040 + (state.jobWidth + 10) * state.cores.reduce((acc,v) => Math.max(acc,v.stack.length), 0)
+
+  // CPU Cores
+  for (let core of state.cores) {
+    ctx.fillStyle = (state.IO) ? '#cbc0ff' : 'pink'
+    ctx.fillRect(990, core.y + 90, -state.jobWidth - 20, 240)
+    if (core.currentJob) drawJob(core.currentJob, 980, core.y + 300)
+  }
+
+  // all jobs in the queue
+  let x = 920
+  ctx.strokeStyle = 'black'
+  for (let i = 0; i < state.jobQueue.length; i++) {
+    drawJob(state.jobQueue[i], x)
+    x -= state.jobWidth + 10
+  }
+
+  // all jobs in each stack
+  for (let core of state.cores) {
+    core.drawStack()
+  }
+}
+
+function drawJob (job, x, y=300) {
+  // show the job in the queue
+  ctx.fillStyle = job.isISR ? '#700' : job.isIOBound ? '#007' : '#070'
+  ctx.fillRect(x, y, -state.jobWidth, -job.cyclesEstimate)
+  ctx.fillStyle = job.isISR ? '#fcc' : job.isIOBound ? '#ccf' : '#cfc'
+  ctx.fillRect(x, y - job.cyclesEstimate, -state.jobWidth, job.cyclesComplete) // % completed
+  ctx.strokeRect(x, y, -state.jobWidth, -job.cyclesEstimate)
+}
+
+function addRandomJob () {
+  let job = {
+    cyclesEstimate: parseInt(Math.max(10, (Math.random() * 200))),
+    isIOBound: Math.random() > 0.8,
+    cyclesComplete: 0,
+    isISR: false
+  }
+  enqueueJob(job)
+//   console.log('Added job', job)
+}
+
+function addInterruptRequest () {
+  let ISR = {
+    cyclesEstimate: parseInt(Math.max(10, (Math.random() * 200))),
+    isIOBound: Math.random() > 0.8,
+    cyclesComplete: 0,
+    isISR: true
+  }
+  enqueueJob(ISR)
+//   console.log('Added job', job)
+}
+
+// function interruptCPU() {
+//   if (state.currentJob) {
+//     state.cpuStack.push(state.currentJob)
+//     state.currentJob = false
+//   }
+// }
+
+</script>

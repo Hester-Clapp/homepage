@@ -1,0 +1,128 @@
+{
+	"Carbon Dioxide": {
+		"state": "gas",
+        "colour": "black",
+		"density": 44,
+		"freezing": {
+			"temperature": 195,
+			"element": "Dry Ice"
+		},
+		"specific heat capacity": 0.846,
+		"thermal conductivity": 0.015
+	},
+	"Dirt": {
+		"state": "solid",
+        "colour": "brown",
+		"gravity": false,
+		"melting": {
+			"temperature": 600,
+			"element": "Sand"
+		},
+		"specific heat capacity": 1.48,
+		"thermal conductivity": 2
+	},
+	"Ice": {
+		"state": "solid",
+        "colour": "lightblue",
+		"gravity": false,
+		"melting": {
+			"temperature": 272.5,
+			"element": "Water"
+		},
+		"specific heat capacity": 2.05,
+		"thermal conductivity": 2.18
+	},
+	"Igneous Rock": {
+		"state": "solid",
+        "colour": "dimgrey",
+		"gravity": false,
+		"melting": {
+			"temperature": 1683,
+			"element": "Magma"
+		},
+		"specific heat capacity": 1,
+		"thermal conductivity": 2
+	},
+	"Magma": {
+		"state": "liquid",
+        "colour": "red",
+		"mass per tile": 1840,
+		"density": 50,
+		"freezing": {
+			"temperature": 1683,
+			"element": "Igneous Rock"
+		},
+		"melting": {
+			"temperature": 2630,
+			"element": "Rock Gas"
+		},
+		"specific heat capacity": 1,
+		"thermal conductivity": 1
+	},
+	"Oxygen": {
+		"state": "gas",
+        "colour": "cyan",
+		"density": 15,
+		"freezing": {
+			"temperature": 90,
+			"element": "Liquid Oxygen"
+		},
+		"specific heat capacity": 1.005,
+		"thermal conductivity": 0.024
+	},
+	"Sand": {
+		"state": "solid",
+        "colour": "beige",
+		"gravity": true,
+		"melting": {
+			"temperature": 1986,
+			"element": "Liquid Glass"
+		},
+		"specific heat capacity": 0.83,
+		"thermal conductivity": 2
+	},
+	"Sandstone": {
+		"state": "solid",
+        "colour": "darkgoldenrod",
+		"gravity": false,
+		"melting": {
+			"temperature": 1200,
+			"element": "Magma"
+		},
+		"specific heat capacity": 0.8,
+		"thermal conductivity": 2.9
+	},
+	"Steam": {
+		"state": "gas",
+        "colour": "lightgrey",
+		"density": 18,
+		"freezing": {
+			"temperature": 372.5,
+			"element": "Water"
+		},
+		"specific heat capacity": 4.179,
+		"thermal conductivity": 0.609
+	},
+	"Vacuum": {
+		"state": "vacuum",
+        "colour": "white",
+		"specific heat capacity": 0,
+		"thermal conductivity": 0
+	},
+	"Water": {
+		"state": "liquid",
+        "colour": "blue",
+		"mass per tile": 1000,
+		"density": 18,
+		"freezing": {
+			"temperature": 272.5,
+			"element": "Ice"
+		},
+		"melting": {
+			"temperature": 372.5,
+			"element": "Steam"
+		},
+		"specific heat capacity": 4.179,
+		"thermal conductivity": 0.609
+	}
+}

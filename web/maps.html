@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transit Maps | Hester's Awesome '00s Homepage</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <link rel="stylesheet" href="./assets/style.css">
+    <style>
+        #maps {
+            width: 100%;
+
+            div.left {
+                margin-right: 100px;
+            }
+
+            div.right {
+                margin-left: 100px;
+            }
+        }
+
+        #maps>div {
+            position: relative;
+            width: 600px;
+            height: 200px;
+            margin: 2rem auto;
+
+            * {
+                position: absolute;
+                border: none;
+                box-sizing: border-box;
+            }
+
+            div {
+                padding: 8px;
+                overflow-x: hidden;
+                overflow-y: scroll;
+
+                * {
+                    position: relative;
+                }
+
+                a {
+                    text-decoration: none;
+                }
+
+                h3 {
+                    margin: 0;
+                    text-align: center;
+                    color: black;
+                    text-shadow: 2px 2px 0 white, 0 0 5px black;
+                }
+
+                div {
+                    margin: 0.5rem;
+                    font-size: small;
+                    overflow: hidden;
+                }
+            }
+
+            div::-webkit-scrollbar-track {
+                background: none;
+                border: none;
+            }
+        }
+
+        #maps>div>img {
+            pointer-events: none;
+        }
+
+        #maps>div>img+a>img {
+            border-radius: 5px;
+            border: 2px ridge #00000077;
+            box-shadow: 2px 2px 3px #00000077;
+        }
+
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 20px;
+        }
+
+        .button {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 12px;
+            font-weight: bolder;
+            text-decoration: none;
+            padding: 6px;
+            border-radius: 8px;
+            color: #fff;
+            border: 2px outset #ccc;
+            box-shadow: 2px 3px 2px #000,
+                inset -1px -1px 4px #ffffff7f;
+            background: linear-gradient(to bottom, #ffcc00, #ff6600);
+            text-shadow: 1px 1px 1px #000;
+            /* transition: transform 0.1s ease; */
+        }
+
+        .button:hover {
+            /* transform: translateY(-2px); */
+            box-shadow: 2px 3px 4px #000, inset -1px -1px 4px #ffffff7f;
+            text-shadow: white 0px 1px 3px;
+        }
+
+        .button:active {
+            transform: translateY(2px);
+            box-shadow: inset 2px 2px 4px #000, 2px 1px 4px #000, inset -1px -1px 4px #ffffff7f;
+        }
+
+        /* Bonus: Different colors per type */
+        .button.png {
+            background: linear-gradient(to bottom, #00ccff, #0066cc);
+        }
+
+        .button.svg {
+            background: linear-gradient(to bottom, #99ff66, #339933);
+        }
+
+        .button.pdf {
+            background: linear-gradient(to bottom, #ff3366, #990033);
+        }
+
+        .button.html {
+            background: linear-gradient(to bottom, #ffcc00, #cc6600);
+        }
+    </style>
+</head>
+
+<body style="background-image: url('./assets/background.png');">
+    <header></header>
+    <table style="margin: auto">
+        <tr>
+            <td><img width="100" src="./assets/rainbow dash.gif" onclick="increase(event,'Loyalty')"></td>
+            <td rowspan="3"
+                style="background-color: #ffffff; width: 600px; padding: 1rem 4ch; box-shadow: 2px 2px 3px #00000077; vertical-align: top;">
+                <p>I make transport maps as a hobby, you can download and use them here!</p>
+                <!-- <img src="./assets/underconstruction.gif"> -->
+                <div id="maps">
+                </div>
+            </td>
+            <td><img width="100" src="./assets/applejack.gif" onclick="increase(event,'Honesty')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/pinkie pie.gif" onclick="increase(event,'Laughter')"></td>
+            <td><img width="100" src="./assets/fluttershy.gif" onclick="increase(event,'Kindness')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/rarity.gif" onclick="increase(event,'Generosity')"></td>
+            <td><img width="100" src="./assets/twilight.gif" onclick="increase(event,'Magic')"></td>
+        </tr>
+    </table>
+    <footer></footer>
+</body>
+<script src="./assets/fetch-common.js"></script>
+<script src="./assets/friendship is magic.js"></script>
+<script>
+    const data = [
+        {
+            title: "Rotterdam - Den Haag",
+            desc: `A frequency/service map of all trains, trams and metro in the Rotterdam Den Haag area, combining the HTM and RET tram networks into one map.`,
+            date: "2025",
+            filename: "MRDH"
+        },
+        {
+            title: "Manchester",
+            desc: `A frequency/service map of all trains and trams in the Greater Manchester area, up to the planned limit of the planned contactless payment zone. This includes Metrolink, Northern and other long-distance trains, some of which may be incorporated into the future TfGM "bee network".`,
+            date: "2025",
+            filename: "Manchester"
+        },
+        {
+            title: "Scotrail",
+            desc: `A frequency/service map of trains operated by Scotrail, including Glasgow S-Bahn and commuter lines, central Scotland regional trains and rural highland routes. The route colours match Scotrail's official <a href="https://www.scotrail.co.uk/media/34924/download?inline">Central</a> and <a href="https://www.scotrail.co.uk/media/22608/download?inline">National</a> route maps, except for the North Clyde Line which is coloured distinctly from the Argyle Line on my map, and the East Kilbride branch which is coloured the same as the South West line on my map.`,
+            date: "2025",
+            filename: "Scotrail"
+        },
+        {
+            title: "Great Western Railway",
+            desc: "A frequency/service map of trains operated by Great Western Railway.",
+            date: "2025",
+            filename: "GWR"
+        },
+        {
+            title: "South Western Railway",
+            desc: "A frequency/service map of trains operated by South Western Railway, including metro and regional services.",
+            date: "2025",
+            filename: "SWR"
+        },
+        {
+            title: "Cambridge Buses",
+            desc: "There isn't an official map for this, so I made one. It shows all of the bus routes in Cambridge with a frequency of 1 per hour or better, comprehensively including all stops within the city (up to which a day rider ticket is valid).",
+            date: "2025",
+            filename: "CambridgeBus"
+        },
+        {
+            title: "Greater Anglia",
+            desc: "A frequency map of commuter, intercity and regional trains operated by Greater Anglia.",
+            date: "2024",
+            filename: "GreaterAnglia"
+        },
+        {
+            title: "Merseyside",
+            desc: "A frequency map of trains in the Liverpool Area, including Merseyrail, Northern and other services with a frequency of 1 per hour or better.",
+            date: "2024",
+            filename: "Merseyrail"
+        },
+        {
+            title: "West Midlands",
+            desc: "A frequency map of trains in the Birmingham Area, including West Midlands Railway, London Northwestern and other services with a frequency of 1 per hour or better.",
+            date: "2023",
+            filename: "Midlands"
+        },
+        {
+            title: "London Tube and Rail",
+            desc: "A service map of all tube and train services in Greater London.",
+            date: "2023",
+            filename: "TubeRail"
+        },
+        {
+            title: "South London Rail",
+            desc: "A frequency map of all metro-style train services in Greater London south of the river.",
+            date: "2023",
+            filename: "SouthLondonRail"
+        },
+    ]
+    data.forEach((map, i) => {
+        const mapDiv = document.createElement("div");
+        const imgLink = document.createElement("a");
+        imgLink.href = `./maps/content/pdf/${map.filename}.pdf`
+        const previewFrame = document.createElement("img");
+        previewFrame.src = `./maps/content/thumbnails/${map.filename}.png`;
+        previewFrame.width = "150";
+        previewFrame.height = "150";
+        previewFrame.style.top = "25px";
+        const infoPane = document.createElement("div");
+        infoPane.style.width = "280px";
+        infoPane.style.height = "150px";
+        infoPane.style.top = "25px";
+        infoPane.innerHTML = `
+                    <h3>${map.title}</h3>
+                    <div class="button-row">
+                        <a class="button pdf" href="./maps/content/pdf/${map.filename}.pdf" target="_blank">PDF</a>
+                        <a class="button svg" href="./maps/content/svg/${map.filename}.svg" target="_blank">SVG</a>
+                        <a class="button png" href="./maps/content/png/${map.filename}.png" target="_blank">PNG</a>
+                        <a class="button html" href="./maps/content/html/${map.filename}.html" target="_blank">HTML</a>
+                    </div>
+                    <div>${map.desc}</div>
+                    <i>${map.date}</i>
+                `;
+        mapDiv.innerHTML = `<img width="500" height="200" src="./assets/scroll.png">`;
+        if (i % 2 === 0) {
+            // Left side
+            mapDiv.className = "left";
+            previewFrame.style.left = "40px";
+            infoPane.style.left = "185px";
+        } else {
+            // Right side
+            mapDiv.className = "right";
+            previewFrame.style.left = "310px";
+            infoPane.style.left = "25px";
+        }
+        imgLink.appendChild(previewFrame);
+        mapDiv.appendChild(imgLink);
+        mapDiv.appendChild(infoPane);
+        maps.appendChild(mapDiv);
+    })
+</script>
+
+</html>

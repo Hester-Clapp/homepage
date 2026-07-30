@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semiconductor Simulator</title>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    class Atom {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+        nucleusCharge = 0; // Neutral by default
+        electrons = 0;
+        newElectrons = 0; // Electrons that will be added in this frame
+
+        get charge() {
+            return this.nucleusCharge - this.electrons;
+        }
+
+        #probability = 0 // of an electron moving to this atom
+        get probability() {
+            return this.#probability;
+        }
+        setProbability() {
+            this.#probability = //Math.erf(this.charge * 0.2) // Charge bias
+                this.charge * 0.2 // Charge bias
+                + (width - this.x) * voltage * 1.5 // Voltage bias
+            // + Math.random() * 0.1; // Heat / randomness
+        }
+
+        moveElectrons() {
+            let neighbours = [this];
+            if (this.y > 0) neighbours.push(grid[this.y - 1][this.x]); // Up
+            if (this.y < height - 1) neighbours.push(grid[this.y + 1][this.x]); // Down
+            if (this.x > 0) neighbours.push(grid[this.y][this.x - 1]); // Left
+            if (this.x < width - 1) neighbours.push(grid[this.y][this.x + 1]); // Right
+
+
+            let newElectronLocations = nWeightedRandom(
+                neighbours.map(atom => atom.probability),
+                this.electrons
+            );
+            // console.log(this.x, this.y, neighbours.map(atom => atom.probability));
+            newElectronLocations.forEach((newLocation, index) => neighbours[newLocation].newElectrons++);
+        }
+
+        draw(colour = "grey") {
+            this.electrons = this.newElectrons
+            this.newElectrons = 0
+
+            drawAt(this.x, this.y, () => {
+                ctx.fillStyle = colour
+                ctx.strokeStyle = "white";
+                ctx.lineWidth = 0.1;
+                ctx.fillRect(0, 0, 1, 1)
+                ctx.strokeRect(0, 0, 1, 1);
+
+                // Draw electrons
+                ctx.fillStyle = "black";
+                if (this.electrons % 2 === 1) {
+                    ctx.fillRect(0.45, 0.45, 0.1, 0.1);
+                }
+                if (this.electrons > 1) {
+                    ctx.fillRect(0.25, 0.25, 0.1, 0.1);
+                    ctx.fillRect(0.65, 0.65, 0.1, 0.1);
+                }
+                if (this.electrons > 3) {
+                    ctx.fillRect(0.25, 0.65, 0.1, 0.1);
+                    ctx.fillRect(0.65, 0.25, 0.1, 0.1);
+                }
+                if (this.electrons > 5) {
+                    ctx.fillRect(0.25, 0.45, 0.1, 0.1);
+                    ctx.fillRect(0.65, 0.45, 0.1, 0.1);
+                }
+                if (this.electrons > 7) {
+                    ctx.fillRect(0.45, 0.65, 0.1, 0.1);
+                    ctx.fillRect(0.45, 0.25, 0.1, 0.1);
+                }
+            });
+        }
+    }
+
+    class Silicon extends Atom {
+        constructor(x, y) {
+            super(x, y);
+            this.nucleusCharge = 14; // Silicon has 14 protons
+            this.electrons = 4;
+        }
+
+        draw() {
+            super.draw("gold");
+        }
+    }
+
+    class Phosphorus extends Atom {
+        constructor(x, y) {
+            super(x, y);
+            this.nucleusCharge = 15; // Phosphorus has 15 protons
+            this.electrons = 5; // Neutral by default
+        }
+
+        draw() {
+            super.draw("blue");
+        }
+    }
+
+    class Boron extends Atom {
+        constructor(x, y) {
+            super(x, y);
+            this.nucleusCharge = 5; // Boron has 5 protons
+            this.electrons = 3; // Neutral by default
+        }
+
+        draw() {
+            super.draw("red");
+        }
+    }
+
+    Math.erf = function (x) {
+        return 0.5 * Math.tanh(x * Math.sqrt(2 / Math.PI)) + 0.5;
+    }
+    function nWeightedRandom(weights, n) {
+        return weights.reduce((bucket, itemWeight, itemIndex) => {
+            let bucketWeight = bucket.weight + itemWeight;
+            bucket.indices.forEach((_, bucketIndex) => {
+                if (Math.random() * bucketWeight < itemWeight) {
+                    bucket.indices[bucketIndex] = itemIndex;
+                }
+            })
+            return { indices: bucket.indices, weight: bucketWeight }
+        }, { indices: new Array(n).fill(0), weight: 0 }).indices
+    }
+
+    let voltage = 0; // Voltage applied to the semiconductor
+
+    const canvas = document.querySelector('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        draw();
+    });
+
+    const grid = []
+    const height = 5;
+    const width = 20;
+    const cellSize = 25;
+    for (let i = 0; i < height; i++) {
+        grid[i] = [];
+        for (let j = 0; j < width; j++) {
+            grid[i][j] = new Silicon(j, i);
+        }
+    }
+
+    function drawAt(x, y, func) {
+        ctx.save();
+        ctx.translate(x * cellSize, y * cellSize);
+        ctx.scale(cellSize, cellSize);
+        func();
+        ctx.restore();
+    }
+
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        grid.forEach(row => row.forEach(atom => {
+            atom.setProbability();
+        }));
+        grid.forEach(row => row.forEach(atom => {
+            atom.moveElectrons();
+            atom.draw();
+        }));
+        // window.requestAnimationFrame(loop);
+    };
+    setInterval(loop, 200); // Run the loop every 100ms
+</script>
+
+</html>

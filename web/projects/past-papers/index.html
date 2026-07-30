@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./favicon.ico">
+    <title>Past Papers</title>
+    <style>
+        body {
+            background-color: #323639;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body>div {
+            width: 100%;
+        }
+
+        div.series {
+            transition: height 200ms;
+            width: 95%;
+            height: fit-content;
+            margin-left: 5%;
+            margin-bottom: 1rem;
+
+            h3 {
+                display: inline-block;
+                text-decoration: none;
+                color: white;
+                height: 2rem;
+                margin: 0.25rem 0.5rem;
+            }
+
+            button {
+                width: 2rem;
+                height: 2rem;
+                margin: 0.25rem 1rem;
+                border: none;
+                border-radius: 50%;
+                background-color: #323639;
+                color: white;
+                font-weight: bold;
+            }
+
+            button:hover {
+                background-color: #424649;
+            }
+
+            button:active {
+                transition: background-color 200ms;
+                background-color: #56595C;
+            }
+        }
+
+        /* div.series.expanded {
+            height: 40rem;
+        } */
+
+        div.series>div {
+            height: 12rem;
+            transition: height 200ms;
+        }
+
+        div.series.expanded>div {
+            height: 40rem;
+        }
+
+        object {
+            width: 50%;
+            box-sizing: border-box;
+            height: 100%;
+            /* object-fit: contain;
+            overflow: hidden; */
+            /* border: none; */
+        }
+    </style>
+</head>
+
+<body>
+
+</body>
+<script>
+    const date = new Date();
+    const thisYear = date.getFullYear();
+    const months = ["May", "June", "Nov", "November"]
+    const data = {
+        "ocr-mei": {
+            subjects: {
+                maths: {
+                    startYear: 2018,
+                    path: "Maths/A-level/Papers/OCR-MEI",
+                    exams: {
+                        mech: {
+                            path: "Paper-1",
+                        },
+                        stats: {
+                            path: "Paper-2",
+                        },
+                        pure: {
+                            path: "Paper-3",
+                        },
+                    }
+                },
+                further: {
+                    startYear: 2019,
+                    path: "Maths/A-level/Papers/OCR-MEI-Further",
+                    exams: {
+                        core_pure: {
+                            path: "Pure-Core"
+                        },
+                        mech_minor: {
+                            path: "Mechanics-Minor"
+                        },
+                        stats_minor: {
+                            path: "Statistics-Minor"
+                        },
+                        algorithms: {
+                            path: "Modelling-With-Algorithms"
+                        },
+                        extra_pure: {
+                            path: "Extra-Pure"
+                        },
+                    }
+                }
+            }
+        },
+        ocr: {
+            subjects: {
+                further: {
+                    startYear: 2019,
+                    path: "Maths/A-level/Papers/OCR-Further",
+                    exams: {
+                        core_1: {
+                            path: "Pure-Core-1"
+                        },
+                        core_2: {
+                            path: "Pure-Core-2"
+                        },
+                        mech: {
+                            path: "Mechanics"
+                        },
+                        stats: {
+                            path: "Statistics"
+                        },
+                        discrete: {
+                            path: "Discrete"
+                        },
+                    }
+                },
+                physics: {
+                    startYear: 2017,
+                    path: "Physics/A-level/Past-Papers/OCR-A",
+                    exams: {
+                        modelling: {
+                            path: "Paper-1"
+                        },
+                        exploring: {
+                            path: "Paper-2"
+                        },
+                        unified: {
+                            path: "Paper-3"
+                        },
+                    }
+                },
+                compsci: {
+                    startYear: 2017,
+                    path: "Computer-Science/A-level/Past-Papers/OCR",
+                    exams: {
+                        computer_systems: {
+                            path: "Paper-1",
+                        },
+                        algorithms_programming: {
+                            path: "Paper-2",
+                        }
+                    }
+                },
+                chemistry: {
+                    startYear: 2017,
+                    path: "Chemistry/A-level/Past-Papers/OCR-A",
+                    exams: {
+                        physical: {
+                            path: "Paper-1",
+                        },
+                        organic: {
+                            path: "Paper-2",
+                        },
+                        unified: {
+                            path: "Paper-3",
+                        },
+                    }
+                }
+            }
+        }
+    }
+
+    let urlParams = new URLSearchParams(window.location.search)
+    let board = urlParams.get("board")
+    let subject = urlParams.get("subject")
+    let exam = urlParams.get("exam")
+
+    function titleCase(string) {
+        return string.replace(/_/g, " ").replace(/(?:^|\s)\w/g, match => match.toUpperCase())
+    }
+
+    function loadPapers(board, subject, exam) {
+        document.title = `${board.toUpperCase()} ${titleCase(subject)} ${titleCase(exam)} Past Papers`
+
+        for (let year = data[board].subjects[subject].startYear; year < thisYear; year++) {
+            let series = document.createElement("div");
+            series.classList.add("series");
+
+            let heading = document.createElement("h3")
+            heading.innerText = `${year} Series`
+            series.appendChild(heading);
+
+            let buttons = {
+                "+": document.createElement("button"),
+                "QP": document.createElement("button"),
+                // "AB": document.createElement("button"),
+                "MS": document.createElement("button")
+            }
+
+            Object.keys(buttons).forEach(name => buttons[name].innerText = name)
+            Object.values(buttons).forEach(button => series.appendChild(button))
+            buttons["+"].onclick = () => { series.classList.toggle("expanded"); series.scrollIntoView() }
+
+            let papers = document.createElement("div");
+            ["QP", "MS"].forEach(async paper => {
+                let object = document.createElement("object");
+                object.type = "application/pdf";
+                papers.appendChild(object);
+                for (const month of months) {
+                    let subjectData = data[board].subjects[subject]
+                    let examData = subjectData.exams[exam]
+                    let url
+                    if (subject === "compsci") url = `https://pmt.physicsandmathstutor.com/download/${subjectData.path}/${examData.path}/${month}%20${year}%20${paper}%20-%20${examData.path.replace("-", "%20")}%20OCR%20Computer%20Science%20A-level.pdf#zoom=page-width`;
+                    else url = `https://pmt.physicsandmathstutor.com/download/${subjectData.path}/${examData.path}/${paper}/${month}%20${year}%20${paper}.pdf#zoom=page-width`;
+
+                    try {
+                        const response = await fetch(url, { method: "HEAD" });
+
+                        if (response.ok) {
+                            console.log(`Found: ${name}`);
+                            object.data = url // First existing file found
+                            buttons[paper].onclick = window.open.bind(this, url)
+                        }
+                    } catch (err) {
+                        console.warn(`Error checking ${name}:`, err);
+                    }
+                }
+            })
+            series.appendChild(papers)
+            document.body.appendChild(series);
+        }
+    }
+
+    if (board && subject && exam) loadPapers(board, subject, exam)
+</script>
+
+</html>

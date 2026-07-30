@@ -1,0 +1,148 @@
+* {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+h1 {
+    background: aliceblue;
+    color: black;
+    margin: 0 10rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+h2 {
+    margin-left: 4rem;
+    color: black;
+    text-decoration: underline;
+}
+
+#links {
+    width: fit-content;
+}
+
+#links li {
+    padding: 1rem;
+    margin: 0.5rem;
+    border: 0;
+    background: #eef;
+}
+
+#links li:nth-child(odd) {
+    background: #dde;
+}
+
+#diagram {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10rem;
+    width: 60%;
+}
+
+img {
+    display: block;
+    margin-left: 8rem;
+}
+
+form {
+    margin-bottom: 1em
+}
+
+#bigHash {
+    padding: 1rem;
+    background: #fdd;
+    color: #f77;
+    width: fit-content;
+}
+
+#textOutput,
+#binTextOutput,
+#heapTextOutput {
+    padding: 1rem;
+    border: 0.2rem solid black;
+    width: fit-content;
+}
+
+ul.treeProperties li {
+    padding: 0;
+    margin: 0.5rem 0;
+    border: 0
+}
+
+ol.horizontal li {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+li {
+    padding: 0.5em;
+    margin: 0.5em;
+    border: solid black 0.2em;
+    clear: both;
+}
+
+li.empty {
+    border: solid lightgrey 0.2em;
+    color: lightgrey;
+}
+
+li.full {
+    border: solid lightgrey 0.2em;
+    color: white;
+    background: lightgrey;
+}
+
+li.top,
+li.back {
+    border: solid orange 0.2em;
+    color: lightgrey;
+}
+
+li.front {
+    border: solid blue 0.2em;
+    color: lightgrey;
+}
+
+li.listFront {
+    border: solid blue 0.2em;
+}
+
+li.success {
+    border: solid limegreen 0.2em;
+}
+
+li.failure {
+    border: solid red 0.2em;
+}
+
+li p {
+    padding: 0;
+    margin: 0;
+}
+
+.left {
+    float: left;
+}
+
+.right {
+    float: right;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid black
+}
+
+th {
+    background: lightgrey
+}
+
+hr {
+    margin: 2rem 0;
+}

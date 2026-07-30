@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Kerbal Space Programme</title>
+    <style>
+        * {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #222;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    function resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener("resize", resize)
+
+    function log(v) { return Math.log10(v) }
+    function exp(v) { return 10 ** v }
+    function sf(m, e) { return m * 10 ** e }
+
+    const halfPi = Math.PI / 2
+    // const G = sf(6.6743, -11)
+    const G = 0.0001
+    const bodies = {
+        sun: {
+            position: {
+
+                x: 0,
+                y: 0,
+            },
+            velocity: {
+                x: 0,
+                y: 0
+            },
+            radius: 100,
+            mass: 10000,
+            color: "yellow",
+            orbiting: "",
+        },
+        earth: {
+            position: {
+
+                x: 1000,
+                y: 0,
+            },
+            velocity: {
+                x: 0,
+                y: -1
+            },
+            radius: 10,
+            mass: 100,
+            color: "blue",
+            orbiting: "sun",
+        },
+        moon: {
+            position: {
+                x: 1050,
+                y: 0,
+            },
+            velocity: {
+                x: 0,
+                y: 0
+            },
+            radius: 5,
+            mass: 25,
+            color: "gray",
+            orbiting: "earth",
+        },
+        rocket: {
+            position: {
+                x: 1015,
+                y: 0,
+            },
+            velocity: {
+                x: -0.1,
+                y: -1.1
+            },
+            radius: 1,
+            mass: 1,
+            color: "orange",
+            orbiting: "earth",
+        },
+    }
+    let scale = 1
+
+    window.addEventListener("keydown", e => {
+        switch (e.key) {
+            case "ArrowUp": scale *= 2; break
+            case "ArrowDown": scale *= .5; break
+            // case "w": bodies.rocket.thrust.y += 10; break
+            // case "s": bodies.rocket.thrust.y -= 10; break
+            // case "d": bodies.rocket.dir += halfPi / 6; break
+            // case "a": bodies.rocket.dir -= halfPi / 6; break
+        }
+    })
+
+    function arctan(v) { return (Math.atan2(v.y, v.x) + 4 * Math.PI) % (4 * Math.PI) }
+    function add(v0, v1) { return { x: v0.x + v1.x, y: v0.y + v1.y } }
+    function from(v0, v1) { return { x: v1.x - v0.x, y: v1.y - v0.y } }
+    function stretch(v, k) { return { x: v.x * k, y: v.y * k } }
+    function magnitude(v) { return Math.hypot(v.x, v.y) }
+    function normalise(v) { return stretch(v, 1 / magnitude(v)) }
+    function dot(v0, v1) { return v0.x * v1.x + v0.y * v1.y }
+    function gravity(name, dt) {
+        const body = bodies[name]
+        if (body.orbiting) {
+            const orbiting = bodies[body.orbiting]
+            const displacement = from(body.position, orbiting.position)
+            const acceleration = stretch(displacement, G * orbiting.mass / (magnitude(displacement) ** 2))
+            bodies[name].velocity = add(body.velocity, stretch(acceleration, dt))
+            bodies[name].position = add(body.position, stretch(body.velocity, dt))
+        }
+    }
+    function update(dt) {
+        for (const name in bodies) { gravity(name, dt) }
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        let offsetX = window.innerWidth / 2 - bodies.rocket.position.x * scale
+        let offsetY = window.innerHeight / 2 - bodies.rocket.position.y * scale
+        for (const name in bodies) {
+            const body = bodies[name]
+            ctx.fillStyle = body.color
+            ctx.beginPath()
+            ctx.moveTo(body.position.x * scale + body.radius * scale + offsetX, body.position.y * scale + offsetY)
+            ctx.arc(body.position.x * scale + offsetX, body.position.y * scale + offsetY, body.radius * scale, 0, 2 * Math.PI)
+            ctx.closePath()
+            ctx.fill()
+        }
+    }
+    let prevTime = 0
+    function tick(time) {
+        const dt = 0.1 * (time - prevTime) || 0
+        update(dt)
+        draw()
+        prevTime = time
+        window.requestAnimationFrame(tick)
+    }
+    tick()
+</script>
+
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrices</title>
+    <style>
+        input {
+            width: 2rem;
+            height: 2rem;
+            text-align: center;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        button {
+            padding: 1ch;
+            margin: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="setup">
+        <label for="n">Dimension:</label>
+        <input id="n">
+    </div>
+    <table id="inputTable"></table>
+    <ul id="operations">
+        <li><button onclick="createOutputTable(det)">Determinant</button></li>
+        <li><button onclick="createOutputTable(minors)">Matrix of Minors</button></li>
+        <li><button onclick="createOutputTable(cofactors)">Matrix of Cofactors</button></li>
+        <li><button onclick="createOutputTable(inverse)">Inverse Matrix</button></li>
+    </ul>
+    <table id="outputTable"></table>
+</body>
+<script>
+    let n, matrix
+    document.getElementById("n").onchange = function () {
+        n = Number(document.getElementById("n").value)
+        matrix = []
+        for (let i = 0; i < n; i++) matrix[i] = Array(n).fill(0)
+        document.getElementById("setup").remove()
+        createInputTable()
+    }
+    function createInputTable() {
+        const table = document.getElementById("inputTable")
+        for (let y = 0; y < n; y++) {
+            const tr = document.createElement("tr")
+            for (let x = 0; x < n; x++) {
+                const td = document.createElement("td")
+                const input = document.createElement("input")
+                input.oninput = function () {
+                    matrix[y][x] = Number(input.value)
+                }
+                td.appendChild(input)
+                tr.appendChild(td)
+            }
+            table.appendChild(tr)
+        }
+        table.children[0].children[0].children[0].focus()
+    }
+    function createOutputTable(func) {
+        let outputMatrix = func(matrix)
+        const table = document.getElementById("outputTable")
+        if (func === det) outputMatrix = [[outputMatrix]]
+        if (func === inverse && det(matrix) === 0) { table.innerHTML = "Cannot invert singular matrix!" } else {
+            table.innerHTML = ""
+            for (let y = 0; y < outputMatrix.length; y++) {
+                const tr = document.createElement("tr")
+                for (let x = 0; x < outputMatrix.length; x++) {
+                    const td = document.createElement("td")
+                    const input = document.createElement("input")
+                    input.readOnly = true
+                    input.value = outputMatrix[y][x]
+                    td.appendChild(input)
+                    tr.appendChild(td)
+                }
+                table.appendChild(tr)
+            }
+        }
+    }
+    function minor(matrix, y, x) {
+        return matrix.slice(0, y).concat(matrix.slice(y + 1)).map(row => row.slice(0, x).concat(row.slice(x + 1)))
+    }
+    function det(matrix) {
+        if (matrix.length !== matrix[0].length) throw new Error("Dimension error - cannot determine non-square matrix")
+        if (matrix.length === 1) return matrix[0][0]
+        else {
+            return matrix[0].map((v, i) => (-2 * (i % 2) + 1) * v * det(minor(matrix, 0, i))).reduce((a, v) => a + v, 0)
+
+        }
+    }
+    function minors(matrix) {
+        return matrix.map((row, y) => row.map((v, x) => det(minor(matrix, y, x))))
+    }
+    function cofactors(matrix) {
+        return matrix.map((row, y) => row.map((v, x) => (-2 * ((x + y) % 2) + 1) * det(minor(matrix, y, x))))
+    }
+    function transpose(matrix) {
+        return matrix[0].map((v, i) => matrix.map(row => row[i]));
+    }
+    function inverse(matrix) {
+        let d = det(matrix)
+        return transpose(matrix.map((row, y) => row.map((v, x) => (-2 * ((x + y) % 2) + 1) * det(minor(matrix, y, x)) / d)))
+
+    }
+</script>
+
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phydeaux Bridge 2</title>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script> // Constants
+    Math.TAU = 2 * Math.PI
+    const g = 9.81
+
+</script>
+<script> // Helper functions
+    function id() {
+        return String(Date.now() - 1730000000000)
+    }
+
+    function objectForEach(object, func) {
+        Object.keys(object).forEach(id => func(object[id]))
+    }
+
+    // Object.prototype.forEach = (func, object = this) => {
+    //     Object.keys(object).forEach(key => func(object[key]))
+    // }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t
+    }
+</script>
+<script> // Classes
+    class Node {
+        constructor(id, x, y, free = true, staticForces = []) {
+            this.id = id
+            this.x = x
+            this.y = y
+            this.free = free
+            this.staticForce = staticForces.reduce((net, force) => { return { x: net.x + force.x, y: net.y + force.y } }, { x: 0, y: 10 })
+            this.netForce = { ...this.staticForce }
+            this.tensions = { x: {}, y: {} }
+            this.resetForces()
+        }
+
+        resetForces() {
+            this.netForce = { ...this.staticForce }
+            this.tensions = { x: {}, y: {} }
+        }
+
+        draw() {
+            ctx.fillStyle = "black"
+            ctx.beginPath()
+            ctx.moveTo(this.x, this.y)
+            ctx.arc(this.x, this.y, 5, 0, Math.TAU)
+            ctx.closePath()
+            ctx.fill()
+
+            // Resultant Force
+            if (this.free) {
+                ctx.strokeStyle = "blue"
+                ctx.lineWidth = 2
+                ctx.beginPath()
+                ctx.moveTo(this.x, this.y)
+                ctx.lineTo(this.x + this.netForce.x, this.y + this.netForce.y)
+                ctx.closePath()
+                ctx.stroke()
+            }
+        }
+    }
+
+    class Beam {
+        constructor(id, node1id, node2id) {
+            this.id = id
+            let node1 = nodes[node1id]
+            let node2 = nodes[node2id]
+            if (node2.x < node1.x) {
+                this.node1 = node2id
+                this.node2 = node1id
+            } else {
+                this.node1 = node1id
+                this.node2 = node2id
+            }
+            this.stress = 0
+
+            this.calcComponents()
+        }
+
+        calcComponents() {
+            const dx = nodes[this.node2].x - nodes[this.node1].x
+            const dy = nodes[this.node2].y - nodes[this.node1].y
+            this.length = Math.hypot(dx, dy)
+            // this.angle = Math.atan2(dy, dx)
+            this.x = dx / this.length
+            this.y = dy / this.length
+
+        }
+
+        draw() {
+            let node1 = nodes[this.node1]
+            let node2 = nodes[this.node2]
+            ctx.lineWidth = 5
+            ctx.beginPath()
+            ctx.moveTo(node1.x, node1.y)
+            ctx.lineTo(node2.x, node2.y)
+            ctx.closePath()
+            ctx.stroke()
+        }
+    }
+
+    class WoodBeam extends Beam {
+
+        constructor(id, node1, node2) {
+            super(id, node1, node2)
+            this.mass = this.length * 0.02 // Wood Density
+            this.maxStress = 100
+        }
+
+        applyForces() {
+            super.calcComponents()
+
+            // // Apply weight force to nodes
+            // [this.node1, this.node2].forEach(node => {
+            //     nodes[node].netForce.y += this.mass * g
+            //     if (nodes[node].free) {
+            //         if (this.x !== 0) nodes[node].tensions.x[this.id] = this.x
+            //         if (this.y !== 0) nodes[node].tensions.y[this.id] = this.y
+            //     }
+            // })
+            // Apply weight force to nodes
+            nodes[this.node1].netForce.y += this.mass * g
+            if (nodes[this.node1].free) {
+                if (this.x !== 0) nodes[this.node1].tensions.x[this.id] = this.x
+                if (this.y !== 0) nodes[this.node1].tensions.y[this.id] = this.y
+            }
+            nodes[this.node2].netForce.y += this.mass * g
+            if (nodes[this.node2].free) {
+                if (this.x !== 0) nodes[this.node2].tensions.x[this.id] = this.x
+                if (this.y !== 0) nodes[this.node2].tensions.y[this.id] = this.y
+            }
+        }
+
+        draw() {
+            // ctx.strokeStyle = "orange"
+            const t = (2 * this.stress / this.maxStress) % this.maxStress / 2
+            let colour
+            if (Math.abs(this.stress) < this.maxStress * 0.5) {
+                colour = [lerp(50, 250, t), lerp(200, 150, t), 50]
+            } else {
+                colour = [250, lerp(150, 50, t), 50]
+            }
+            ctx.strokeStyle = `rgb(${colour.join(",")})`
+            super.draw()
+        }
+    }
+
+    function addNode(x, y, free, id = id()) {
+        nodes[id] = new Node(x, y, free)
+    }
+
+    function addBeam(node1, node2, material, id = id()) {
+        beams[id] = new Beam(id, node1, node2, material)
+    }
+
+    class Matrix {
+        // static multiply(matrix1, matrix2) {
+        //     if (matrix1.length !== matrix2[0].length) throw new Error("Dimension error - cannot multiply matrices")
+        //     return matrix1.map((row, y) => row.map((v, i) => v*matrix2[i]))
+        // }
+        static multiplyVector(matrix, vector) {
+            if (matrix[0].length !== vector.length) throw new Error("Dimension error - cannot multiply matrix and vector")
+            return matrix.map((row, y) => row.reduce((a, v, i) => a + v * vector[i], 0))
+        }
+        static minor(matrix, y, x) {
+            return matrix.slice(0, y).concat(matrix.slice(y + 1)).map(row => row.slice(0, x).concat(row.slice(x + 1)))
+        }
+        static det(matrix) {
+            if (matrix.length !== matrix[0].length) throw new Error("Dimension error - cannot determine non-square matrix")
+            if (matrix.length === 1) return matrix[0][0]
+            else {
+                return matrix[0].map((v, i) => (-2 * (i % 2) + 1) * v * this.det(this.minor(matrix, 0, i))).reduce((a, v) => a + v, 0)
+
+            }
+        }
+        static minors(matrix) {
+            return matrix.map((row, y) => row.map((v, x) => this.det(this.minor(matrix, y, x))))
+        }
+        static cofactors(matrix) {
+            return matrix.map((row, y) => row.map((v, x) => (-2 * ((x + y) % 2) + 1) * this.det(this.minor(matrix, y, x))))
+        }
+        static transpose(matrix) {
+            return matrix[0].map((v, i) => matrix.map(row => row[i]));
+        }
+        static invert(matrix) {
+            let d = this.det(matrix)
+            return this.transpose(matrix.map((row, y) => row.map((v, x) => (-2 * ((x + y) % 2) + 1) * this.det(this.minor(matrix, y, x)) / d)))
+        }
+        static solve(matrix, vector) {
+            return this.multiplyVector(this.invert(matrix), vector)
+        }
+    }
+</script>
+<script> // Main
+
+    const nodes = {
+        "1": new Node(1, 50, 250, false),
+        "2": new Node(2, 150, 250),
+        "3": new Node(3, 250, 250),
+        "4": new Node(4, 350, 250),
+        "5": new Node(5, 100, 170),
+        "6": new Node(6, 200, 170),
+        "7": new Node(7, 300, 170),
+    }
+    const beams = {
+        "1": new WoodBeam(1, "1", "2"),
+        "2": new WoodBeam(2, "2", "3"),
+        // "3": new WoodBeam(3, "3", "4"),
+        "4": new WoodBeam(4, "1", "5"),
+        "5": new WoodBeam(5, "5", "2"),
+        "6": new WoodBeam(6, "2", "6"),
+        "7": new WoodBeam(7, "6", "3"),
+        // "8": new WoodBeam(8, "3", "7"),
+        // "9": new WoodBeam(9, "7", "4"),
+        "10": new WoodBeam(10, "5", "6"),
+        // "11": new WoodBeam(11, "6", "7"),
+    }
+
+    function analyse() {
+        objectForEach(nodes, node => node.resetForces())
+        objectForEach(beams, beam => beam.applyForces())
+
+        // Generate equations
+        let equations = []
+        let beamsToSolve = {}
+        objectForEach(nodes, node => {
+            if (node.free) {
+                if (Object.keys(node.tensions.x).length > 0) {
+                    equations.push({ total: node.netForce.x, terms: node.tensions.x })
+                    Object.assign(beamsToSolve, node.tensions.x)
+                }
+                if (Object.keys(node.tensions.y).length > 0) {
+                    equations.push({ total: node.netForce.y, terms: node.tensions.y })
+                    Object.assign(beamsToSolve, node.tensions.y)
+                }
+            }
+        })
+
+        // Matricise and solve equations
+        beamsToSolve = Object.keys(beamsToSolve).sort()
+        let solution
+        if (equations.length > beamsToSolve.length) {
+            console.log(equations)
+            let matrix = equations.slice(0, beamsToSolve.length).map(equation => beamsToSolve.map((v, i) => equation.terms[v] || 0))
+            let vector = equations.slice(0, beamsToSolve.length).map(equation => -equation.total)
+            solution = Matrix.solve(matrix, vector)
+            console.log(solution)
+        } else {
+            console.error("Cannot solve, too many unknowns")
+        }
+
+        // Visualise stress
+        beamsToSolve.forEach((beam, i) => { beams[beam].stress = solution[i] })
+    }
+
+    const canvas = document.querySelector("canvas")
+    canvas.width = window.innerWidth - 20
+    canvas.height = window.innerHeight - 20
+    const ctx = canvas.getContext("2d")
+
+    let prevTime = 0
+    function loop(time = 0) {
+        // nodes["3"].x++
+        // analyse()
+        // Draw everything
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        objectForEach(beams, beam => beam.draw())
+        objectForEach(nodes, node => node.draw())
+        window.requestAnimationFrame(loop)
+    }
+    loop()
+    analyse()
+
+</script>
+
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Arrays</h2>
+    <p>
+        An array is a composite data structure which stores multiple pieces of data in order. Conventionally, this data
+        is all
+        of the same primitive data type.
+    </p>
+    <p>
+        Arrays are static data structures, which means they are a fixed length. You cannot add items to an array if
+        all of the indices are full. However, arrays are mutable, which means the data inside them can be changed
+        after it is written.
+    </p>
+    <p>
+        Arrays form the basis of many abstract data types, such as <a href="./stack.html">stacks</a>, <a
+            href="./queue.html">queues</a> and <a href="./hash.html">hash tables.</a>
+    </p>
+    <hr>
+    <form id="insertForm" autocomplete="off">
+        <input id="insertInput" placeholder="Insert an item..." required>
+        <input id="insertIndex" placeholder="At index..." required>
+        <input id="insertButton" type="submit" value="Insert">
+    </form>
+    <form id="queryForm" autocomplete="off">
+        <input id="queryIndex" placeholder="Query an index..." required>
+        <input id="queryButton" type="submit" value="Query">
+    </form>
+    <form id="deleteForm" autocomplete="off">
+        <input id="deleteIndex" placeholder="Delete an index..." required>
+        <input id="deleteButton" type="submit" value="Delete">
+    </form>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="arrayElements">
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+    </ol>
+</body>
+<script>
+    let array = document.getElementById("arrayElements").children
+    let length = 0
+
+    document.getElementById("insertForm").addEventListener("submit", e => {
+        e.preventDefault()
+        let i = (Number(document.getElementById("insertIndex").value) - 1) % 8
+        array[i].innerHTML = document.getElementById("insertInput").value
+        array[i].className = "success"
+        setTimeout(() => { array[i].className = "" }, 500)
+        length++
+        document.getElementById("deleteButton").disabled = false
+        if (length > 7) document.getElementById("insertButton").disabled = true
+        document.getElementById("insertForm").reset()
+        document.getElementById("insertInput").focus()
+    })
+    document.getElementById("queryForm").addEventListener("submit", e => {
+        e.preventDefault()
+        let i = (Number(document.getElementById("queryIndex").value) - 1) % 8
+        document.getElementById("textOutput").innerHTML = array[i].innerHTML
+        array[i].className = "success"
+        setTimeout(() => { array[i].className = array[i].innerHTML ? "" : "empty" }, 500)
+        document.getElementById("queryForm").reset()
+        document.getElementById("queryIndex").focus()
+    })
+    document.getElementById("deleteForm").addEventListener("submit", e => {
+        e.preventDefault()
+        let i = (Number(document.getElementById("deleteIndex").value) - 1) % 8
+        array[i].innerHTML = ""
+        array[i].className = "failure"
+        setTimeout(() => { array[i].className = "empty" }, 500)
+        length--
+        document.getElementById("insertButton").disabled = false
+        if (length < 1) document.getElementById("deleteButton").disabled = true
+        document.getElementById("deleteForm").reset()
+        document.getElementById("deleteIndex").focus()
+    })
+</script>
+
+</html>

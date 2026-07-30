@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thrust</title>
+    <style>
+        :root {
+            --colour0: yellow;
+            --colour1: lime;
+            --colour2: red;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+            background-color: black;
+        }
+
+        canvas {
+            background-color: black;
+            display: block;
+        }
+
+        div#top {
+            display: flex;
+            border: 2px solid var(--colour0);
+            border-bottom-left-radius: 1rem;
+            border-bottom-right-radius: 1rem;
+            margin-left: 2rem;
+            width: fit-content;
+            height: fit-content;
+        }
+
+        div#top>div {
+            margin: 0;
+            width: 6rem;
+            padding: 0 4rem;
+            font-size: 1.5rem;
+            height: fit-content;
+            color: var(--colour0);
+        }
+
+        div#top>div>p:first-child {
+            color: var(--colour1);
+        }
+
+        div#top>div p {
+            margin: 0;
+        }
+
+        div#canvas {
+            position: relative;
+            display: inline-block;
+        }
+
+        p#middle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            color: var(--colour1);
+        }
+
+        p#middle>span {
+            color: var(--colour0);
+        }
+
+        p#middle>button {
+            font-size: 1.5rem;
+            padding: 1rem 2rem;
+            background: none;
+            border: 2pt solid var(--colour0);
+            color: var(--colour1);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="top">
+        <div id="fuel">
+            <p>Fuel</p>
+            <p>1000</p>
+        </div>
+        <div id="lives">
+            <p>Lives</p>
+            <p>3</p>
+        </div>
+        <div id="score">
+            <p>Score</p>
+            <p>0</p>
+        </div>
+    </div>
+    <div id="canvas">
+        <canvas width="800" height="600"></canvas>
+        <p id="middle"><button onclick="play()">Play</button></p>
+    </div>
+</body>
+<script>
+    // Vector Maths
+    function add(v1, v2) {
+        return { x: v1.x + v2.x, y: v1.y + v2.y }
+    }
+    function multiply(v, s) {
+        return { x: v.x * s, y: v.y * s }
+    }
+    function polar(angle = Math.random() * 2 * Math.PI, magnitude = 1) {
+        return { x: Math.cos(angle) * magnitude, y: Math.sin(angle) * magnitude }
+    }
+    function magnitude(v) {
+        return Math.hypot(v.x, v.y)
+    }
+    function normalise(v) {
+        return multiply(v, 1 / magnitude(v))
+    }
+    function dot(v1, v2) {
+        return v1.x * v2.x + v1.y * v2.y
+    }
+    function cross(v1, v2) {
+        return v1.x * v2.y - v1.y * v2.x
+    }
+    function lerp(v1, v2, t = 0) {
+        return add(multiply(v1, 1 - t), multiply(v2, t))
+    }
+
+    class GameObject {
+        constructor(x, y, direction = -Math.PI / 2) {
+            this.position = { x, y }
+            this.direction = direction
+            this.down = polar(direction)
+        }
+        currentAnimations = []
+        radius = 0
+        health = 1
+        friendly = false
+        visible = true
+        displacementTo(obj) {
+            return add(multiply(this.position, -1), obj.position)
+        }
+        distanceTo(obj) {
+            let displacement = this.displacementTo(obj)
+            return magnitude(displacement)
+        }
+        collision(obj, radius = obj?.radius || 0) {
+            if (!this.visible) return false
+            return this.distanceTo(obj) < radius + this.radius
+        }
+        explode(particleCount = 16, colour = game.mission.colours[0]) {
+            if (this.visible) {
+                this.health--
+                sound.explode()
+                if (this.health <= 0) {
+                    this.visible = false
+                    this.anchored = true
+                }
+                for (let i = 0; i < particleCount; i++) {
+                    this.currentAnimations.push(new Animation(
+                        10 + Math.random() * 10,
+                        25,
+                        animationFunctions.particle,
+                        add(this.position, multiply(polar(), Math.random() * 20)),
+                        multiply(polar(), Math.random() * 10),
+                        colour))
+                }
+            }
+        }
+        drawAnimations() {
+            if (this.currentAnimations.length > 0) {
+                this.currentAnimations.forEach((animation, i) => {
+                    animation.draw()
+                    if (animation.currentFrame >= animation.frames) {
+                        this.currentAnimations.splice(i, 1)
+                    }
+                })
+            }
+        }
+        draw(override = false) {
+            this.drawAnimations()
+            if (this.visible || override) {
+                ctx.save()
+                ctx.translate(this.position.x - camera.position.x, this.position.y - camera.position.y)
+                ctx.rotate(this.direction)
+            }
+        }
+    }
+
+    class KineticObject extends GameObject {
+        constructor(x, y) {
+            super(x, y)
+        }
+        velocity = { x: 0, y: 0 }
+        direction = -Math.PI / 2
+        get acceleration() {
+            return game.mission.gravity
+        }
+        anchored = true
+        update(dt) {
+            if (!this.anchored) {
+                this.velocity = add(this.velocity, multiply(this.acceleration, dt))
+                this.position = add(this.position, multiply(this.velocity, dt))
+
+                // Boundary Collisions
+                const restitution = 0.5
+                if (this.position.x < game.mission.boundary.x) {
+                    this.position.x = game.mission.boundary.x
+                    this.velocity.x = -this.velocity.x * restitution
+                }
+                if (this.position.x > game.mission.boundary.x + game.mission.boundary.width) {
+                    this.position.x = game.mission.boundary.x + game.mission.boundary.width
+                    this.velocity.x = -this.velocity.x * restitution
+                }
+                if (this.position.y > game.mission.boundary.y + game.mission.boundary.height) {
+                    this.position.y = game.mission.boundary.y + game.mission.boundary.height
+                    this.velocity.y = -this.velocity.y * restitution
+                }
+            }
+        }
+    }
+
+    class Rocket extends KineticObject {
+        constructor(x, y, fuel) {
+            super(x, y)
+            this.#fuel = fuel
+        }
+        thrust = { x: 0, y: 0 }
+        get acceleration() {
+            return add(multiply(game.mission.pod.attached ? add(this.thrust, game.mission.pod.tension) : this.thrust, 1 / this.mass), game.mission.gravity)
+        }
+        #drymass = 1000
+        #fuel = 1000
+        get fuel() {
+            return this.#fuel
+        }
+        set fuel(newFuel) {
+            this.#fuel = newFuel
+            if (newFuel <= 0) {
+                game.mission.failure = true
+            }
+            document.querySelector('#fuel>p').nextElementSibling.innerHTML = Math.round(newFuel)
+        }
+        refueling = false
+        get mass() {
+            return this.#drymass + this.fuel
+        }
+        radius = 15
+        friendly = true
+        visible = false
+        update(dt) {
+            if (this.anchored) {
+                if (this.visible && this.currentAnimations.length === 0) this.anchored = false
+            } else {
+                // User Input
+                if (input.left) this.direction -= 0.006 * dt
+                if (input.right) this.direction += 0.006 * dt
+                if (input.thrust && this.fuel > 0) {
+                    this.fuel -= 0.05 * dt
+                    this.thrust = polar(this.direction, 0.5)
+                } else {
+                    this.thrust = { x: 0, y: 0 }
+                }
+
+                super.update(dt)
+            }
+            this.refueling = false
+        }
+        reloaded = true
+        vanish() {
+            this.anchored = true
+            this.visible = false
+            this.currentAnimations.push(new Animation(13, 25, animationFunctions.vanish, this.position, game.mission.colours[0]))
+        }
+        explode() {
+            if (this.visible) {
+                super.explode(16, game.mission.colours[1])
+                if (game.mission.pod.attached) setTimeout(() => game.mission.pod.explode(), 200)
+                if (game.mission.detonationTime || game.mission.rocket.fuel <= 0) {
+                    game.mission.lose()
+                }
+                if (game.lives > 0) {
+                    setTimeout(game.respawn.load, 2500)
+                } else {
+                    game.lose()
+                }
+            }
+        }
+        draw() {
+            super.draw()
+            if (this.visible) {
+                ctx.strokeStyle = 'yellow'
+                ctx.beginPath()
+                ctx.moveTo(20, 0)
+                ctx.lineTo(-5, 15)
+                ctx.lineTo(-10, 10)
+                ctx.lineTo(-5, 0)
+                ctx.lineTo(-10, -10)
+                ctx.lineTo(-5, -15)
+                ctx.lineTo(20, 0)
+                ctx.closePath()
+                ctx.stroke()
+                if (input.thrust && this.fuel > 0) {
+                    ctx.strokeStyle = 'red'
+                    ctx.beginPath()
+                    ctx.moveTo(-5, 0)
+                    ctx.lineTo(-10, 2)
+                    ctx.lineTo(-15, 0)
+                    ctx.lineTo(-10, -2)
+                    ctx.lineTo(-5, 0)
+                    ctx.closePath()
+                    ctx.stroke()
+                }
+                ctx.rotate(-this.direction)
+                if (input.shield) {
+                    ctx.strokeStyle = game.mission.colours[1]
+                    ctx.beginPath()
+                    ctx.moveTo(20, 0)
+                    ctx.arc(0, 0, 20, 0, 2 * Math.PI)
+                    ctx.closePath()
+                    ctx.stroke()
+                    if (this.refueling) {
+                        ctx.strokeStyle = game.mission.colours[0]
+                        ctx.beginPath()
+                        ctx.moveTo(-25, 20)
+                        ctx.lineTo(-65, 100)
+                        ctx.moveTo(25, 20)
+                        ctx.lineTo(65, 100)
+                        ctx.closePath()
+                        ctx.stroke()
+                    }
+                }
+                ctx.rotate(this.direction)
+            }
+            ctx.restore()
+        }
+    }
+
+    class Pod extends KineticObject {
+        constructor(x, y) {
+            super(x, y)
+        }
+        direction = 0
+        mass = 400
+        radius = 12
+        friendly = true
+        attached = false
+        pickupRange = 100
+        tension = { x: 0, y: 0 }
+
+        update(dt) {
+            if (this.visible) {
+                // Pick up
+                let rocketDistance = this.distanceTo(game.mission.rocket)
+                if (input.shield) {
+                    if (rocketDistance < this.pickupRange) {
+                        this.attached = true
+                        this.maxLength = this.pickupRange
+                    } else if (this.attached && this.anchored) {
+                        this.anchored = false
+                        sound.tick()
+                        setTimeout(sound.tick, 120)
+                    }
+                } else if (this.anchored) {
+                    this.attached = false
+                }
+
+                super.update(dt)
+
+                if (!this.anchored) {
+                    if (this.attached) {
+                        // Rope constraint
+                        let displacement = this.displacementTo(game.mission.rocket)
+                        let distance = magnitude(displacement)
+                        let massProportion = this.mass / (this.mass + game.mission.rocket.mass)
+                        let centreOfMass = add(multiply(this.position, massProportion), multiply(game.mission.rocket.position, 1 - massProportion))
+
+                        // Centripetal acceleration
+                        let extension = distance - this.maxLength
+                        this.tension = multiply(normalise(displacement), -0.07 * extension)
+                        this.velocity = add(this.velocity, multiply(this.tension, -dt / this.mass))
+
+                        this.position = add(centreOfMass, multiply(normalise(displacement), -this.maxLength * (1 - massProportion)))
+                        game.mission.rocket.position = add(centreOfMass, multiply(normalise(displacement), this.maxLength * massProportion))
+
+
+                    }
+                }
+
+                // Win Condition
+                if (this.position.y < game.mission.boundary.y) {
+                    game.mission.win()
+                }
+            }
+        }
+        vanish() {
+            sound.ding()
+            this.anchored = true
+            this.visible = false
+            this.currentAnimations.push(new Animation(13, 25, animationFunctions.vanish, this.position, game.mission.colours[1]))
+        }
+        explode() {
+            if (this.visible) {
+                super.explode(16, game.mission.colours[1])
+                setTimeout(() => game.mission.rocket.explode(), 200)
+            }
+        }
+        draw() {
+            super.draw()
+            if (this.visible) {
+                ctx.strokeStyle = game.mission.colours[1]
+                ctx.beginPath()
+                ctx.moveTo(12, 0)
+                ctx.arc(0, 0, 12, 0, 2 * Math.PI)
+                ctx.closePath()
+                ctx.stroke()
+                if (this.anchored) {
+                    ctx.strokeStyle = game.mission.colours[0]
+                    ctx.beginPath()
+                    ctx.moveTo(0, 15)
+                    ctx.lineTo(8, 12)
+                    ctx.lineTo(8, 15)
+                    ctx.lineTo(2, 18)
+                    ctx.lineTo(2, 25)
+                    ctx.lineTo(-2, 25)
+                    ctx.lineTo(-2, 18)
+                    ctx.lineTo(-8, 15)
+                    ctx.lineTo(-8, 12)
+                    ctx.lineTo(0, 15)
+                    ctx.closePath()
+                    ctx.stroke()
+                }
+                if (this.attached && this.visible) {
+                    let rocketDisplacement = this.displacementTo(game.mission.rocket)
+                    ctx.strokeStyle = game.mission.colours[2]
+                    ctx.beginPath()
+                    ctx.moveTo(0, 0)
+                    ctx.lineTo(rocketDisplacement.x, rocketDisplacement.y)
+                    ctx.closePath()
+                    ctx.stroke()
+                }
+            }
+            ctx.restore()
+        }
+    }
+
+    class Bullet extends GameObject {
+        constructor(position, velocity, friendly = true, colour) {
+            super(position.x, position.y)
+            this.velocity = velocity
+            this.friendly = friendly
+            this.colour = colour
+            if (friendly) {
+                this.targets = [...game.mission.limpets, ...game.mission.fuels, game.mission.pod, game.mission.reactor, ...game.mission.triggers]
+                sound.fire()
+            } else {
+                this.targets = [game.mission.rocket, game.mission.pod]
+                sound.fireEnemy()
+            }
+            game.mission.bullets.push(this)
+        }
+        targets = []
+
+        update(dt) {
+            let prevDotProducts = this.targets.map(target => dot(this.velocity, this.displacementTo(target)))
+
+            this.position = add(this.position, multiply(this.velocity, dt))
+
+            // Check if the bullet is out of bounds
+            if (this.position.x < game.mission.boundary.x || this.position.x > game.mission.boundary.x + game.mission.boundary.width ||
+                this.position.y < game.mission.boundary.y || this.position.y > game.mission.boundary.y + game.mission.boundary.height) {
+                game.mission.bullets.splice(game.mission.bullets.indexOf(this), 1)
+            }
+
+            // Check for terrain collisions
+            if ([...game.mission.terrain, ...game.mission.trapdoors].some(piece => piece.collision(this))) {
+                game.mission.bullets.splice(game.mission.bullets.indexOf(this), 1)
+            }
+
+            let currentDotProducts = this.targets.map(target => dot(this.velocity, this.displacementTo(target)))
+            // Check if the bullet has passed through the target
+            let passes = this.targets.map((target, i) => prevDotProducts[i] * currentDotProducts[i])
+            if (passes.some(pass => pass < 0)) this.targets.forEach((target, i) => {
+                if (passes[i] < 0) {
+                    let distance = cross(normalise(this.velocity), this.displacementTo(target))
+                    if (Math.abs(distance) < target.radius) {
+                        if (!(target === game.mission.rocket && input.shield)) target.explode()
+                        game.mission.bullets.splice(game.mission.bullets.indexOf(this), 1)
+                    }
+                }
+            })
+
+        }
+        draw() {
+            ctx.save()
+            ctx.translate(this.position.x - camera.position.x, this.position.y - camera.position.y)
+            ctx.strokeStyle = this.colour
+            ctx.strokeRect(-1, -1, 2, 2)
+            ctx.restore()
+        }
+    }
+
+    class Limpet extends GameObject {
+        constructor(x, y, direction) {
+            super(x, y, direction)
+            this.lastFireTime = 0
+        }
+        get fireRate() {
+            return game.mission.reactor.health * 0.07
+        }
+        get fireInterval() {
+            return 1000 / this.fireRate
+        }
+        maxFireDistance = 1000
+        maxFireAngle = 0.05 // Cosine of angle
+        radius = 50
+        explode() {
+            if (this.visible) game.score = game.score + 750
+            super.explode(8, game.mission.colours[0])
+        }
+        update(dt) {
+            if (this.visible && game.mission.rocket.visible && game.respawn.timeSinceLastLoad > game.respawn.gracePeriod) {
+                this.lastFireTime += dt * Math.random()
+                if (this.lastFireTime > this.fireInterval) {
+                    this.lastFireTime = 0
+                    let displacement = this.displacementTo(game.mission.rocket)
+                    let distance = magnitude(displacement)
+                    let angle = dot(normalise(displacement), this.down)
+                    if (distance < this.maxFireDistance && angle > this.maxFireAngle) {
+                        new Bullet(add(this.position, polar(this.direction, 20)), multiply(normalise(displacement), 0.3), false, game.mission.colours[2])
+                    }
+                }
+            }
+        }
+        draw() {
+            super.draw()
+            if (this.visible) {
+                ctx.strokeStyle = game.mission.colours[1]
+                ctx.beginPath()
+                ctx.moveTo(0, -35)
+                ctx.lineTo(15, -30)
+                ctx.lineTo(15, 30)
+                ctx.lineTo(0, 35)
+                ctx.lineTo(0, 30)
+                ctx.lineTo(10, 15)
+                ctx.lineTo(10, -15)
+                ctx.lineTo(0, -30)
+                ctx.lineTo(0, -35)
+                ctx.moveTo(15, 10)
+                ctx.arc(0, 0, 15 * Math.SQRT2, -Math.PI / 4, Math.PI / 4)
+                ctx.closePath()
+                ctx.stroke()
+                ctx.restore()
+            }
+        }
+    }
+
+    class Fuel extends GameObject {
+        radius = 20
+        friendly = true
+        fuel = 300
+        refuelDistance = 200
+        refuelAngle = 0.95 // Cosine of angle
+
+        explode() {
+            super.explode(8, game.mission.colours[0])
+            if (!this.visible) {
+                game.score = game.score + 150
+            }
+        }
+        update(dt) {
+            if (this.visible && game.mission.rocket.visible && input.shield) {
+                let displacement = this.displacementTo(game.mission.rocket)
+                let distance = magnitude(displacement)
+                let angle = dot(normalise(displacement), polar(this.direction))
+                if (distance < this.refuelDistance && angle > this.refuelAngle) {
+                    if (this.fuel > 0) {
+                        game.mission.rocket.refueling = true
+                        game.mission.rocket.fuel += 0.5 * dt
+                        this.fuel -= 0.5 * dt
+                    } else {
+                        game.mission.rocket.refueling = false
+                        this.visible = false
+                        game.score = game.score + 300
+                        sound.tick()
+                        setTimeout(sound.tick, 120)
+                    }
+                }
+            }
+        }
+        draw() {
+            super.draw()
+            if (this.visible) {
+                ctx.strokeStyle = game.mission.colours[0]
+                ctx.strokeRect(10, -20, 20, 40)
+                ctx.strokeStyle = game.mission.colours[1]
+                ctx.beginPath()
+                ctx.moveTo(0, -10)
+                ctx.lineTo(10, -8)
+                ctx.moveTo(0, 10)
+                ctx.lineTo(10, 8)
+                ctx.closePath()
+                ctx.stroke()
+                ctx.fillStyle = game.mission.colours[2]
+                // Write Fuel sideways
+                ctx.rotate(this.direction + Math.PI)
+                ctx.font = 'bold 15px sans-serif'
+                ctx.textAlign = 'center'
+                ctx.textBaseline = 'middle'
+                ctx.fillText('Fuel', 0, -20)
+            }
+            ctx.restore()
+        }
+    }
+
+    class Reactor extends GameObject {
+        radius = 30
+        friendly = false
+        health = 10
+        visible = true
+        ticking = 1
+        explode() {
+            if (this.visible) {
+                super.explode(8, game.mission.colours[0])
+                if (this.health <= 0) {
+                    game.mission.detonationTime = performance.now() + 10000
+                    this.ticking = setInterval(sound.tick, 320)
+                    setTimeout(clearInterval, 10000, this.ticking)
+                }
+            }
+        }
+        draw() {
+            super.draw(true)
+            let time = performance.now()
+            let flash = time > game.mission?.detonationTime ? false :
+                Math.floor((game.mission.detonationTime - performance.now()) / 160) % 2 === 1
+            if (this.visible || flash) {
+                ctx.strokeStyle = game.mission.colours[0]
+                ctx.beginPath()
+                ctx.moveTo(45, 0)
+                ctx.arc(22.5, 0, 22.5, 0, 2 * Math.PI)
+                ctx.closePath()
+                ctx.stroke()
+                ctx.strokeStyle = game.mission.colours[1]
+                ctx.fillStyle = "black"
+                ctx.beginPath()
+                ctx.rect(0, -25, 10, 50)
+                ctx.rect(10, 15, 30, 5)
+                ctx.closePath()
+                ctx.fill()
+                ctx.stroke()
+                ctx.strokeStyle = game.mission.colours[2]
+                ctx.strokeRect(2.5, -20, 5, 2.5)
+            }
+            ctx.restore()
+        }
+    }
+
+    class Terrain {
+        constructor(x, y, width, height, shape) {
+            this.position = { x, y }
+            this.size = { width, height }
+            this.gradient = height / width
+            this.shape = shape
+        }
+
+        collision(obj, radius = obj?.radius || 0) {
+            let x = obj.position.x - this.position.x
+            let y = obj.position.y - this.position.y
+            let boundingBoxHit = (x + radius > 0 && x - radius < this.size.width &&
+                y + radius > 0 && y - radius < this.size.height)
+            if (!boundingBoxHit) return false
+            if (this.shape === 'full') return true
+
+            let relativeX = x / this.size.width
+            let relativeY = y / this.size.height
+            let clearance
+
+            if (this.shape === 'slope top right') {
+                clearance = relativeX - relativeY
+            }
+            if (this.shape === 'slope top left') {
+                clearance = 1 - relativeX - relativeY
+            }
+            if (this.shape === 'slope bottom left') {
+                clearance = relativeY - relativeX
+            }
+            if (this.shape === 'slope bottom right') {
+                clearance = relativeX + relativeY - 1
+            }
+            return clearance * this.size.height < radius
+        }
+
+        draw() {
+            ctx.save()
+            ctx.translate(this.position.x - camera.position.x, this.position.y - camera.position.y)
+            ctx.strokeStyle = game.mission.colours[2]
+            ctx.beginPath()
+            for (let i = 0; i < this.size.height; i += 10) {
+                if (this.shape === 'full') {
+                    ctx.moveTo(0, i)
+                    ctx.lineTo(this.size.width, i)
+                }
+                if (this.shape === 'slope top left') {
+                    ctx.moveTo(this.size.width - i / this.gradient, i)
+                    ctx.lineTo(this.size.width, i)
+                }
+                if (this.shape === 'slope top right') {
+                    ctx.moveTo(0, i)
+                    ctx.lineTo(i / this.gradient, i)
+                }
+                if (this.shape === 'slope bottom left') {
+                    ctx.moveTo(i / this.gradient, i)
+                    ctx.lineTo(this.size.width, i)
+                }
+                if (this.shape === 'slope bottom right') {
+                    ctx.moveTo(0, i)
+                    ctx.lineTo(this.size.width - i / this.gradient, i)
+                }
+
+            }
+            ctx.closePath()
+            ctx.stroke()
+            ctx.restore()
+        }
+    }
+
+    class Trapdoor extends Terrain {
+        constructor(x, y, closedWidth, closedHeight, openWidth, openHeight, triggers) {
+            super(x, y, closedWidth, closedHeight, 'full')
+            this.closedSize = { width: closedWidth, height: closedHeight }
+            this.openSize = { width: openWidth, height: openHeight }
+            this.isOpen = false
+            this.triggers = triggers
+            triggers.forEach(trigger => {
+                trigger.position = add(trigger.position, this.position)
+                trigger.target = this
+            })
+        }
+        currentAnimations = []
+
+        get isClosed() {
+            return !this.isOpen
+        }
+
+        open() {
+            if (this.isClosed) {
+                this.isOpen = true
+                this.currentAnimations.push(new Animation(13, 25, animationFunctions.lerpSize, this, this.closedSize, this.openSize))
+                setTimeout(this.close.bind(this), 10000)
+            }
+        }
+        close() {
+            this.isOpen = false
+            this.currentAnimations.push(new Animation(13, 25, animationFunctions.lerpSize, this, this.openSize, this.closedSize))
+        }
+        drawAnimations() {
+            if (this.currentAnimations.length > 0) {
+                this.currentAnimations.forEach((animation, i) => {
+                    animation.draw()
+                    if (animation.currentFrame >= animation.frames) {
+                        this.currentAnimations.splice(i, 1)
+                    }
+                })
+            }
+        }
+        draw() {
+            this.drawAnimations()
+            super.draw()
+            this.triggers.forEach(trigger => trigger.draw())
+        }
+    }
+
+    class TrapdoorTrigger extends GameObject {
+        constructor(x, y, direction = 0) {
+            super(x, y, direction)
+            this.radius = 20
+        }
+
+        explode() {
+            this.target.open()
+        }
+
+        draw() {
+            super.draw()
+            ctx.strokeStyle = game.mission.colours[0]
+            ctx.beginPath()
+            ctx.moveTo(this.radius, 0)
+            ctx.arc(0, 0, this.radius, 0, 2 * Math.PI)
+            ctx.closePath()
+            ctx.stroke()
+            ctx.restore()
+        }
+    }
+
+    class Animation {
+        previousFrameTime
+        constructor(frames, framerate, drawFunc, ...params) {
+            this.frames = frames
+            this.frameTime = 1000 / framerate
+            this.drawFunc = drawFunc
+            this.drawFuncParams = params
+            this.currentFrame = 0
+        }
+
+        draw() {
+            if (this.currentFrame < this.frames) {
+                this.drawFunc(this.currentFrame, ...this.drawFuncParams)
+                if (this.currentFrame === 0 || performance.now() - this.previousFrameTime > this.frameTime) {
+                    this.previousFrameTime = performance.now()
+                    this.currentFrame++
+                }
+            }
+        }
+    }
+
+    class Mission {
+        constructor(template) {
+            this.rocket = template.rocket
+            this.pod = template.pod
+            this.reactor = template.reactor
+            this.limpets = template.limpets
+            this.fuels = template.fuels
+            this.boundary = template.boundary
+            this.terrain = template.terrain
+            this.trapdoors = template.trapdoors
+            this.triggers = template?.trapdoors.map(trapdoor => trapdoor.triggers).flat()
+            this.colours = template.colours
+            this.gravity = template.gravity
+        }
+        detonationTime = undefined
+        bullets = []
+        success = false
+        failure = false
+        win() {
+            game.mission.success = true
+            game.mission.rocket.vanish()
+            game.mission.pod.vanish()
+            game.score = game.score + 2000
+            clearInterval(game.mission.reactor.ticking)
+            setTimeout(() => {
+                document.querySelector('div#canvas p').innerHTML = `Mission <span>${game.currentMission}</span> Complete`
+                game.running = false
+            }, 1000)
+            setTimeout(game.loadMission, 5000)
+        }
+        lose() {
+            game.mission.failure = true
+            clearInterval(game.mission.reactor.ticking)
+            setTimeout(() => {
+                document.querySelector('div#canvas p').innerHTML = `Mission <span>${game.currentMission}</span> Failure`
+                game.running = false
+            }, 1000)
+            setTimeout(game.loadMission, 5000)
+        }
+    }
+
+    function initialiseSounds() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const bufferSize = 1 * audioCtx.sampleRate; // 2 seconds
+
+        // Thrust
+        const thrustBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const thrustNoise = thrustBuffer.getChannelData(0);
+
+        for (let i = 0; i < bufferSize; i++) {
+            thrustNoise[i] = Math.random() * 2 - 1; // White noise between -1 and 1
+        }
+
+        const thrustNoiseSource = audioCtx.createBufferSource();
+        thrustNoiseSource.buffer = thrustBuffer;
+        thrustNoiseSource.loop = true;
+
+        const thrustGainNode = audioCtx.createGain();
+        thrustGainNode.gain.value = 0;
+        thrustNoiseSource.connect(thrustGainNode);
+
+        // Tractor / Shield
+        const shieldOscillators = []
+        const shieldGainNode = audioCtx.createGain();
+        shieldGainNode.gain.value = 0;
+        for (let i = 1; i < 5; i++) {
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'square';
+            oscillator.frequency.value = 114 * i;
+
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.value = 2 ** -i;
+            oscillator.connect(gainNode).connect(shieldGainNode);
+            shieldOscillators.push(oscillator);
+        }
+
+        // Filters
+        const notch = audioCtx.createBiquadFilter();
+        notch.type = 'notch';
+        notch.frequency.value = 5500;
+        notch.Q.value = 6;
+        const lowpass = audioCtx.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.value = 3000;
+        lowpass.Q.value = 0.7;
+
+        thrustGainNode.connect(notch);
+        shieldGainNode.connect(notch);
+        notch.connect(lowpass).connect(audioCtx.destination);
+
+        // Other Sounds
+        ding = new Audio('./sounds/ding.mp3')
+        ding.volume = 0.5
+        explode = new Audio('./sounds/explode.mp3')
+        explode.volume = 0.5
+        fire = new Audio('./sounds/fire.mp3')
+        fire.volume = 0.5
+        fireEnemy = new Audio('./sounds/fireEnemy.mp3')
+        fireEnemy.volume = 0.5
+        tick = new Audio('./sounds/tick.mp3')
+        tick.volume = 0.5
+
+        let started = false
+        return {
+            start() {
+                if (!started) {
+                    thrustNoiseSource.start();
+                    shieldOscillators.forEach(oscillator => oscillator.start());
+                }
+                started = true
+            },
+            ding() {
+                ding.currentTime = 0
+                ding.play()
+            },
+            explode() {
+                explode.currentTime = 0
+                explode.play()
+            },
+            fire() {
+                fire.currentTime = 0
+                fire.play()
+            },
+            fireEnemy() {
+                fireEnemy.currentTime = 0
+                fireEnemy.play()
+            },
+            shield(enable) {
+                if (enable) {
+                    shieldGainNode.gain.value = 0.5
+                } else {
+                    shieldGainNode.gain.value = 0
+                }
+            },
+            thrust(enable) {
+                if (enable) {
+                    thrustGainNode.gain.value = 0.5
+                } else {
+                    thrustGainNode.gain.value = 0
+                }
+            },
+            tick() {
+                tick.currentTime = 0
+                tick.play()
+            }
+        }
+    }
+
+    const animationFunctions = {
+        vanish(frame, position, colour) {
+            let width = 7 - Math.abs(frame - 6)
+            ctx.save()
+            ctx.translate(position.x - camera.position.x, position.y - camera.position.y)
+            ctx.strokeStyle = colour
+            for (let i = 0; i < width; i++) {
+                ctx.beginPath()
+                ctx.lineWidth = 1 * (width - i + 1)
+                ctx.moveTo(15 * (i + 1), 8)
+                ctx.lineTo(15 * (i + 1), -8)
+                ctx.moveTo(-15 * (i + 1), 8)
+                ctx.lineTo(-15 * (i + 1), -8)
+                ctx.moveTo(8, 15 * (i + 1))
+                ctx.lineTo(-8, 15 * (i + 1))
+                ctx.moveTo(8, -15 * (i + 1))
+                ctx.lineTo(-8, -15 * (i + 1))
+                ctx.closePath()
+                ctx.stroke()
+            }
+            ctx.restore()
+        },
+        particle(frame, origin, velocity, colour) {
+            let position = add(origin, multiply(velocity, frame))
+            ctx.save()
+            ctx.translate(position.x - camera.position.x, position.y - camera.position.y)
+            ctx.strokeStyle = colour
+            ctx.strokeRect(-1, -1, 2, 2)
+            ctx.restore()
+        },
+        twinkle(frame, position = { x: Math.random() * camera.viewport.width, y: -Math.random() * camera.buffer }, colour = game.mission.colours.slice(0, 2)[Math.floor(Math.random() * 2)]) {
+            ctx.save()
+            ctx.translate(position.x - camera.position.x, position.y - camera.position.y)
+            ctx.strokeStyle = colour
+            ctx.strokeRect(-1, -1, 2, 2)
+            ctx.restore()
+        },
+        lerpPosition(frame, object, start, end) {
+            object.position = lerp(start, end, frame / 12)
+        },
+        lerpSize(frame, object, startWH, endWH) {
+            let startXY = { x: startWH.width, y: startWH.height }
+            let endXY = { x: endWH.width, y: endWH.height }
+            console.log(endWH)
+            let interpolated = lerp(startXY, endXY, frame / 12)
+            object.size = { width: interpolated.x, height: interpolated.y }
+
+        }
+    }
+
+    const game = {
+        missions: [
+            new Mission({
+                rocket: new Rocket(300, 600, 1000),
+                pod: new Pod(700, 875),
+                reactor: new Reactor(1100, 750),
+                limpets: [new Limpet(500, 850, Math.atan2(-2, 1))],
+                fuels: [new Fuel(300, 800)],
+                boundary: {
+                    x: 0,
+                    y: 0,
+                    width: 1300,
+                    height: 1100,
+                    spaceHeight: 400,
+                },
+                terrain: [
+                    new Terrain(0, 700, 200, 100, 'slope top right'),
+                    new Terrain(0, 800, 400, 400, 'full'),
+                    new Terrain(400, 800, 200, 100, 'slope top right'),
+                    new Terrain(400, 900, 600, 300, 'full'),
+                    new Terrain(1000, 750, 300, 650, 'full'),
+                ],
+                trapdoors: [],
+                colours: ['yellow', 'lime', 'red'],
+                gravity: { x: 0, y: 0.00004 },
+            }),
+            new Mission({
+                rocket: new Rocket(300, 400, 1200),
+                pod: new Pod(750, 1575),
+                reactor: new Reactor(300, 600),
+                limpets: [new Limpet(600, 1300, Math.atan2(2, 1)), new Limpet(1100, 1200, Math.atan2(2, -1))],
+                fuels: [new Fuel(850, 1600)],
+                boundary: {
+                    x: 0,
+                    y: 0,
+                    width: 1400,
+                    height: 1800,
+                    spaceHeight: 400,
+                },
+                terrain: [
+                    new Terrain(0, 600, 400, 200, 'full'),
+                    new Terrain(400, 600, 400, 200, 'slope top right'),
+                    new Terrain(0, 800, 800, 400, 'full'),
+                    new Terrain(500, 1200, 300, 150, 'slope bottom right'),
+                    new Terrain(0, 1200, 500, 400, 'full'),
+                    new Terrain(500, 1500, 200, 100, 'slope top right'),
+                    new Terrain(0, 1600, 1400, 200, 'full'),
+
+                    new Terrain(1000, 500, 400, 200, 'slope top left'),
+                    new Terrain(1000, 700, 400, 450, 'full'),
+                    new Terrain(1000, 1150, 200, 100, 'slope bottom left'),
+                    new Terrain(1200, 1150, 200, 450, 'full'),
+                    new Terrain(900, 1450, 300, 150, 'slope top left'),
+                ],
+                trapdoors: [],
+                colours: ['yellow', 'red', 'lime'],
+                gravity: { x: 0, y: 0.00003 },
+            }),
+            new Mission({
+                rocket: new Rocket(900, 400, 1200),
+                pod: new Pod(400, 2475),
+                reactor: new Reactor(1400, 750),
+                limpets: [new Limpet(1550, 1250, Math.atan2(-2, -1)), new Limpet(1050, 1125, Math.atan2(2, 1)), new Limpet(550, 2125, Math.atan2(-2, -1)), new Limpet(200, 1950, Math.atan2(2, 1))],
+                fuels: [new Fuel(900, 600), new Fuel(1225, 1300), new Fuel(1300, 1300), new Fuel(1375, 1300), new Fuel(950, 1700), new Fuel(650, 2100)],
+                boundary: {
+                    x: 0,
+                    y: 0,
+                    width: 1800,
+                    height: 2800,
+                    spaceHeight: 400,
+                },
+                terrain: [
+                    new Terrain(600, 600, 500, 500, 'full'),
+                    new Terrain(1000, 1100, 100, 50, 'slope bottom right'),
+                    new Terrain(600, 1100, 400, 400, 'full'),
+                    new Terrain(500, 1500, 200, 100, 'slope bottom right'),
+                    new Terrain(0, 750, 600, 750, 'full'),
+                    new Terrain(0, 1500, 500, 400, 'full'),
+                    new Terrain(100, 1900, 200, 100, 'slope bottom right'),
+                    new Terrain(0, 1900, 100, 600, 'full'),
+                    new Terrain(100, 2400, 200, 100, 'slope top right'),
+                    new Terrain(0, 2500, 1800, 300, 'full'),
+
+                    new Terrain(1600, 600, 200, 1100, 'full'),
+                    new Terrain(1300, 750, 300, 350, 'full'),
+                    new Terrain(1450, 1200, 200, 100, 'slope top left'),
+                    new Terrain(1200, 1300, 400, 400, 'full'),
+                    new Terrain(900, 1700, 900, 400, 'full'),
+                    new Terrain(500, 2100, 100, 50, 'slope top left'),
+                    new Terrain(600, 2100, 1200, 50, 'full'),
+                    new Terrain(500, 2150, 1300, 350, 'full'),
+
+                ],
+                trapdoors: [],
+                colours: ['yellow', 'lime', 'cyan'],
+                gravity: { x: 0, y: 0.00003 },
+            }),
+            new Mission({
+                rocket: new Rocket(800, 400, 2500),
+                pod: new Pod(1300, 2675),
+                reactor: new Reactor(600, 1550),
+                limpets: [new Limpet(800, 850, Math.atan2(2, 1)), new Limpet(600, 1150, Math.atan2(-2, 1)), new Limpet(600, 1300, Math.atan2(2, 1)), new Limpet(1000, 1450, Math.atan2(2, -1)), new Limpet(900, 1650, Math.atan2(-2, 1)), new Limpet(1300, 2200, Math.atan2(2, 1)), new Limpet(1600, 2450, Math.atan2(-2, -1))],
+                fuels: [],
+                boundary: {
+                    x: 0,
+                    y: 0,
+                    width: 1900,
+                    height: 2900,
+                    spaceHeight: 400,
+                },
+                terrain: [
+                    new Terrain(0, 600, 500, 700, 'full'),
+                    new Terrain(500, 600, 200, 100, 'slope top right'),
+                    new Terrain(500, 700, 400, 100, 'full'),
+                    new Terrain(500, 800, 400, 200, 'slope bottom right'),
+                    new Terrain(500, 1100, 200, 100, 'slope top right'),
+                    new Terrain(0, 1300, 500, 250, 'full'),
+                    new Terrain(500, 1200, 200, 50, 'full'),
+                    new Terrain(500, 1250, 200, 100, 'slope bottom right'),
+                    new Terrain(0, 1550, 700, 550, 'full'),
+                    new Terrain(700, 1550, 500, 250, 'slope top right'),
+                    new Terrain(700, 1800, 800, 300, 'full'),
+                    new Terrain(1100, 2100, 400, 200, 'slope bottom right'),
+                    new Terrain(0, 2100, 1100, 800, 'full'),
+                    new Terrain(1100, 2500, 100, 50, 'slope top right'),
+                    new Terrain(1100, 2550, 100, 150, 'full'),
+                    new Terrain(1100, 2700, 600, 200, 'full'),
+
+                    new Terrain(1100, 600, 800, 600, 'full'),
+                    new Terrain(900, 1200, 400, 200, 'full'),
+                    new Terrain(900, 1400, 400, 200, 'slope bottom left'),
+                    new Terrain(1300, 1200, 600, 400, 'full'),
+                    new Terrain(1700, 1600, 200, 1300, 'full'),
+                    new Terrain(1400, 2400, 300, 150, 'slope top left'),
+                    new Terrain(1400, 2550, 300, 150, 'full'),
+                ],
+                trapdoors: [new Trapdoor(1500, 1900, 200, 50, 20, 50, [
+                    new TrapdoorTrigger(200, 150),
+                    new TrapdoorTrigger(200, -100),
+                ])],
+                colours: ['yellow', 'magenta', 'lime'],
+                gravity: { x: 0, y: 0.00003 },
+            }),
+        ],
+        mission: undefined,
+        currentMission: 0,
+        loadMission() {
+            if (game.currentMission >= game.missions.length) game.win()
+            else {
+                game.mission = game.missions[game.currentMission]
+                game.currentMission++
+
+                // Respawning
+                game.respawn = {
+                    autosaveRate: 1000,
+                    queueLength: 3,
+                    autosaveQueue: [],
+                    timeSinceLastSave: 0,
+
+                    gracePeriod: 2000,
+                    timeSinceLastLoad: 0,
+                    autosave: {
+                        rocket: {
+                            position: game.mission.rocket.position,
+                            direction: game.mission.rocket.direction,
+                        },
+                        pod: {
+                            position: game.mission.pod.position,
+                            attached: false,
+                            anchored: true,
+                        }
+                    },
+                    load() {
+                        game.lives--
+                        game.mission.rocket.position = game.respawn.autosave.rocket.position
+                        game.mission.rocket.velocity = { x: 0, y: 0 }
+                        game.mission.rocket.direction = game.respawn.autosave.rocket.direction
+                        game.mission.rocket.currentAnimations = [new Animation(13, 25, animationFunctions.vanish, game.mission.rocket.position, game.mission.colours[0])]
+                        game.mission.rocket.visible = true
+                        game.mission.rocket.anchored = true
+
+                        game.mission.pod.position = game.respawn.autosave.pod.position
+                        game.mission.pod.velocity = { x: 0, y: 0 }
+                        game.mission.pod.attached = game.respawn.autosave.pod.attached
+                        game.mission.pod.currentAnimations = [new Animation(13, 25, animationFunctions.vanish, game.mission.pod.position, game.mission.colours[1])]
+                        game.mission.pod.visible = true
+                        game.mission.pod.anchored = true
+
+                        game.respawn.timeSinceLastLoad = 0
+                    }
+                }
+
+                document.documentElement.style.setProperty("--colour0", game.mission.colours[0])
+                document.documentElement.style.setProperty("--colour1", game.mission.colours[1])
+                document.documentElement.style.setProperty("--colour2", game.mission.colours[2])
+                document.querySelector('p#middle').innerHTML = ""
+                game.mission.rocket.vanish()
+                setTimeout(() => { game.mission.rocket.visible = true }, 13 * 1000 / 25)
+                game.running = true
+                gameLoop()
+            }
+        },
+        _score: 0,
+        _spentScore: 0,
+        get score() {
+            return this._score
+        },
+        set score(newScore) {
+            this._score = newScore
+            document.querySelector("#score>p").nextElementSibling.innerHTML = newScore
+            if (this._score - this._spentScore >= 10000) {
+                this._spentScore += 10000
+                this.lives++
+                sound.ding()
+            }
+        },
+        _lives: 3,
+        get lives() {
+            return game._lives;
+        },
+        set lives(newLives) {
+            game._lives = newLives
+            document.querySelector('#lives>p').nextElementSibling.innerHTML = newLives
+        },
+        running: false,
+        win() {
+            setTimeout(() => {
+                document.querySelector('div#canvas p').innerHTML = `Game Finished`
+                game.running = false
+            }, 2000)
+        },
+        lose() {
+            setTimeout(() => {
+                document.querySelector('div#canvas p').innerHTML = `Game Over`
+                game.running = false
+            }, 2000)
+        }
+    }
+    const sound = initialiseSounds()
+    const camera = {
+        position: { x: 0, y: 0 },
+        viewport: { width: 800, height: 600 },
+        buffer: 400,
+    }
+
+
+    // Key input
+    let input = {
+        left: false,
+        right: false,
+        shield: false,
+        thrust: false,
+    }
+    window.addEventListener('keydown', event => {
+        switch (event.keyCode) {
+            case 65:
+            case 90:
+                input.left = true
+                break
+            case 68:
+            case 88:
+                input.right = true
+                break
+            case 32:
+            case 69:
+                input.shield = true
+                if (game.mission.rocket.visible) sound.shield(true)
+                break
+            case 16:
+            case 87:
+                input.thrust = true
+                if (game.mission.rocket.visible) sound.thrust(true)
+                break
+            case 13:
+            case 81:
+                if (!input.shield && game.mission.rocket.reloaded && game.mission.rocket.visible) {
+                    new Bullet(add(game.mission.rocket.position, polar(game.mission.rocket.direction, 25)), add(game.mission.rocket.velocity, polar(game.mission.rocket.direction, 0.3)), true, game.mission.colours[1])
+                    game.mission.rocket.reloaded = false
+                }
+                break
+        }
+    })
+    window.addEventListener('keyup', event => {
+        switch (event.keyCode) {
+            case 65:
+            case 90:
+                input.left = false
+                break
+            case 68:
+            case 88:
+                input.right = false
+                break
+            case 32:
+            case 69:
+                input.shield = false
+                sound.shield(false)
+                break
+            case 16:
+            case 87:
+                input.thrust = false
+                sound.thrust(false)
+                break
+            case 13:
+            case 81:
+                game.mission.rocket.reloaded = true
+                break
+        }
+    })
+
+    // Drawing
+    const canvas = document.querySelector('canvas')
+    const ctx = canvas.getContext('2d')
+    let globalAnimations = []
+
+    // Resize
+    function resizeCanvas() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight - document.querySelector('div#top').offsetHeight
+        camera.viewport.width = canvas.width
+        camera.viewport.height = canvas.height
+        ctx.lineWidth = 2
+        focusCamera()
+    }
+    function focusCamera() {
+        if (game.mission?.rocket.position.x - camera.position.x < camera.buffer) camera.position.x = Math.max(game.mission.boundary.x, game.mission.rocket.position.x - camera.buffer)
+        if (game.mission?.rocket.position.x - camera.position.x > camera.viewport.width - camera.buffer) camera.position.x = Math.min(game.mission.boundary.x + game.mission.boundary.width, game.mission.rocket.position.x + camera.buffer) - camera.viewport.width
+        if (game.mission?.rocket.position.y - camera.position.y < camera.buffer) camera.position.y = game.mission.rocket.position.y - camera.buffer
+        if (game.mission?.rocket.position.y - camera.position.y > camera.viewport.height - camera.buffer) camera.position.y = Math.min(game.mission.boundary.y + game.mission.boundary.height, game.mission.rocket.position.y + camera.buffer) - camera.viewport.height
+    }
+    window.addEventListener('resize', resizeCanvas)
+    resizeCanvas()
+
+    let prevLoopTime = 0
+    function gameLoop(currentTime = 0) {
+        let dt = currentTime - prevLoopTime
+        if (dt > 0 && dt < 500) {
+
+            // Reactor meltdown
+            if (!game.mission.success && currentTime > game.mission.detonationTime) {
+                // Camera Shake
+                let cameraCentre = { x: camera.position.x, y: camera.position.y }
+                let cameraShakeMagnitude = Math.exp((game.mission.detonationTime - currentTime) / 500) * 25
+                camera.position = add(cameraCentre, polar(Math.random() * Math.PI * 2, cameraShakeMagnitude))
+
+                // Explosions
+                let toExplode = [game.mission.rocket, game.mission.pod, ...game.mission.limpets, ...game.mission.fuels]
+                toExplode.filter(obj => obj.visible).forEach(obj => obj.explode())
+
+                // game.mission.failure = true
+            }
+
+            // Camera movement
+            focusCamera()
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+            let toUpdate = [game.mission.rocket, game.mission.pod, ...game.mission.bullets, ...game.mission.limpets, ...game.mission.fuels]
+            let toDraw = [...game.mission.terrain, ...game.mission.trapdoors, game.mission.rocket, game.mission.pod, game.mission.reactor, ...game.mission.bullets, ...game.mission.limpets, ...game.mission.fuels,]
+
+            toUpdate.forEach(obj => obj.update(dt))
+            toDraw.forEach(obj => obj.draw())
+
+            // Collisions
+            let rocketCollidable = [...game.mission.terrain, ...game.mission.trapdoors, ...game.mission.fuels, game.mission.pod, game.mission.reactor]
+            let podCollidable = [...game.mission.terrain, ...game.mission.trapdoors, ...game.mission.fuels, game.mission.reactor]
+
+            if (rocketCollidable.some(piece => piece.collision(game.mission.rocket))) game.mission.rocket.explode()
+            if (podCollidable.some(piece => piece.collision(game.mission.pod))) game.mission.pod.explode()
+            if (game.mission.terrain.some(piece => piece.collision(game.mission.pod))) game.mission.pod.explode()
+
+
+            // Stars
+            globalAnimations.forEach((animation, i) => {
+                animation.draw()
+                if (animation.currentFrame >= animation.frames) {
+                    // animation.rewind()
+                    globalAnimations.splice(i, 1)
+                }
+            })
+            if (Math.random() < 0.3) {
+                globalAnimations.push(new Animation(
+                    10 + Math.random() * 10,
+                    5,
+                    animationFunctions.twinkle,
+                    { x: Math.random() * game.mission.boundary.width + game.mission.boundary.x, y: game.mission.boundary.spaceHeight - Math.random() * (camera.viewport.height + game.mission.boundary.spaceHeight) },
+                    game.mission.colours.slice(0, 2)[Math.floor(Math.random() * 2)]
+                ))
+            }
+
+            // Saving
+            game.respawn.timeSinceLastSave += dt
+            game.respawn.timeSinceLastLoad += dt
+            if (game.respawn.timeSinceLastSave > game.respawn.autosaveRate
+                && game.mission.rocket.visible
+                && game.mission.pod.visible
+                && !game.mission.trapdoors.some(trapdoor => trapdoor.collision(game.mission.rocket) || trapdoor.collision(game.mission.pod))
+            ) {
+                game.respawn.timeSinceLastSave -= game.respawn.autosaveRate
+                game.respawn.autosaveQueue.push(JSON.parse(JSON.stringify({
+                    rocket: {
+                        position: game.mission.rocket.position,
+                        direction: game.mission.rocket.direction,
+                    },
+                    pod: {
+                        position: game.mission.pod.position,
+                        attached: game.mission.pod.attached,
+                        anchored: game.mission.pod.anchored,
+                    },
+                })))
+                if (game.respawn.autosaveQueue.length > game.respawn.queueLength) {
+                    game.respawn.autosave = game.respawn.autosaveQueue.shift()
+                }
+            }
+        }
+        prevLoopTime = currentTime
+        if (game.running) window.requestAnimationFrame(gameLoop)
+    }
+
+    function play() {
+        prevLoopTime = performance.now();
+        sound.start();
+        // game.currentMission = 0
+        game.loadMission()
+    }
+</script>
+
+</html>

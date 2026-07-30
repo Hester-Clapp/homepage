@@ -1,0 +1,1227 @@
+[
+    {
+        "Category": "CPU",
+        "Title": "CPU",
+        "Description": "Play two more cards",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 2,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "ALU",
+        "Description": "Add up all card numbers in your hand. If over 100, pick up 3. If under 50, discard 2.",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Address Bus",
+        "Description": "Choose a player and peek at one card from their hand",
+        "Targets": 1,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 0,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 1,
+                "Skip": false
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Control Bus",
+        "Description": "Reverse the current action. This card can be played at any time",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Data Bus",
+        "Description": "Take one card from another player",
+        "Targets": 1,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 1,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 0,
+                "Skip": false
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "FDE Cycle",
+        "Description": "Take one card from another player and play it immediately",
+        "Targets": 1,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Cache",
+        "Description": "Play a card without discarding it",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Pipelining",
+        "Description": "All players must commit one card to play on their next turn",
+        "Targets": "*",
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Program Counter",
+        "Description": "Choose a new winning number of cards between 1 and 16",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Accumulator",
+        "Description": "Draw 2 cards",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 2,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "CIR",
+        "Description": "Repeat the action of the previous card",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Reduced Instruction Set",
+        "Description": "Play one more card",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 1,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Complex Instruction Set",
+        "Description": "Play two more cards",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 2,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Havard Architecture",
+        "Description": "Split your hand into two piles. You may not play two cards from different piles for the next 3 turns.",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "CPU",
+        "Title": "Von Neumann Architecture",
+        "Description": "Choose another player and shuffle your cards together with theirs. Deal the same number of cards to each player as they had to start with",
+        "Targets": 1,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "RAM",
+        "Description": "Discard any number of cards and draw the same number",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": "k",
+                "Draw": "k",
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "ROM",
+        "Description": "Place one of your cards face up in front of you. It cannot be stolen, discarded or played from now on, but still counts towards your hand total.",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 1
+            }
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "Virtual Storage",
+        "Description": "Place one of your cards face down in front of you. It cannot be stolen, discarded or played from now on, but still counts towards your hand total.",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 1
+            }
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Operating System",
+        "Description": "Choose another player to skip their next turn",
+        "Targets": 1,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 0,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 0,
+                "Skip": true
+            }
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "BIOS",
+        "Description": "Take one card from every player",
+        "Targets": "*",
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 1,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 0,
+                "Skip": false
+            }
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "Paging",
+        "Description": "Swap the next 4 cards in the deck with 4 cards from your hand",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 4,
+                "Draw": 4,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "Segmentation",
+        "Description": "Cut the deck into 3 segments and rearrange them",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "Virtual Memory",
+        "Description": "Draw one card",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 1,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Memory and Storage",
+        "Title": "Secondary Storage",
+        "Description": "Place one of your cards face down in front of you. While it is down, it cannot be stolen or discarded, but still counts towards your hand total. You may retrieve and play it on a later turn",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 1
+            }
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "First Come First Served",
+        "Description": "The next player's turn is skipped",
+        "Targets": "+",
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 0,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 0,
+                "Skip": true
+            }
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Round Robin",
+        "Description": "If another player takes more than 5 seconds on their turn, skip their turn. This card may be played at any time",
+        "Targets": 1,
+        "Effects": {
+            "Special": false,
+            "Anytime": true,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            },
+            "Target": {
+                "Give": 0,
+                "Take": 0,
+                "Be Given": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Peek": 0,
+                "Skip": true
+            }
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Shortest Job First",
+        "Description": "The player with the lowest numbered card goes next",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Shortest Time Remaining",
+        "Description": "The player with the fewest cards left goes next",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Multi Level Feedback Queue",
+        "Description": "Choose two players to swap hands",
+        "Targets": 2,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Interrupt Request",
+        "Description": "Prevent any action. This card may be played at any time.",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": true
+        }
+    },
+    {
+        "Category": "Scheduling",
+        "Title": "Interrupt Service Routine",
+        "Description": "Play one of your cards. This card may be played at any time.",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": true,
+            "Self": {
+                "Play": 1,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Distributed OS",
+        "Description": "Play one of your cards, which will affect all players",
+        "Targets": "*",
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Multi Tasking OS",
+        "Description": "Play two more cards",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 2,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Multi User OS",
+        "Description": "Choose another player. On their next turn, you may play a card as well.",
+        "Targets": 1,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Device Driver",
+        "Description": "Take one card from the discard pile.",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 0,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 1,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Defragmentation",
+        "Description": "Shuffle the deck",
+        "Targets": 0,
+        "Effects": {
+            "Special": true,
+            "Anytime": false
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Security",
+        "Description": "Prevent another player from stealing cards. This card may be played at any time",
+        "Targets": 1,
+        "Effects": {
+            "Special": false,
+            "Anytime": true
+        }
+    },
+    {
+        "Category": "Operating Systems",
+        "Title": "Virtual Machine",
+        "Description": "Take one card from the discard pile and play it immediately",
+        "Targets": 0,
+        "Effects": {
+            "Special": false,
+            "Anytime": false,
+            "Self": {
+                "Play": 1,
+                "Discard": 0,
+                "Draw": 0,
+                "Retrieve": 0,
+                "Protect": 0
+            }
+        }
+    },
+    {
+        "Category": "Software",
+        "Title": "Open Source Licence",
+        "Description": "All players must reveal one of their cards and keep it face up. The card can still be played, discarded or stolen",
+        "Targets": "*"
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Compiler",
+        "Description": "Discard any cards from your hand in the \"Programming\" or \"OOP\" categories. Take any cards in the discard pile from the \"Assembly Code\" category",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Library Code",
+        "Description": "Draw 5 cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Linker",
+        "Description": "Play two more cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Loader",
+        "Description": "Take 3 cards from another player",
+        "Targets": 1
+    },
+    {
+        "Category": "Software",
+        "Title": "Waterfall Methodology",
+        "Description": "Commit the cards you want to play on your next 3 turns. You cannot change your decision afterwards",
+        "Targets": 0
+    },
+    {
+        "Category": "Software",
+        "Title": "Agile Methodology",
+        "Description": "Take one card from the discard pile",
+        "Targets": 0
+    },
+    {
+        "Category": "Software",
+        "Title": "Rapid Application Development",
+        "Description": "Draw one card and play it immediately",
+        "Targets": 0
+    },
+    {
+        "Category": "Software",
+        "Title": "Extreme Programming",
+        "Description": "Partner with the next player for their next turn. Between you you may choose a card to play from either of your hands",
+        "Targets": "+"
+    },
+    {
+        "Category": "Programming",
+        "Title": "Encapsulation",
+        "Description": "Prevent another player from peeking at any cards. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Programming",
+        "Title": "Inheritance",
+        "Description": "Take two cards from the discard pile",
+        "Targets": 0
+    },
+    {
+        "Category": "Programming",
+        "Title": "Polymorphism",
+        "Description": "Repeat the action of the previous card",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "OUT",
+        "Description": "Discard as many cards as you want",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "LDA",
+        "Description": "Take one card from another player",
+        "Targets": 1
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "STA",
+        "Description": "Give one card to another player",
+        "Targets": 1
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "ADD",
+        "Description": "Draw one card",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "BRA",
+        "Description": "Choose another player to go next",
+        "Targets": 0
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "HLT",
+        "Description": "If a player tries to take one of your cards, cancel the action skip their turn. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Immediate Addressing",
+        "Description": "Declare a specific card. If anyone has it, they must discard it",
+        "Targets": "*"
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Direct Addressing",
+        "Description": "Take one card from the next player",
+        "Targets": "+"
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Indirect Addressing",
+        "Description": "Declare a specific card. If anyone has it, they must give it to you",
+        "Targets": "*"
+    },
+    {
+        "Category": "Assembly Code",
+        "Title": "Indexed Addressing",
+        "Description": "Take one card from 3 other players",
+        "Targets": 3
+    },
+    {
+        "Category": "Databases",
+        "Title": "Run Length Encoding",
+        "Description": "Repeat the previous 3 cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Databases",
+        "Title": "Dictionary Compression",
+        "Description": "Discard any cards in your hand from the same category",
+        "Targets": 0
+    },
+    {
+        "Category": "Databases",
+        "Title": "Symmetric Encryption",
+        "Description": "Swap one card with another player",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Asymmetric Encryption",
+        "Description": "Give another player one of your cards and take one of theirs",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "First Normal Form",
+        "Description": "Choose a player. If they have any cards from the same category, they must discard all but one of them",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Second Normal Form",
+        "Description": "Prevent another player from drawing multiple cards. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Third Normal Form",
+        "Description": "Prevent another player from playing multiple cards in the same turn. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Secondary Index",
+        "Description": "Take one card from the discard pile",
+        "Targets": 0
+    },
+    {
+        "Category": "Databases",
+        "Title": "SELECT Query",
+        "Description": "Declare a category. Every player must give you all of their cards from that category (if applicable)",
+        "Targets": "*"
+    },
+    {
+        "Category": "Databases",
+        "Title": "INSERT Query",
+        "Description": "Give another player as many cards as you want",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "DELETE Query",
+        "Description": "Declare a category. Every player must discard all of their cards from that category",
+        "Targets": "*"
+    },
+    {
+        "Category": "Databases",
+        "Title": "Atomicity",
+        "Description": "Swap your entire hand with another player",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Referential Integrity",
+        "Description": "Declare that another player has a specific card. If you are correct, pick up one card. If you are incorrect, discard one card.",
+        "Targets": 1
+    },
+    {
+        "Category": "Databases",
+        "Title": "Deadlock",
+        "Description": "Choose two players and prevent them from exchanging any cards.",
+        "Targets": 2
+    },
+    {
+        "Category": "Databases",
+        "Title": "Durability",
+        "Description": "Prevent one of your cards from being stolen. This card may be played at any time",
+        "Targets": 0
+    },
+    {
+        "Description": "Swap one card with another player",
+        "Targets": 1
+    },
+    {
+        "Title": "LAN",
+        "Description": "Take one card from the player on either side of you",
+        "Targets": 2
+    },
+    {
+        "Title": "DNS",
+        "Description": "Declare a specific card. If anyone has it, they must give it to you",
+        "Targets": 0
+    },
+    {
+        "Title": "Packet Switching",
+        "Description": "Take one card from 3 players, and redistribute them randomly",
+        "Targets": 3
+    },
+    {
+        "Title": "Circuit Switching",
+        "Description": "Choose two players to be linked, so all effects target them both.",
+        "Targets": 2
+    },
+    {
+        "Title": "Denial of Service Attack",
+        "Description": "Cancel any action. This card may be played at any time",
+        "Targets": 0
+    },
+    {
+        "Title": "Spyware",
+        "Description": "Look at another player's hand and take one card",
+        "Targets": 1
+    },
+    {
+        "Title": "Firewall",
+        "Description": "Cancel any incoming action against you. This card may be played at any time",
+        "Targets": 0
+    },
+    {
+        "Title": "Proxy Server",
+        "Description": "Redirect any action to another player. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Title": "Router",
+        "Description": "Take one card from one player and give it to another player",
+        "Targets": 1
+    },
+    {
+        "Description": "Choose two players to swap hands",
+        "Targets": 2
+    },
+    {
+        "Title": "Client-Server",
+        "Description": "All players place one card in the middle. Shuffle these cards and deal one to each player",
+        "Targets": "*"
+    },
+    {
+        "Title": "Peer-to-Peer",
+        "Description": "All players give one of their cards to another player",
+        "Targets": "*"
+    },
+    {
+        "Title": "JavaScript",
+        "Description": "Automate a card, causing its effect to repeat every turn for the next two rounds",
+        "Targets": 0
+    },
+    {
+        "Title": "Web Crawler",
+        "Description": "Take 2 cards from the discard pile",
+        "Targets": 0
+    },
+    {
+        "Title": "Web Indexing",
+        "Description": "Declare a category. Every player must give you one of their cards from that category (if applicable)",
+        "Targets": "*"
+    },
+    {
+        "Title": "PageRank",
+        "Description": "Peek at the top 5 cards of the deck. Place them back in an order you decide",
+        "Targets": 0
+    },
+    {
+        "Title": "Client-side Processing",
+        "Description": "Take one card from another player and play it immediately",
+        "Targets": 1
+    },
+    {
+        "Title": "Server-side Processing",
+        "Description": "Take one card from the deck and play it immediately",
+        "Targets": 0
+    },
+    {
+        "Category": "Binary",
+        "Title": "Binary",
+        "Description": "Choose a player to reveal every card in their hand with an even card number",
+        "Targets": 1
+    },
+    {
+        "Category": "Binary",
+        "Title": "Unsigned Binary",
+        "Description": "If you have zero cards after playing this card, draw 8 cards.",
+        "Targets": 0
+    },
+    {
+        "Category": "Binary",
+        "Title": "Sign and Magnitude",
+        "Description": "If a player tries to discard cards, make them pick up instead, and vice versa. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Binary",
+        "Title": "Two's Complement",
+        "Description": "Add up the numbers of your cards. If the total is greater than 256, discard one card. Otherwise, pick up one card",
+        "Targets": 0
+    },
+    {
+        "Category": "Binary",
+        "Title": "Binary Addition",
+        "Description": "Draw two cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Binary",
+        "Title": "Floating Point",
+        "Description": "Play a card and double its effect",
+        "Targets": 0
+    },
+    {
+        "Category": "Binary",
+        "Title": "Left Bit Shift",
+        "Description": "All players pass one card to the player on their left",
+        "Targets": "*-"
+    },
+    {
+        "Category": "Binary",
+        "Title": "Right Bit Shift",
+        "Description": "All players pass one card to the player on their right",
+        "Targets": "*+"
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Array",
+        "Description": "Draw 3 cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Tuple",
+        "Description": "Play 3 more cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "List",
+        "Description": "Place one card from your hand anywhere in the deck",
+        "Targets": 0
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Graph",
+        "Description": "All players give one of their cards to another player",
+        "Targets": "*"
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Stack",
+        "Description": "For the next 3 turns, you must play the card that you drew most recently",
+        "Targets": 0
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Queue",
+        "Description": "For the next 3 turns, you must play cards in the order that you drew them",
+        "Targets": 0
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Hash Table",
+        "Description": "Declare a specific card. If anyone has it, they must give it to you",
+        "Targets": "*"
+    },
+    {
+        "Category": "Data Structures",
+        "Title": "Binary Search Tree",
+        "Description": "Choose a number. The player on your left must give you a card with a number smaller than the number you chose. The player on your right must give you a card with a number larger than the number you chose.",
+        "Targets": "+-"
+    },
+    {
+        "Category": "Logic",
+        "Title": "AND Gate",
+        "Description": "Choose another player and force them to play 2 cards on their next turn",
+        "Targets": 1
+    },
+    {
+        "Category": "Logic",
+        "Title": "NOT Gate",
+        "Description": "Cancel current action. This card may be played at any time",
+        "Targets": 0
+    },
+    {
+        "Category": "Logic",
+        "Title": "XOR Gate",
+        "Description": "Choose another player and force them to play only one card on their next turn",
+        "Targets": 1
+    },
+    {
+        "Category": "Logic",
+        "Title": "De Morgan's Law",
+        "Description": "If a player tries to discard cards, make them pick up instead, and vice versa",
+        "Targets": 1
+    },
+    {
+        "Category": "Logic",
+        "Title": "Half Adder",
+        "Description": "Draw 2 cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Logic",
+        "Title": "Full Adder",
+        "Description": "Draw 3 cards and discard one of them",
+        "Targets": 0
+    },
+    {
+        "Category": "Logic",
+        "Title": "D Flip-Flop",
+        "Description": "Skip your turn but commit one card to play next turn",
+        "Targets": 0
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Data Protection Act",
+        "Description": "Prevent another player taking cards from the discard pile. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Computer Misuse Act",
+        "Description": "Prevent another player from stealing cards. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Copyright Designs and Patents Act",
+        "Description": "Prevent another player from drawing cards. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Regulation of Investigatory Powers Act",
+        "Description": "Peek at the next 5 cards in the deck",
+        "Targets": 0
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Artificial Intelligence",
+        "Description": "Draw one card and play it immediately",
+        "Targets": 0
+    },
+    {
+        "Category": "Legislation",
+        "Title": "E-Waste",
+        "Description": "Choose a player to discard half of their hand",
+        "Targets": 1
+    },
+    {
+        "Category": "Legislation",
+        "Title": "Personal Information",
+        "Description": "Ask another player whether they have a specific card. They must answer truthfully",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Abstraction",
+        "Description": "Remove one card from the game",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Precondition",
+        "Description": "Redirect any action to another player. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Decomposition",
+        "Description": "Discard one card from your hand and draw 2 from the deck",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Precomputation",
+        "Description": "Take one card from the discard pile",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Procedure",
+        "Description": "Turn one of your cards into a procedure. You can now play this card without discarding it. It can still be stolen",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Concurrent Processing",
+        "Description": "Play up to 3 more cards",
+        "Targets": 0
+    },
+    {
+        "Category": "Programming",
+        "Title": "Iteration",
+        "Description": "Play a card and repeat its action up to 3 times",
+        "Targets": 0
+    },
+    {
+        "Category": "Programming",
+        "Title": "Recursion",
+        "Description": "Repeat the action of the previous card",
+        "Targets": 0
+    },
+    {
+        "Category": "Programming",
+        "Title": "Selection",
+        "Description": "Draw 3 cards and keep one of them",
+        "Targets": 0
+    },
+    {
+        "Category": "Programming",
+        "Title": "Local Variable",
+        "Description": "Prevent another player from peeking at any cards. This card may be played at any time",
+        "Targets": 1
+    },
+    {
+        "Category": "Programming",
+        "Title": "Global Variable",
+        "Description": "Play one of your cards, which will affect all players",
+        "Targets": "*"
+    },
+    {
+        "Category": "Programming",
+        "Title": "Pass by Value",
+        "Description": "Give one card to another player. They must play it immediately",
+        "Targets": 1
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Divide and Conquer",
+        "Description": "Choose a player and take half of their hand",
+        "Targets": 1
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Backtracking",
+        "Description": "Reverse the direction of play",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Data Mining",
+        "Description": "Draw 10 cards and keep 4 of them",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Heuristic",
+        "Description": "Make a guess about which player has a specific card. If you are correct, draw 3 cards.",
+        "Targets": 0
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Performance Modelling",
+        "Description": "Compare hands with another player. Whoever has fewer cards draws 2.",
+        "Targets": 1
+    },
+    {
+        "Category": "Computational Thinking",
+        "Title": "Visualisation",
+        "Description": "All players must reveal all of their cards, and then hide them again",
+        "Targets": "*"
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Depth First Traversal",
+        "Description": "Choose a player. On their next turn, they must play at least 3 cards, or discard one if it is not possible",
+        "Targets": 1
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Breadth First Traversal",
+        "Description": "Choose a player. On their next 2 turns, they must only play one card.",
+        "Targets": 1
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Linear Search",
+        "Description": "Draw 10 cards and keep one of them",
+        "Targets": 0
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Bubble Sort",
+        "Description": "All players give their highest numbered card to the player after them",
+        "Targets": "*"
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Insertion Sort",
+        "Description": "Give one of your cards to the next player. The card may be passed on until someone decides to keep it.",
+        "Targets": "+"
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Quick Sort",
+        "Description": "Choose a pivot number. The player on your left must give you all of their cards with a smaller number than the pivot. The player on your right must give you all of their cards with a larger number than the pivot.",
+        "Targets": "+-"
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Merge Sort",
+        "Description": "Choose another player and shuffle your cards together with theirs. Deal the same number of cards to each player as they had to start with",
+        "Targets": 1
+    },
+    {
+        "Category": "Algorithms",
+        "Title": "Pathfinding",
+        "Description": "Choose another player to go next",
+        "Targets": 1
+    }
+]

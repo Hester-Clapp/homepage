@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<canvas></canvas>
+
+<input oninput="brush.element = this.value" placeholder="Element">
+
+<script>
+
+	const elements = JSON.parse(`{
+	"Carbon Dioxide": {
+		"state": "gas",
+        "colour": "black",
+		"density": 44,
+		"freezing": {
+			"temperature": 195,
+			"element": "Dry Ice"
+		},
+		"specific heat capacity": 0.846,
+		"thermal conductivity": 0.015
+	},
+	"Dirt": {
+		"state": "solid",
+        "colour": "brown",
+		"gravity": false,
+		"melting": {
+			"temperature": 600,
+			"element": "Sand"
+		},
+		"specific heat capacity": 1.48,
+		"thermal conductivity": 2
+	},
+	"Ice": {
+		"state": "solid",
+        "colour": "lightblue",
+		"gravity": false,
+		"melting": {
+			"temperature": 272.5,
+			"element": "Water"
+		},
+		"specific heat capacity": 2.05,
+		"thermal conductivity": 2.18
+	},
+	"Igneous Rock": {
+		"state": "solid",
+        "colour": "dimgrey",
+		"gravity": false,
+		"melting": {
+			"temperature": 1683,
+			"element": "Magma"
+		},
+		"specific heat capacity": 1,
+		"thermal conductivity": 2
+	},
+	"Magma": {
+		"state": "liquid",
+        "colour": "red",
+		"mass per tile": 1840,
+		"density": 50,
+		"freezing": {
+			"temperature": 1683,
+			"element": "Igneous Rock"
+		},
+		"melting": {
+			"temperature": 2630,
+			"element": "Rock Gas"
+		},
+		"specific heat capacity": 1,
+		"thermal conductivity": 1
+	},
+	"Oxygen": {
+		"state": "gas",
+        "colour": "cyan",
+		"density": 15,
+		"freezing": {
+			"temperature": 90,
+			"element": "Liquid Oxygen"
+		},
+		"specific heat capacity": 1.005,
+		"thermal conductivity": 0.024
+	},
+	"Sand": {
+		"state": "solid",
+        "colour": "beige",
+		"gravity": true,
+		"melting": {
+			"temperature": 1986,
+			"element": "Liquid Glass"
+		},
+		"specific heat capacity": 0.83,
+		"thermal conductivity": 2
+	},
+	"Sandstone": {
+		"state": "solid",
+        "colour": "darkgoldenrod",
+		"gravity": false,
+		"melting": {
+			"temperature": 1200,
+			"element": "Magma"
+		},
+		"specific heat capacity": 0.8,
+		"thermal conductivity": 2.9
+	},
+	"Steam": {
+		"state": "gas",
+        "colour": "lightgrey",
+		"density": 18,
+		"freezing": {
+			"temperature": 372.5,
+			"element": "Water"
+		},
+		"specific heat capacity": 4.179,
+		"thermal conductivity": 0.609
+	},
+	"Vacuum": {
+		"state": "vacuum",
+        "colour": "white",
+		"specific heat capacity": 0,
+		"thermal conductivity": 0
+	},
+	"Water": {
+		"state": "liquid",
+        "colour": "blue",
+		"mass per tile": 1000,
+		"density": 18,
+		"freezing": {
+			"temperature": 272.5,
+			"element": "Ice"
+		},
+		"melting": {
+			"temperature": 372.5,
+			"element": "Steam"
+		},
+		"specific heat capacity": 4.179,
+		"thermal conductivity": 0.609
+	}
+}`)
+
+	const canvas = document.querySelector("canvas")
+	const ctx = canvas.getContext("2d")
+
+	const canvasWidth = 500
+	const canvasHeight = 500
+	const tileWidth = 25
+
+	canvas.width = canvasWidth
+	canvas.height = canvasHeight
+
+	class Tile {
+		constructor(x, y, elementName, mass = 0, temperature = 0) {
+			this.x = x
+			this.y = y
+			this.elementName = elementName
+			this.element = elements[elementName]
+			this.mass = mass
+			this.temperature = temperature
+			this.next
+		}
+
+		get getNbrs() {
+			return [
+				(this.x > 0) ? tiles[this.x - 1][this.y] : null,
+				(this.x < canvasWidth / tileWidth - 1) ? tiles[this.x + 1][this.y] : null,
+				(this.y > 0) ? tiles[this.x][this.y - 1] : null,
+				(this.y < canvasHeight / tileWidth - 1) ? tiles[this.x][this.y + 1] : null,
+			].filter(v => v)
+		}
+
+		changeElement(name, mass = 0, temperature = 0) {
+			this.elementName = name
+			this.element = elements[name]
+			this.mass = mass || this.mass
+			this.temperature = temperature || this.temperature
+		}
+
+		swap(target) {
+			this.next = this.next || new Tile(this.x, this.y, this.elementName, this.mass, this.temperature)
+			target.next = target.next || new Tile(target.x, target.y, target.elementName, target.mass, target.temperature)
+			this.next.changeElement(target.elementName, target.mass, target.temperature)
+			target.next.changeElement(this.elementName, this.mass, this.temperature)
+		}
+
+		rise() {
+			if (this.y > 0) this.swap(tiles[this.x, this.y - 1])
+		}
+
+		sink() {
+			if (this.y < canvasHeight) this.swap(tiles[this.x, this.y + 1])
+		}
+
+		swapSideways() {
+			let sideNbrs = this.getNbrs.filter(v => v.y === this.y)
+			this.swap(sideNbrs[Math.floor(Math.random() * sideNbrs.length)])
+		}
+
+		updateStats() {
+			this.next = new Tile(this.x, this.y, this.elementName)
+			let allNbrs = this.getNbrs//.filter(v => v.element.state === this.element.state || v.elementName == "Vacuum")
+			let sameNbrs = allNbrs.filter(v => v.elementName === this.elementName)
+			// switch (this.element.state) {
+			// case "gas":
+			let totalMass = allNbrs.reduce((a, v) => a + v.mass, 0) + this.mass
+			this.next.mass = totalMass / (allNbrs.length + 1)
+			this.next.temperature = (allNbrs.reduce((a, v) => a + v.mass * v.temperature, 0) + this.mass * this.temperature) * this.mass / totalMass
+			if (this.elementName == "Vacuum" && this.mass > 0) this.next.changeElement((allNbrs.filter(v => v.elementName != "Vacuum")[0] || { elementName: "Vacuum" }).elementName)
+			if (Math.random() > 0.9) this.swapSideways()
+			//         break
+			// }
+		}
+
+		draw() {
+			ctx.fillStyle = this.element.colour
+			ctx.fillRect(this.x * tileWidth, this.y * tileWidth, tileWidth, tileWidth)
+		}
+	}
+
+	let tiles = []
+	for (let x = 0; x < canvasWidth / tileWidth; x++) {
+		tiles[x] = []
+		for (let y = 0; y < canvasHeight / tileWidth; y++) {
+			tiles[x][y] = new Tile(x, y, "Vacuum")
+		}
+	}
+
+	function tick() {
+		tiles.forEach(row => { row.forEach(tile => { tile.updateStats() }) })
+		tiles = tiles.map(row => row.map(tile => tile.next))
+		tiles.forEach(row => { row.forEach(tile => { tile.draw() }) })
+		// window.requestAnimationFrame(tick)
+	}
+
+	let brush = {
+		x: 0,
+		y: 0,
+		width: 1,
+		element: "Vacuum"
+	}
+	window.addEventListener("mousemove", (e) => {
+		let rect = canvas.getBoundingClientRect()
+		brush.x = (e.clientX - rect.left) / tileWidth
+		brush.y = (e.clientY - rect.top) / tileWidth
+	})
+
+
+
+	tiles[1][2].changeElement("Oxygen")
+	tiles[1][2].mass = 1
+
+	tiles[12][7].changeElement("Carbon Dioxide")
+	tiles[12][7].mass = 1
+	setInterval(tick, 100)
+
+
+</script>

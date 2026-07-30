@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Encoding</title>
+    <style>
+        * {
+            font-size: 2ch;
+            text-align: center;
+        }
+
+        body {
+            margin-bottom: 10rem;
+            margin: 0;
+        }
+
+        #textInput {
+            padding: 1rem;
+            width: 100%;
+            margin: 0;
+            border: 0;
+            background-color: #eee;
+            height: 2rem;
+            word-wrap: break-word;
+        }
+
+        input,
+        button {
+            padding: 1ch;
+            margin: 1ch;
+            border: 0.2rem outset;
+        }
+
+        p {
+            word-wrap: break-word;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #ddd;
+        }
+
+        tr:nth-child(even) {
+            background-color: #eee;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+
+<body id="body">
+    <form id="form">
+        <input id="textInput" placeholder="Enter message..." autocomplete="off">
+        <br>
+        <input id="submitButton" type="submit">
+    </form>
+    <p id="uncompressedSize"></p>
+    <p id="Ntropy"></p>
+    <button id="iterateButton">Construct Tree</button>
+    <table id="table"></table>
+    <canvas id="canvas"></canvas>
+</body>
+<script>
+    const ctx = canvas.getContext("2d")
+    let inputLength = 0, uncompressedCodewordLength, pdf, entropy, treeWidth = 0, treeDepth = 0, letters = [], uniqueLetters = [], nodes = [], code = {}, encoded = "", iterating, encoding
+    // textInput.focus()
+    form.addEventListener("submit", e => {
+        e.preventDefault()
+        letters = textInput.value.replaceAll(" ", "_").split("")
+        inputLength = letters.length
+        uncompressedCodewordLength = Math.ceil(Math.log2(inputLength))
+        let bin = letters.map(v => v.charCodeAt(0).toString(2).padStart(uncompressedCodewordLength, "0")).join("")
+        uncompressedSize.innerHTML = ("Uncompressed size: " + String(inputLength * uncompressedCodewordLength) + " bits")
+        pdf = letters.reduce((c, v) => (c[v] = (c[v] || 0) + 1 / inputLength, c), {})
+        uniqueLetters = Object.keys(pdf)
+        entropy = -uniqueLetters.map(k => pdf[k] * Math.log2(pdf[k])).reduce((a, b) => a + b, 0)
+        Ntropy.innerHTML = ("Entropy: " + String(Math.round(100 * entropy) / 100))
+        nodes = uniqueLetters.map(k => { return { chr: k, prb: pdf[k], inTree: false } }).sort((a, b) => a.prb - b.prb)
+        depth = 0
+        drawTable()
+        form.remove()
+    })
+    iterateButton.addEventListener("click", () => {
+        if (inputLength > 0) {
+            iterateButton.remove()
+            iterating = setInterval(iterate, 2000 / nodes.length)
+        } else {
+            iterateButton.innerHTML = "Enter a message first!"
+        }
+    })
+    function drawTable() {
+        table.innerHTML = "<tr><th>Character:</th><th>Probability:</th></tr>"
+        for (let el of nodes.filter(v => !v.inTree)) {
+            let tr = document.createElement("tr")
+            let chr = document.createElement("td")
+            chr.innerHTML = el.chr
+            tr.appendChild(chr)
+            let prb = document.createElement("td")
+            prb.innerHTML = Math.round(1000 * el.prb) / 1000
+            tr.appendChild(prb)
+            table.appendChild(tr)
+        }
+    }
+    function setNode(node = nodes.sort((a, b) => b.prb - a.prb)[0], depth = 0, bin = "") {
+        if (node.hasOwnProperty("a")) setNode(node.a, depth + 1, bin + "1")
+        if (node.hasOwnProperty("b")) setNode(node.b, depth + 1, bin + "0")
+        if (node.chr.length === 1) {
+            node.x = treeWidth
+            treeWidth++
+        } else {
+            node.x = Math.min(node.a.x, node.b.x)
+        }
+        node.depth = depth
+        nodes[nodes.indexOf(node)] = node
+        node.bin = bin
+        treeDepth = Math.max(treeDepth, depth)
+    }
+    function drawTree() {
+        nodes.forEach((node) => {
+            let d = node.depth
+            let x = node.x
+            ctx.fillStyle = "lightgray"
+            if (node.chr.length === 1) {
+                ctx.fillRect(x * 60, d * 100, 50, 50)
+            } else {
+                ctx.beginPath()
+                ctx.moveTo(x * 60 + 50, d * 100)
+                ctx.arc(x * 60 + 25, d * 100 + 25, 25, 0, 2 * Math.PI)
+                ctx.fill()
+            }
+            ctx.fillStyle = "black"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            if (node.chr.length === 1) {
+                ctx.font = "20px Times New Roman"
+                ctx.fillText(node.chr.length === 1 ? node.chr : `(${node.chr})`, x * 60 + 25, d * 100 + 25)
+            }
+            ctx.font = "10px Times New Roman"
+            ctx.fillText(Math.round(1000 * node.prb) / 1000, x * 60 + 25, d * 100 + 10)
+            ctx.fillText(node.bin, x * 60 + 25, d * 100 + 40)
+            if (node.hasOwnProperty("a")) {
+                ctx.strokeStyle = "red"
+                ctx.beginPath()
+                ctx.moveTo(x * 60 + 25, d * 100 + 50)
+                ctx.lineTo(node.a.x * 60 + 25, d * 100 + 100)
+                ctx.stroke()
+            }
+            if (node.hasOwnProperty("b")) {
+                ctx.strokeStyle = "black"
+                ctx.beginPath()
+                ctx.moveTo(x * 60 + 25, d * 100 + 50)
+                ctx.lineTo(node.b.x * 60 + 25, d * 100 + 100)
+                ctx.stroke()
+            }
+        })
+    }
+    function iterate() {
+        if (nodes.filter(v => !v.inTree).length > 1) {
+            let remainingNodes = nodes.filter(v => !v.inTree)
+            let a = remainingNodes.slice(0, 1)[0]
+            let b = remainingNodes.slice(1, 2)[0]
+            let node = { chr: (a.chr + b.chr), prb: (a.prb + b.prb), inTree: false, a: a, b: b }
+            a.inTree = true
+            b.inTree = true
+            nodes.push(node)
+            nodes.sort((a, b) => a.prb - b.prb)
+            drawTable()
+        } else {
+            document.getElementById("table").remove()
+            setNode()
+            canvas.width = uniqueLetters.length * 60
+            canvas.height = treeDepth * 100 + 100
+            canvas.addEventListener("click", () => { canvas.style.width = `${uniqueLetters.length * 120}px`; canvas.style.height = `${treeDepth * 200 + 100}px` })
+            drawTree()
+            nodes.filter(v => v.chr.length === 1).forEach(node => {
+                code[node.chr] = node.bin
+            })
+            let br = document.createElement("br")
+            body.appendChild(br)
+            let cap = document.createElement("p")
+            cap.innerHTML = "(Click tree to enlarge)"
+            cap.style["font-size"] = "1rem"
+            body.appendChild(cap)
+            let encodeButton = document.createElement("button")
+            encodeButton.id = "encodeButton"
+            encodeButton.innerHTML = "Encode message"
+            encodeButton.addEventListener("click", () => { encoding = setInterval(encodeMessage, 50) })
+            body.appendChild(encodeButton)
+            let compressed = document.createElement("p")
+            compressed.id = "compressed"
+            compressed.innerHTML = "Compressed: " + letters.reduce((a, b) => a + b, "")
+            body.appendChild(compressed)
+            let compressedSize = document.createElement("p")
+            compressedSize.id = "compressedSize"
+            body.appendChild(compressedSize)
+            let saving = document.createElement("p")
+            saving.id = "saving"
+            body.appendChild(saving)
+            let acwl = document.createElement("p")
+            acwl.id = "acwl"
+            body.appendChild(acwl)
+            let efficiency = document.createElement("p")
+            efficiency.id = "efficiency"
+            body.appendChild(efficiency)
+            clearInterval(iterating)
+        }
+    }
+    function encodeMessage() {
+        if (compressed.innerHTML.length - letters.length > 400) {
+            compressed.innerHTML = compressed.innerHTML.slice(0, 400) + "..."
+            while (letters.length > 0) encoded += code[letters.shift()]
+        }
+        if (letters.length > 0) {
+            encoded += code[letters.shift()]
+            compressed.innerHTML = "Compressed: " + encoded + letters.reduce((a, b) => a + b, "")
+        } else {
+            clearInterval(encoding)
+            encodeButton.remove()
+            compressedSize.innerHTML = "Compressed Size: " + encoded.length + " bits"
+            // saving.innerHTML = "Saving: " + String(Math.round(1000 - encoded.length / (inputLength * 8) * 1000) / 10) + "%"
+            const L = uniqueLetters.map(v => code[v].length * pdf[v]).reduce((a, b) => a + b, 0)
+            console.log(L)
+            const eta = `${Math.round(1000 * entropy / L) / 10}%`
+            acwl.innerHTML = "Average codeword length: " + String(Math.round(100 * L) / 100)
+            efficiency.innerHTML = "Efficiency: " + eta
+            let retry = document.createElement("button")
+            retry.onclick = () => { window.location.reload() }
+            retry.innerHTML = "Try another message"
+            body.appendChild(retry)
+        }
+    }
+</script>
+
+
+</html>

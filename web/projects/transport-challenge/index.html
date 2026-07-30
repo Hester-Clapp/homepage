@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>London Transport Challenge</title>
+    <style>
+        * {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        h1 {
+            margin-top: 0;
+            padding: 0.5rem;
+            background: blue;
+            color: white;
+            margin: 0;
+            padding: 1rem 0;
+            width: auto;
+        }
+
+        hr {
+            margin: 0 2rem;
+        }
+
+        p {
+            font-size: large;
+            margin: 1rem;
+        }
+
+        #challenge {
+            margin: 1rem 0;
+        }
+
+        #advice p {
+            margin: 2rem 1rem;
+        }
+
+        #time {
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        ol,
+        ul {
+            display: inline-block;
+            text-align: left;
+        }
+
+        li {
+            padding: 0.5rem;
+            width: fit-content;
+            font-size: large;
+        }
+
+        img {
+            display: inline;
+            margin: 0 5px;
+            height: 1rem;
+        }
+
+        button {
+            padding: 0.5rem;
+            margin: 0.2rem;
+            background: blue;
+            color: white;
+            border-radius: 0.5rem;
+            font-weight: bold;
+        }
+
+        #cancelButton {
+            background: white;
+            color: black;
+        }
+
+        #cancelButton.active {
+            background: crimson;
+        }
+
+        input {
+            margin: 1rem;
+            margin-bottom: 3rem;
+            width: 40%
+        }
+
+        label {
+            display: block;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>London Transport Challenge</h1>
+    <div id="challenge">
+    </div>
+    <hr>
+    <h2>Rules</h2>
+    <p>Start at King's Cross (or your local London terminus) at 10am. The challenge will usually take around 8 hours.
+    </p>
+    <p>Generate your stations, and try to visit them all. You must leave or arrive at each of your stations by train or
+        rail-replacement bus, and take a selfie of you at platform level and outside.</p>
+    <p>You may use any public transport, including:</p>
+    <div class="center">
+        <ul>
+            <li>London Underground</li>
+            <li>London Overground</li>
+            <li>Elizabeth Line</li>
+            <li>Docklands Light Railway</li>
+            <li>London Trams</li>
+            <li>Any National Rail trains</li>
+            <li>London Bus</li>
+            <li>Riverboat services</li>
+            <li>Cable Car</li>
+        </ul>
+    </div>
+    <p>You may not use private transport, such as:</p>
+    <div class="center">
+        <ul>
+            <li>Santander Cycles</li>
+            <li>E-Scooters</li>
+            <li>Taxi or ride share services</li>
+            <li>TfL Dial-a-ride</li>
+        </ul>
+    </div>
+    <p>You may make use of maps, timetables, journey planners and other publically available information.</p>
+    <hr>
+    <h2>Advice</h2>
+    <div id="advice">
+        <p>Inform yourself about strikes and engineering works beforehand; you may want to complete the challenge on
+            days
+            with minimal disruption.</p>
+        <p>I would recommend taking a pencil and paper to plan your route before you rush off onto a train.</p>
+        <p>Generally, allow 1 hour per station, plus 1 for lunch/snacks and another for things going wrong.</p>
+        <p>If you use travelcards, note that sometimes the gates will not let you back into a station that you have
+            recently
+            exited. If this happens, speak to a member of staff who will let you through. The ticket will usually
+            continue
+            to work afterwards.</p>
+        <p>Personally, I like to eat in local businesses rather than fast food chains. Half of the fun is ending up in
+            random parts of London and finding out what is there.</p>
+        <p>Most importantly, enjoy yourself! Enjoy the route planning, the experience of travelling, the problem solving
+            in
+            tight situations and the sense of achievement at the end. Don't stress too much about completing everything
+            as
+            quickly as
+            possible.</p>
+    </div>
+</body>
+<script src="./zones.js"></script>
+<script>
+    const defaultSettings = { minOver: 1, minLiz: 1, minDLR: 1, maxRail: 0, heathrow: true }
+    let settings = JSON.parse(localStorage.getItem("transport-challenge-settings")) || defaultSettings
+
+    let currentChallenge = JSON.parse(localStorage.getItem("transport-challenge")) || null
+    if (currentChallenge && Date.now() - currentChallenge.startTime < 86400000) {
+        startChallenge(currentChallenge)
+        updateTime()
+    } else {
+        cancelChallenge()
+    }
+
+    function isInvalid(selection) {
+        return (selection.filter(v => v.over).length < settings.minOver ||
+            selection.filter(v => v.liz).length < settings.minLiz ||
+            selection.filter(v => v.dlr).length < settings.minDLR ||
+            selection.filter(v => !(v.tube || v.over || v.liz || v.dlr)).length > settings.maxRail ||
+            (selection[5].name.includes("Heathrow") ? !settings.heathrow : false)
+        )
+    }
+
+    function roll() {
+        let selection = Array(6).fill(null).map((v, i) => zones[i][Math.floor(Math.random() * zones[i].length)])
+        let timestamp = Date.now()
+        while (isInvalid(selection)) {
+            selection = Array(6).fill(null).map((v, i) => zones[i][Math.floor(Math.random() * zones[i].length)])
+            if (Date.now() - timestamp > 5000) { return null }
+        }
+        return selection
+    }
+
+    function updateTime() {
+        let startTime = JSON.parse(localStorage.getItem("transport-challenge")).startTime
+        document.getElementById("time").innerHTML = [String(Math.floor((Date.now() - startTime) / 3600000)), String(Math.floor((Date.now() - startTime) / 60000) % 60).padStart(2, "0"), String(Math.floor((Date.now() - startTime) / 1000) % 60).padStart(2, "0")].join(":")
+    }
+
+    function startChallenge(challenge) {
+        if (challenge.stations) {
+            document.getElementById("challenge").innerHTML = `<h2>Your stations:</h2><div class="center"><ol id="list"></ol></div>`
+            localStorage.setItem("transport-challenge", JSON.stringify(challenge))
+            const modes = ["tube", "over", "liz", "dlr", "tram", "rail"]
+            challenge.stations.forEach(v => {
+                let li = document.createElement("li")
+                li.innerText = v.name
+                modes.forEach(m => { if (v.hasOwnProperty(m)) li.innerHTML += `<img src="./${m}.svg">` })
+                list.appendChild(li)
+            })
+            document.getElementById("challenge").innerHTML += `<h2>Your time:</h2><p id="time">0:00:00</p><button onclick="updateTime()">Update Time</button><br><button id="cancelButton" onclick="confirmCancelChallenge()">Cancel Challenge</button>`
+        } else {
+            document.getElementById("challenge").innerHTML = `Failed to load stations - timed out.<br><button onclick="startChallenge({stations: roll(),startTime: Date.now()})">Generate</button><br><button onclick="openSettings()">Settings</button>`
+        }
+    }
+
+    function cancelChallenge() {
+        localStorage.setItem("transport-challenge", "null")
+        document.getElementById("challenge").innerHTML = `<p>Press the button below to generate stations and start the challenge!</p><button onclick=" startChallenge({stations: roll(),startTime: Date.now()})">Generate</button><br><button onclick="openSettings()">Settings</button>`
+    }
+
+    function confirmCancelChallenge() {
+        let cancelButton = document.getElementById("cancelButton")
+        cancelButton.disabled = true
+        cancelButton.innerHTML = "Are you sure?"
+        setTimeout(() => {
+            cancelButton.disabled = false
+            cancelButton.onclick = cancelChallenge
+            cancelButton.className = "active"
+        }, 1000)
+        setTimeout(() => {
+            cancelButton.innerHTML = "Cancel Challenge"
+            cancelButton.onclick = confirmCancelChallenge
+            cancelButton.className = ""
+        }, 4000)
+    }
+
+    function openSettings() {
+        document.getElementById("challenge").innerHTML = `<label for="minOver"><img src="./over.svg">Minimum Overground Stations</label><input type="range" id="minOver" min="0" max="6" value="${settings.minOver}" oninput="minOver = this.value; this.nextElementSibling.value = this.value"><output>${settings.minOver}</output><label for="minLiz"><img src="./liz.svg">Minimum Elizabeth Line Stations</label><input type="range" id="minLiz" min="0" max="6" value="${settings.minLiz}" oninput="minLiz = this.value; this.nextElementSibling.value = this.value"><output>${settings.minLiz}</output><label for="minDLR"><img src="./dlr.svg">Minimum DLR Stations</label><input type="range" id="minDLR" min="0" max="6" value="${settings.minDLR}" oninput="minDLR = this.value; this.nextElementSibling.value = this.value"><output>${settings.minDLR}</output><label for="maxRail"><img src="./rail.svg">Maximum non-TfL train stations</label><input type="range" id="maxRail" min="0" max="6" value="${settings.maxRail}" oninput="minRail = this.value; this.nextElementSibling.value = this.value"><output>${settings.maxRail}</output><label for="heathrow">Include Heathrow</label><input type="checkbox" id="heathrow" ${settings.heathrow ? "checked" : ""}><br><button onclick="saveSettings(false)">Save</button><br><button onclick="saveSettings(true)">Defaults</button>`
+    }
+
+    function saveSettings(defaults = false) {
+        if (defaults) {
+            settings = defaultSettings
+        } else {
+            settings = {
+                minOver: Number(document.getElementById("minOver").value),
+                minLiz: Number(document.getElementById("minLiz").value),
+                minDLR: Number(document.getElementById("minDLR").value),
+                maxRail: Number(document.getElementById("maxRail").value),
+                heathrow: document.getElementById("heathrow").checked
+            }
+        }
+        localStorage.setItem("transport-challenge-settings", JSON.stringify(settings))
+        cancelChallenge()
+        if (defaults) openSettings()
+    }
+</script>
+
+</html>

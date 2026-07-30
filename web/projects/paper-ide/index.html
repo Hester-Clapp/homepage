@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paper IDE</title>
+    <link href="https://fonts.googleapis.com/css?family=Schoolbell&v1" rel="stylesheet">
+    <style>
+        span.strikethrough {
+            text-decoration: line-through;
+        }
+
+        body {
+            background-color: lightgrey;
+            padding: 0;
+            margin: 0;
+            border: 0.5rem white ridge;
+        }
+
+        header {
+            background-color: blue;
+            padding: 0;
+
+            h1 {
+                font-family: 'Schoolbell', 'Papyrus', 'Comic Sans MS', cursive;
+                margin: 0;
+                padding: 0.5rem 1rem;
+                color: white;
+
+                i {
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: larger;
+                }
+            }
+        }
+
+        main {
+            padding: 1rem;
+            border-top: 0.5rem white ridge;
+        }
+
+        button {
+            background-color: lightgrey;
+            border: 0.25rem white outset;
+            margin-left: 1rem;
+            padding: 0.25rem 1ch;
+            font-size: large;
+            font-weight: bold;
+        }
+
+        button:active {
+            border-style: inset;
+        }
+
+        #page {
+            overflow: hidden;
+        }
+
+        #page,
+        #output {
+            font-family: 'Schoolbell', 'Papyrus', 'Comic Sans MS', cursive;
+            min-width: 75ch;
+            height: 48rem;
+            padding: 1rem;
+
+            border: 0.5rem white ridge;
+            background: white;
+        }
+
+        #output {
+            font-family: 'Courier New', Courier, monospace;
+            height: 16rem;
+            min-width: 50ch;
+            overflow-y: scroll;
+            margin: 1rem;
+
+            p {
+                margin: 0;
+            }
+
+            .error {
+                color: red;
+            }
+
+            .warn {
+                color: gold;
+            }
+        }
+
+        #page>code {
+            min-height: 1em;
+            font-family: inherit;
+            display: block;
+        }
+
+        #page>code.selected::after {
+            content: "\1F589";
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: small
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Paper <i>IDE_</i></h1>
+    </header>
+    <main>
+        <div style="display:flex;">
+            <div id="page"></div>
+            <div>
+                <button id="run">Run</button>
+                <button id="previous">←</button>
+                <button id="next">→</button>
+                <button id="new">+</button>
+                <div id="output"></div>
+            </div>
+        </div>
+    </main>
+</body>
+
+<script>
+
+    let pages = []
+    let page = document.querySelector("#page")
+    let output = document.querySelector("#output")
+    let script = [[""]]
+    let currentPage = -1
+    let currentLine
+    let currentDiv
+    let currentIndent = 0
+    let currentBlock = 0
+    newPage()
+
+    function newPage() {
+        savePage()
+        currentPage = pages.length
+        currentLine = 0
+        page.innerHTML = ""
+        pages[currentPage] = [[""]]
+        script = pages[currentPage]
+        newLine()
+    }
+
+    function savePage() {
+        if (currentPage >= 0) {
+            pages[currentPage] = JSON.parse(JSON.stringify(script))
+        }
+    }
+
+    function loadPage(i = currentPage) {
+        savePage()
+        currentPage = i
+        script = pages[currentPage]
+        buildHTML(page)
+        currentLine = 0
+        currentDiv = document.querySelector("#page>code")
+        document.querySelector("#page>code.selected")?.classList.remove("selected")
+        currentDiv.classList.add("selected")
+    }
+
+    function newLine() {
+        currentDiv?.classList.remove("selected")
+        currentDiv = document.createElement("code")
+        currentDiv.innerHTML = ""
+        currentDiv.style["margin-left"] = currentIndent * 4 + "ch"
+        currentDiv.classList.add("selected")
+        page.appendChild(currentDiv)
+    }
+
+    function addChar(e) {
+        let key = e.key
+        if (/^Shift$|^Control$|^Alt$|^AltGraph$|^Meta$|^CapsLock$|^F[0-9]$|^F1[0-2]$|^ArrowLeft$|^ArrowRight$/.test(key)) return
+        e.preventDefault()
+        switch (key) {
+            case "Tab": return;
+            case "Enter":
+                if (script.length < 48) {
+                    currentLine = script.length
+                    script[currentLine] = [""]
+                    currentBlock = 0
+                    newLine()
+                }
+                break;
+            case "Backspace":
+                if (!script[currentLine][(currentBlock >> 1) << 1].length) break;
+                let whitespace = true
+                let lastChar = " "
+                while ((whitespace || lastChar != " ") && lastChar) {
+                    lastChar = deleteChar()
+                    whitespace = whitespace && /\w/.test(lastChar)
+                }
+                buildLine(currentDiv)
+                break;
+            default:
+                if (currentDiv.innerText.length >= 74 - currentIndent * 4) return
+                switch (key) {
+                    case "ArrowUp":
+                        if (currentLine > 0) {
+                            currentLine--
+                            currentDiv.classList.remove("selected")
+                            currentDiv = page.children[currentLine]
+                            currentDiv.classList.add("selected")
+                        }
+                        break;
+                    case "ArrowDown":
+                        if (currentLine < script.length - 1) {
+                            currentLine++
+                            currentDiv.classList.remove("selected")
+                            currentDiv = page.children[currentLine]
+                            currentDiv.classList.add("selected")
+                        }
+                        break;
+                    default:
+                        if (currentBlock % 2) script[currentLine][++currentBlock] = ""
+                        script[currentLine][currentBlock] += key
+                        currentDiv.append(document.createTextNode(key))
+                        if (/[\(\[\{]/.test(key)) currentIndent++
+                        if (/[\)\]\}]/.test(key)) currentIndent--
+                        break;
+                }
+        }
+    }
+
+    function deleteChar() {
+        let line = script[currentLine]
+        let currentValidBlock = (currentBlock >> 1) << 1
+        let chars = script[currentLine][currentValidBlock].split("")
+        let last = chars.pop()
+
+        if (currentBlock % 2) {
+            line[currentValidBlock] = chars.join("")
+            line[currentBlock] = last + line[currentBlock]
+        } else {
+            currentBlock++
+            line[currentValidBlock] = chars.join("")
+            line[currentBlock] = last
+
+            if (!chars.join("")) {
+                currentBlock -= 2
+                currentValidBlock -= 2
+                line[currentBlock] = line[currentBlock] + line[currentBlock + 1] + last
+                line.pop()
+                line.pop()
+            }
+        }
+
+        return chars[chars.length - 1]
+    }
+
+    function buildLine(el, line = currentLine) {
+        el.innerHTML = ""
+        script[line].forEach((block, i) => {
+            let span = document.createElement("span")
+            if (i % 2) span.classList.add("strikethrough")
+            span.textContent = block
+            el.appendChild(span)
+        })
+    }
+
+    function buildHTML(el) {
+        el.innerHTML = ""
+        script.forEach((_, line) => {
+            let html = document.createElement("code")
+            buildLine(html, line)
+            page.appendChild(html)
+        })
+    }
+
+    function recalculateIndent() {
+        currentIndent = Math.max(
+            script.join("\n").split("")
+                .reduce((indent, char) => {
+                    if (/[\(\[\{]/.test(char)) return indent + 1
+                    if (/[\)\]\}]/.test(char)) return indent - 1
+                    return indent
+                }, 0),
+            0
+        )
+
+    }
+
+    function getCode() {
+        savePage();
+        let code = "";
+        for (const pageScript of pages) {
+            for (const line of pageScript) {
+                code += line.filter((v, i) => i % 2 === 0).join("") + "\n";
+            }
+        }
+        return code.trim();
+    }
+
+    let log = console.log
+    console.log = message => output.innerHTML += `<p>${message}</p>`
+    console.error = message => output.innerHTML += `<p class="error">${message}</p>`
+    console.warn = message => output.innerHTML += `<p class="warn">${message}</p>`
+
+    addEventListener("keydown", addChar)
+    document.querySelector("#run").addEventListener("click", e => {
+        output.innerHTML = ""
+        try {
+            code = new Function(getCode())
+            code.call()
+        } catch (e) {
+            console.error(e)
+        }
+    })
+    document.querySelector("#previous").addEventListener("click", () => { if (currentPage > 0) loadPage(currentPage - 1) })
+    document.querySelector("#next").addEventListener("click", () => { if (currentPage < pages.length - 1) loadPage(currentPage + 1) })
+    document.querySelector("#new").addEventListener("click", newPage)
+</script>
+
+</html>

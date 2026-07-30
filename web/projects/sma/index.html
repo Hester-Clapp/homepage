@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape-Memory Alloys</title>
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.png">
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        li {
+            padding: 0.5rem 0;
+        }
+
+        h1 {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: 600;
+            padding: 1rem 1ch;
+            margin-bottom: 1rem;
+            margin-top: 0;
+            background: #445;
+            color: white
+        }
+
+        h2,
+        h3 {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: 600;
+            margin: 2rem 0;
+        }
+
+        p {
+            text-align: justify;
+            margin-left: 10%;
+            margin-right: 10%;
+        }
+
+        hr {
+            margin-top: 8rem;
+        }
+
+        span.reference {
+            color: blue;
+            vertical-align: super;
+            font-size: 0.6rem;
+            cursor: pointer;
+        }
+
+        canvas {
+            border: 5px dashed black;
+            user-select: none;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        td {
+            border: 1px solid black;
+            padding: 0.5rem 0.5ch;
+        }
+
+        figure {
+            margin-top: 8rem;
+            text-align: center;
+        }
+
+        img {
+            width: 50%;
+            height: auto;
+        }
+
+        figcaption {
+            font-family: 'Times New Roman', Times, serif;
+            font-style: italic;
+        }
+
+        div.flex {
+            display: flex;
+            width: 100%;
+            padding: 1rem 0;
+            margin: 0;
+            justify-content: center;
+        }
+
+        div.flex div.text {
+            width: auto;
+        }
+
+        #heat,
+        #rescue {
+            width: 40%;
+            height: 4rem;
+            margin: 0 30%;
+            background: green;
+            color: white;
+            font-size: 2rem;
+            border: 5px solid lightgrey
+        }
+
+        #heat.heat {
+            background: red;
+        }
+
+        #heat:hover,
+        #rescue:hover {
+            color: black;
+        }
+
+        #heat:active,
+        #rescue:active {
+            background: white;
+        }
+
+        #references li {
+            margin: 1rem 1rem;
+            padding: 1rem 1rem;
+        }
+
+        #references li.highlight {
+            background: lavender;
+        }
+
+        /* Copied from w3schools */
+        abbr {
+            position: relative;
+            display: inline;
+            border-bottom: 1px dotted black;
+        }
+
+        abbr .long {
+            visibility: hidden;
+            width: 16rem;
+            background-color: #445;
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem 0.5ch;
+            border-radius: 6px;
+
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -8rem;
+
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        abbr .long::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #445 transparent transparent transparent;
+        }
+
+        abbr:hover {
+            cursor: help;
+        }
+
+        abbr:hover .long {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Shape-Memory Alloys</h1>
+    <h2>What are shape-memory alloys?</h2>
+    <p>
+        A shape-memory alloy is a type of smart material that reacts to heat and changes its shape. It can be
+        <abbr>plastically deformed<span class="long">Deformed in such a way that the material stays
+                deformed</span></abbr>, but it will "remember" its original shape, which will be restored if the
+        material is
+        heated above a certain temperature.<span class="reference">[1]</span>
+    </p>
+    <p>
+        The most common type of SMA is a Nickel-Titanium alloy known as
+        <abbr>Ni<span class="long">Nickel</span></abbr><abbr>Ti<span class="long">Titanium</span></abbr><abbr>NOL<span
+                class="long">Naval Ordanance
+                Laboratory</span></abbr>.
+        It was first discovered
+        at
+        the
+        Naval Ordanance Laboratory in
+        1959 by William J Buehler and Frederick E Wang.<span class="reference">[2]</span>
+    </p>
+    <br>
+    <p>
+        When fabricating NiTiNOL, the ratio of Nickel to Titanium has a drastic effect on the transformation
+        temperature. Just a 1% increase in Nickel concentration equates to a change of ~100°C!<span
+            class="reference">[3]</span> The alloy is worked at temperatures of around 800°C and formed into the
+        right shape, after which point it is annealed at ~350°C to determine the original form. The
+        <abbr>transformation temperature<span class="long">The temperature at which the SMA changes
+                structure</span></abbr> can also be adjusted during this time.<span class="reference">[3]</span>
+    </p>
+    <hr>
+    <h2>How do shape-memory alloys work?</h2>
+    <div class="flex">
+        <div>
+            <canvas id="structure"></canvas>
+            <br>
+            <button id="heat">Heat</button>
+        </div>
+        <div class="text">
+            <h3>Instructions:</h3>
+            <p>Click and drag or swipe on the bar to deform it.</p>
+            <p>Press the heat button to heat up the bar.</p>
+            <h3>Explanation:</h3>
+            <p>
+                The shape-memory effect is caused by the material alternating between two different structures.
+            </p>
+            <p>
+                Below the <abbr>transformation temperature<span class="long">The temperature at which the SMA
+                        changes structure</span></abbr>, the structure is known as <abbr>martensite<span class="long">A
+                        type of crystal structure which resembles a normal metal</span></abbr>, which
+                in the
+                simulation has rhombus-shaped crystals. This is malleable, and can be <abbr>plastically
+                    deformed<span class="long">Deformed in such a way that the material stays deformed</span></abbr>
+                with
+                only a little stress.
+            </p>
+            <p>
+                When the bar is heated above the <abbr>transformation temperature<span class="long">The temperature
+                        at which the SMA changes structure</span></abbr>, the structure changes to a structure
+                called <abbr>austenite<span class="long">A type of crystal structure which behaves like a
+                        spring</span></abbr>, which has square crystals in the simulation. This makes the material
+                <abbr>super-elastic<span class="long">When the material is bent, it returns to its original shape by
+                        changing its crystal structure</span></abbr> since this structure cannot be <abbr>plastically
+                    deformed<span class="long">Deformed in such a way that the material stays deformed</span></abbr>,
+                causing the bar to spring back into the shape it was originally annealed in.
+            </p>
+            <p>
+                When the bar cools back down, the structure returns to <abbr>martensite<span class="long">A type of
+                        crystal structure which resembles a normal metal</span></abbr>, but the overall shape
+                doesn't
+                change.
+            </p>
+        </div>
+    </div>
+    <hr>
+    <h2>Properties</h2>
+    <table>
+        <tr>
+            <td>Density:</td>
+            <td>6500 kg m<sup>-3</sup> <span class="reference">[4]</span></td>
+        </tr>
+        <tr>
+            <td>Ultimate Tensile Stress:</td>
+            <td>8.6 GPa <span class="reference">[4]</span></td>
+        </tr>
+        <tr>
+            <td>Young's Modulus:</td>
+            <td>~30GPa (<abbr>martensite<span class="long">A type of crystal structure which resembles a normal
+                        metal</span></abbr>) <span class="reference">[4]</span></td>
+            <td>~80GPa (<abbr>austenite<span class="long">A type of crystal structure which behaves like a
+                        spring</span></abbr>) <span class="reference">[4]</span></td>
+        </tr>
+    </table>
+    <figure>
+        <img src="./assets/stress-strain.png">
+        <figcaption>Typical stress-strain curve for a twinned martensitic material.<span class="reference">[1]</span>
+        </figcaption>
+    </figure>
+    <p>
+        Martensitic NiTiNOL has a very low yield stress, and can be <abbr>plastically deformed<span
+                class="long">Deformed in such a way that the material stays deformed</span></abbr> with a small
+        amount of
+        force.<span class="reference">[1]</span> This is caused by the crystals changing which direction they point
+        in, as demonstrated by the simulation.<span class="reference">[1]</span></p>
+    <p> This deformation is recoverable through
+        heating, but it does not allow the material to change volume.
+    </p>
+    <figure>
+        <img src="./assets/strain-temperature.png">
+        <figcaption>Hypothetical plot of strain vs temperature for a martensitic transformation occuring in a
+            shape-memory alloy.<span class="reference">[1]</span></figcaption>
+    </figure>
+    <p>
+        Of course, with shape-memory alloys, stress is only half of the story. The material lengthens and contracts
+        when it changes between the <abbr>martensite<span class="long">A type of crystal structure which resembles a
+                normal metal</span></abbr> and <abbr>austenite<span class="long">A type of crystal structure which
+                behaves like a spring</span></abbr> structures, in addition to normal heat expansion.
+    </p>
+    <figure>
+        <img src="./assets/hysteresis.png">
+        <figcaption>Schematic stress-strain diagram for NiTiNOL and stainless steel.<span class="reference">[5]</span>
+        </figcaption>
+    </figure>
+    <p>
+        NiTiNOL behaves differently to other
+        metals due to its <abbr>super-elasticity<span class="long">When the material is bent, it returns to its original
+                shape by
+                changing its crystal structure</span></abbr>. The loading and unloading
+        curves form a hysteresis loop, allowing the material to elastically deform, similar to rubber and other
+        natural materials such as hair or bone.<span class="reference">[5]</span>
+    </p>
+    <hr>
+    <h2>Medical Applications</h2>
+    <p>
+        NiTiNOL is well-suited to use inside the body, due to its elasticity as well as its resistance to kinks and
+        corrosion.<span class="reference">[5]</span></p>
+    <p>The shape-memory effect means it is possible to make
+        self-expanding
+        stents. They can be collapsed, and inserted into blood vessels through tiny holes. Then they are heated to
+        expand and deploy to the correct size.<span class="reference">[5]</span>
+    </p>
+    <div class="flex">
+        <div>
+            <canvas id="stent"></canvas>
+            <br>
+            <button id="rescue">Rescue Stent</button>
+        </div>
+        <div class="text">
+            <h3>Instructions</h3>
+            <p>Click and drag or swipe to move the stent.</p>
+            <p>Push it against the top or bottom of the canvas to collapse it.</p>
+            <p>Drag it into the blood vessel to deploy - it will expand under the heat from the body.</p>
+            <p>Press the Rescue Stent button to (magically) retrieve the stent and try again.</p>
+        </div>
+    </div>
+    <p>
+        Despite this unique behaviour, NiTiNOL is more expensive to produce than other metal stents, so many patients
+        may opt for a cheaper, more conventional design.
+    </p>
+    <hr>
+    <h2>Industrial Applications</h2>
+    <p>
+        SMAs have also been used to make <abbr>actuators<span class="long">A mechanical component which can be
+                controlled to change length or apply force</span></abbr>, utilising the ability to change length when
+        heated by an
+        electrical current.<span class="reference">[6]</span> Similarly, they can be used in temperature sensors, by
+        deforming at the specific <abbr>transformation temperature<span class="long">The temperature at which the
+                SMA changes structure</span></abbr> and completing a circuit.<span class="reference">[6]</span>
+    </p>
+    <p>
+        Mechanisms involving shape-memory alloys tend to be simpler, with fewer moving parts, and also lighter than
+        conventional mechanisms. However, they lack the same longevity and reliability after heavy use, as the
+        material degrades as it is repeatedly heated, cooled and deformed.<span class="reference">[6]</span> As it
+        wears out,
+        it may become less flexible, or fail to return to its precise original shape, making it less desirable.<span
+            class="reference">[6]</span>
+    </p>
+    <hr>
+    <h2>Conclusion</h2>
+    <p>
+        Shape-memory alloys are an interesting and unique family of materials. They are unlike other metals with
+        their ability to be <abbr>plastically deformed<span class="long">Deformed in such a way that the material
+                stays deformed</span></abbr>, or become elastic when heated.
+    </p>
+    <p>
+        This unique behaviour makes them suitable for a variety of niche applications. However, they are difficult to
+        manufacture and prone to degradation, and other materials are usually favourable due to cost.
+    </p>
+    <p>
+        65 years since their discovery, shape-memory alloys have not yet been widely adopted, and likely to
+        remain a quirky yet impractical material in the future.
+    </p>
+    <hr>
+    <h2>References</h2>
+    <ol id="references">
+        <li>Duerig TW, Melton KN, Stöckel DW. Engineering aspects of shape memory alloys. Butterworth-heinemann;
+            2013
+            Oct 22.</li>
+        <li>KAUFFMAN, G.B., MAYO, I. The Story of Nitinol: The Serendipitous Discovery of the Memory Metal and
+            Its Applications.
+            Chem. Educator 2, 1–21 (1997).</li>
+        <li>Wu MH. Fabrication of nitinol materials and components. InMaterials Science Forum 2002 May 11 (Vol.
+            394, pp. 285-292).
+            Trans Tech Publications Ltd.</li>
+        <li>Cross WB, Kariotis AH, Stimler FJ. Nitinol characterization study. NASA; 1969 Sep 1.</li>
+        <li>Stöckel D, Pelton A, Duerig T. Self-expanding nitinol stents material and design considerations.
+            European radiology.
+            2004 Feb;14292-301.</li>
+        <li>Costanza G, Tata ME, Calisti C. Nitinol one-way shape memory springs Thermomechanical characterization
+            and actuator
+            design. Sensors and Actuators A Physical. 2010 Jan 1;157(1)113-7.</li>
+    </ol>
+</body>
+
+<script>
+    let mousedown = false
+    window.addEventListener("mousedown", () => { mousedown = true })
+    window.addEventListener("mouseup", () => { mousedown = false })
+    window.addEventListener("touchstart", () => { mousedown = true })
+    window.addEventListener("touchend", () => { mousedown = false })
+
+    // Citation links
+    let citations = document.querySelectorAll(".reference")
+    let references = document.getElementById("references").children
+    for (let i = 0; i < references.length; i++) { references[i].id = String(i + 1) }
+    for (let i = 0; i < citations.length; i++) {
+        let citation = citations[i]
+        let strNumber = citation.innerHTML.replaceAll(/[\[\]]/g, "").trim()
+        citation.addEventListener("click", () => {
+            if (window.location.href.slice(-2, -1) === "#") {
+                window.location.href = window.location.href.replace(/#./, "#" + strNumber)
+            } else {
+                window.location.href = window.location.href + "#" + strNumber
+            }
+            for (let j = 0; j < references.length; j++) { references[j].className = "" }
+            references[Number(strNumber) - 1].className = "highlight"
+        })
+    }
+    ;
+    // Structure simulation
+    (() => {
+        class Segment {
+            temperature = 0
+            transferTemperature = 0.2 + 0.7 * Math.random()
+            transformationTemperature = Math.max(0.4 + 0.5 * Math.random(), this.transferTemperature)
+            constructor(i) {
+                this.index = i
+                this.up = 2 * (i % 2) - 1
+                this.x = i * length
+                this.y = (quantity * length + length * (i % 2)) / 2
+            }
+            update() {
+                if (this.temperature > this.transformationTemperature) this.up = 0
+                if (this.temperature < this.transferTemperature && this.up === 0) this.up = 2 * (this.index % 2) - 1
+            }
+            draw() {
+                ctx.lineWidth = length / 4
+                ctx.strokeStyle = `rgb(${(128 * this.temperature ** 2 + 64)},64,${(64 * Math.max(1 - this.temperature, 0) ** 2 + 64)})`
+                for (let y = 0; y < 5; y++) {
+                    ctx.moveTo(this.x, this.y + y * length)
+                    ctx.lineTo(this.x + length, this.y - this.up * length / 2 + y * length)
+                }
+                ctx.moveTo(this.x, this.y)
+                ctx.lineTo(this.x, this.y + 4 * length)
+            }
+        }
+        const canvas = document.getElementById("structure")
+        const ctx = canvas.getContext("2d")
+        const length = 8
+        const quantity = Math.floor(400 / length)
+        canvas.width = length * quantity + 50
+        canvas.height = length * (quantity + 4)
+        let mouseY = length * quantity / 2
+        let lagY = mouseY
+        let heat = false
+        let hover = false
+        let segments = Array(quantity).fill(null).map((v, i) => new Segment(i))
+        function bend(dir) {
+            let targets = segments.filter(v => v.up === (dir ? 1 : -1))
+            if (targets.length > 0) {
+                targets[Math.floor(Math.random() * targets.length)].up = (dir ? -1 : 1)
+                segments.forEach((v, i) => { v.y = i ? (segments[i - 1].y - segments[i - 1].up * length / 2) : v.y })
+            }
+            lagY += dir ? length : -length
+            draw()
+        }
+        function toggleHeat() { heat = !heat; document.getElementById("heat").className = heat ? "heat" : "" }
+        document.getElementById("heat").addEventListener("click", toggleHeat)
+        canvas.addEventListener("mousemove", e => { if (mousedown) mouseY = e.clientY - canvas.getBoundingClientRect().top })
+        canvas.addEventListener("touchmove", e => { e.preventDefault(); if (mousedown) mouseY = e.touches[0].clientY - canvas.getBoundingClientRect().top })
+        canvas.addEventListener("mousedown", () => { lagY = mouseY })
+        canvas.addEventListener("touchstart", () => { hover = true; lagY = mouseY })
+        canvas.addEventListener("mouseover", () => { hover = true })
+        canvas.addEventListener("mouseout", () => { hover = false })
+            ; (function loop() {
+                if (mousedown && hover) {
+                    while ((lagY - mouseY) > length) { bend(false) }
+                    while ((lagY - mouseY) < -length) { bend(true) }
+                }
+                if (heat) {
+                    let tooHot = false
+                    segments.forEach(v => {
+                        v.temperature += 0.008 * Math.random()
+                        if (v.temperature >= 1.1) { tooHot = true }
+                    })
+                    if (tooHot) toggleHeat()
+                } else {
+                    segments.forEach(v => {
+                        v.temperature *= (0.995 + Math.random() * 0.004)
+                    })
+                }
+                draw()
+                window.requestAnimationFrame(loop)
+            })()
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx.beginPath()
+            segments.forEach((v, i) => {
+                v.update()
+                v.y = i ? (segments[i - 1].y - segments[i - 1].up * length / 2) : v.y
+                v.draw()
+            })
+            ctx.moveTo(quantity * length, segments[segments.length - 1].y - (segments[segments.length - 1].up - 8) * length / 2)
+            ctx.lineTo(quantity * length, segments[segments.length - 1].y - segments[segments.length - 1].up * length / 2)
+            ctx.stroke()
+        }
+    })()
+        ;
+    // Stent Simulation
+    (() => {
+        const canvas = document.getElementById("stent")
+        const ctx = canvas.getContext("2d")
+        canvas.width = 600
+        canvas.height = 450
+        ctx.strokeStyle = "black"
+        ctx.lineWidth = 1.5
+        function drawStent(height) {
+            ctx.beginPath()
+            for (let i = 0; i < 4; i++) {
+                for (let j = stentPosition.x; j < stentPosition.x + 180; j += 60) {
+                    ctx.moveTo(j + (i % 2) * 30, (1 - Math.cos((Math.PI * i) / 4)) * height + stentPosition.y)
+                    ctx.lineTo(j + ((i + 1) % 2) * 30, (1 - Math.cos((Math.PI * (i + 1)) / 4)) * height + stentPosition.y)
+                    ctx.moveTo(j + 60 - (i % 2) * 30, (1 - Math.cos((Math.PI * i) / 4)) * height + stentPosition.y)
+                    ctx.lineTo(j + 60 - ((i + 1) % 2) * 30, (1 - Math.cos((Math.PI * (i + 1)) / 4)) * height + stentPosition.y)
+                }
+            }
+            ctx.stroke()
+        }
+
+        let height = 19.64
+        let temperature = 0
+        let stentPosition = { x: 20, y: 50 }
+        let initialStentPosition = { x: 20, y: 50 }
+        let initialMousePosition = { x: 0, y: 0 }
+        drawScene()
+        function drawScene(e) {
+            bound = canvas.getBoundingClientRect()
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            ctx.fillStyle = "palevioletred"
+            ctx.fillRect(350, 190, 250, 50)
+            ctx.fillStyle = "peachpuff"
+            ctx.fillRect(300, 0, 50, 200)
+            ctx.fillRect(300, 225, 50, 225)
+            ctx.fillStyle = "#804"
+            ctx.fillRect(350, 182, 250, 10)
+            ctx.fillRect(350, 233, 250, 10)
+            ctx.strokeStyle = `rgb(${(128 * temperature ** 2 + 64)},64,${(64 * Math.max(1 - temperature, 0) ** 2 + 64)})`
+            let lastStentPosition = stentPosition || { x: 20, y: 50 }
+            if (e) stentPosition = {
+                x: e.clientX - bound.left - 90 + initialStentPosition.x - initialMousePosition.x,
+                y: e.clientY - bound.top - height + initialStentPosition.y - initialMousePosition.y
+            }
+
+            // Collisions
+            if (stentPosition.x > 120 && stentPosition.x < 350 && (stentPosition.y < 200 || stentPosition.y > 225 - height * 2)) {
+                if (lastStentPosition.x <= 120) stentPosition.x = Math.min(stentPosition.x, 120)
+                else if (lastStentPosition.x >= 350) stentPosition.x = Math.max(stentPosition.x, 350)
+                else {
+                    if (lastStentPosition.y <= 200) stentPosition.y = Math.max(stentPosition.y, 200)
+                    else if (lastStentPosition.y >= 225 - height * 2) stentPosition.y = Math.min(stentPosition.y, 225 - height * 2)
+                    height = Math.min(height, 12.5)
+                }
+                if (e) resetMouse(e)
+            }
+
+            // Collapsing
+            if (stentPosition.x <= 120 && (stentPosition.y < 0 || stentPosition.y > 450 - height * 2)) {
+                if (lastStentPosition.y < 0) {
+                    height = Math.max(height + stentPosition.y / 2, 20 * Math.exp(7 * temperature - 3) / (Math.exp(7 * temperature - 3) + 1), 1)
+                    stentPosition.y = 0
+                }
+                if (lastStentPosition.y > 450 - height * 2) {
+                    height = Math.max(height + (450 - stentPosition.y) / 2, 2 * (20 * Math.exp(7 * temperature - 3) / (Math.exp(7 * temperature - 3) + 1)), 2) / 2
+                    stentPosition.y = 450 - 2 * height
+                }
+                if (e) resetMouse(e)
+            }
+
+            // Deployment
+            if (stentPosition.x >= 350 && (stentPosition.y < 192 || stentPosition.y > 233 - height * 2)) {
+                if (lastStentPosition.y < 192) {
+                    stentPosition.y = 192
+                }
+                if (lastStentPosition.y > 233 - height * 2) {
+                    stentPosition.y = 233 - 2 * height
+                }
+                if (e) resetMouse(e)
+            }
+            drawStent(height)
+        }
+        function resetMouse(e) {
+            bound = canvas.getBoundingClientRect()
+            if (!e.clientX) e = e.changedTouches[0]
+            initialMousePosition = { x: e.clientX - bound.left - 90, y: e.clientY - bound.top - height }
+            initialStentPosition = stentPosition
+        }
+        canvas.addEventListener("mousedown", resetMouse)
+        canvas.addEventListener("touchstart", resetMouse)
+        canvas.addEventListener("mousemove", e => { if (mousedown) { drawScene(e) } })
+        canvas.addEventListener("touchmove", e => { e.preventDefault(); drawScene(e.changedTouches[0]) })
+        document.getElementById("rescue").addEventListener("click", () => { stentPosition.x = 20; drawScene() })
+        function loop() {
+            if (stentPosition.x > 260) {
+                if (temperature < 0.997) {
+                    temperature += 0.003
+                    drawScene()
+                }
+                height = Math.max(height, 20 * Math.exp(7 * temperature - 3) / (Math.exp(7 * temperature - 3) + 1))
+            } else {
+                if (temperature > 0.003) {
+                    temperature -= 0.003
+                    drawScene()
+                }
+            }
+            window.requestAnimationFrame(loop)
+        }
+        loop()
+    })()
+</script>
+
+</html>

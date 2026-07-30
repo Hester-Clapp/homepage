@@ -1,0 +1,329 @@
+.aero {
+    background-size: 100%;
+    border-radius: 1rem;
+    box-shadow: 0 0 0.5rem #0000007F;
+    border: 1pt outset #0000003F;
+    display: block;
+    min-height: 1rem;
+    padding: 0.5rem 1ch;
+    transition: filter 0.2s;
+}
+
+.aero.blue,
+.aero-button.blue {
+    background-image: linear-gradient(#A1C8E6 0%, #4B9ED6 min(50%, 6rem), #2A5B9B min(60%, 8rem), #4B9ED6 100%);
+}
+
+.aero.green,
+.aero-button.green {
+    background-image: linear-gradient(#A4D7A8 0%, #5fa44e min(50%, 6rem), #2A5D3D min(60%, 8rem), #5fa44e 100%);
+}
+
+.aero.yellow,
+.aero-button.yellow {
+    background-image: linear-gradient(#F6E8A0 0%, #E1A300 min(50%, 6rem), #C76B2A min(60%, 8rem), #E1A300 100%);
+}
+
+.aero.red,
+.aero-button.red {
+    background-image: linear-gradient(#FFB3B3 0%, #E63946 min(50%, 6rem), #A50000 min(60%, 8rem), #E63946 100%);
+}
+
+.aero.purple,
+.aero-button.purple {
+    background-image: linear-gradient(#b396e4 0%, #673AB7 min(50%, 6rem), #301462 min(60%, 8rem), #673AB7 100%);
+}
+
+.aero.black,
+.aero-button.black {
+    background-image: linear-gradient(#A5A5A5 0%, #2E2E2E min(60%, 8rem));
+}
+
+.aero.blue.flat {
+    background-image: linear-gradient(#A1C8E6 0%, #4B9ED6 min(40%, 6rem));
+}
+
+.aero.green.flat {
+    background-image: linear-gradient(#A4D7A8 0%, #5fa44e min(40%, 6rem));
+}
+
+.aero.yellow.flat {
+    background-image: linear-gradient(#F6E8A0 0%, #E1A300 min(40%, 6rem));
+}
+
+.aero.red.flat {
+    background-image: linear-gradient(#FFB3B3 0%, #E63946 min(40%, 6rem));
+}
+
+.aero.purple.flat {
+    background-image: linear-gradient(#b396e4 0%, #673AB7 min(40%, 6rem));
+}
+
+.aero.black.flat {
+    background-image: linear-gradient(#A5A5A5 0%, #2E2E2E min(60%, 8rem));
+}
+
+.aero h1 {
+    text-align: center;
+    padding: 1rem;
+    color: #F3F3F3;
+    text-shadow: 0 0 4px #2E2E2E;
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+}
+
+header.aero.banner {
+    padding: 0;
+    border-radius: 0;
+}
+
+.aero-orb {
+    border-radius: 50%;
+    box-shadow: 0 0 0.5rem #0000007F, 0 0 1rem inset #F3F3F37F;
+    border: 1pt solid #0000003F;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 100%;
+    color: #F3F3F3;
+    text-shadow: 0 0 4px #2E2E2E;
+    cursor: pointer;
+    user-select: none;
+    transition: filter 0.2s;
+}
+
+.aero-orb.blue {
+    background: radial-gradient(circle at 50% 100%, #4B9ED6 0%, #2A5B9B 50%, #4B9ED6 60%, #A1C8E6 100%);
+}
+
+.aero-orb.green {
+    background: radial-gradient(circle at 50% 100%, #7ab96a 0%, #2A5D3D 50%, #5fa44e 60%, #A4D7A8 100%);
+}
+
+.aero-orb.yellow {
+    background: radial-gradient(circle at 50% 100%, #E1A300 0%, #C76B2A 50%, #E1A300 60%, #F6E8A0 100%);
+}
+
+.aero-orb.red {
+    background: radial-gradient(circle at 50% 100%, #E63946 0%, #A50000 50%, #E63946 60%, #FFB3B3 100%);
+}
+
+.aero-orb.purple {
+    background: radial-gradient(circle at 50% 100%, #673AB7 0%, #301462 50%, #673AB7 60%, #b396e4 100%);
+}
+
+.aero.glass {
+    background-size: 100%;
+    border-radius: 1rem;
+    box-shadow: 0 0 0.5rem #0000007F, inset 0 0 4rem #F3F3F37F;
+}
+
+body>div>.aero.glass {
+    backdrop-filter: blur(4px);
+}
+
+.aero.glass.blue {
+    background-image: linear-gradient(#A1C8E65F 0%, #4B9ED65F min(50%, 6rem), #2A5B9B5F min(60%, 8rem), #4B9ED65F 100%);
+}
+
+.aero.glass.green {
+    background-image: linear-gradient(#A4D7A85F 0%, #5fa44e5F min(50%, 6rem), #2A5D3D5F min(60%, 8rem), #5fa44e5F 100%);
+}
+
+.aero.glass.yellow {
+    background-image: linear-gradient(#F6E8A05F 0%, #E1A3005F min(50%, 6rem), #C76B2A5F min(60%, 8rem), #E1A3005F 100%);
+}
+
+.aero.glass.red {
+    background-image: linear-gradient(#FFB3B35F 0%, #E639465F min(50%, 6rem), #A500005F min(60%, 8rem), #E639465F 100%);
+}
+
+.aero.glass.purple {
+    background-image: linear-gradient(#b396e45F 0%, #673AB75F min(50%, 6rem), #3014625F min(60%, 8rem), #673AB75F 100%);
+}
+
+.aero.glass.black {
+    background-image: linear-gradient(#A5A5A5BF 0%, #2E2E2EBF min(60%, 8rem));
+    box-shadow: 0 0 0.5rem #0000007F;
+}
+
+.aero-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1pt outset #2E2E2E7F;
+    width: 2rem;
+    height: 1.5rem;
+    color: white;
+    font-weight: 600;
+    font-size: 100%;
+    text-shadow: 0 0 4px #2E2E2E;
+    transition: filter 250ms, box-shadow 500ms;
+    cursor: pointer;
+}
+
+.aero-button.blue:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #4B9ED6;
+}
+
+.aero-button.green:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #5fa44e;
+}
+
+.aero-button.yellow:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #E1A300;
+}
+
+.aero-button.red:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #E63946;
+}
+
+.aero-button.purple:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #673AB7;
+}
+
+.aero-button.black:hover {
+    filter: brightness(108%);
+    box-shadow: 0 0 0.5rem #2E2E2E;
+}
+
+.aero-button.blue:active {
+    background-image: linear-gradient(#A1C8E6 0%, hsl(204, 81%, 29%) min(50%, 6rem), hsl(214, 57%, 19%) min(60%, 8rem), hsl(204, 81%, 29%) 100%);
+}
+
+.aero-button.green:active {
+    background-image: linear-gradient(#A4D7A8 0%, hsl(108, 68%, 24%) min(50%, 6rem), hsl(142, 69%, 13%) min(60%, 8rem), hsl(108, 68%, 24%) 100%);
+}
+
+.aero-button.yellow:active {
+    background-image: linear-gradient(#F6E8A0 0%, hsl(43, 100%, 40%) min(50%, 6rem), hsl(25, 90%, 35%) min(60%, 8rem), hsl(43, 100%, 40%) 100%);
+}
+
+.aero-button.red:active {
+    background-image: linear-gradient(#FFB3B3 0%, hsl(355, 89%, 28%) min(50%, 6rem), hsl(0, 100%, 16%) min(60%, 8rem), hsl(355, 89%, 28%) 100%);
+}
+
+.aero-button.purple:active {
+    background-image: linear-gradient(#b396e4 0%, hsl(262, 76%, 24%) min(50%, 6rem), hsl(262,
+                83%,
+                15%) min(60%, 8rem), hsl(262, 76%, 24%) 100%);
+}
+
+.aero-button.black:active {
+    background-image: linear-gradient(#A5A5A5 0%, hsl(204, 81%, 29%) min(50%, 6rem), hsl(214, 57%, 19%) min(60%, 8rem), hsl(204, 81%, 29%) 100%);
+}
+
+.aero>div.white {
+    background-color: #F3F3F3;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    /* filter: initial; */
+
+    h2 {
+        text-align: center;
+        margin-top: 0;
+    }
+
+    h3 {
+        text-align: center;
+        margin: 0;
+    }
+}
+
+.tile-select {
+    transition: box-shadow 500ms;
+    box-shadow: inset 0 0 1rem -1rem #F3F3F33F;
+    outline: 1px solid #00000000;
+    user-select: none;
+    cursor: pointer;
+}
+
+.tile-select.selected {
+    box-shadow: inset 0 0 1rem 0 #F3F3F33F;
+    outline: 1px outset #2E2E2E3F;
+}
+
+.tile-select:hover {
+    box-shadow: inset 0 0 2rem 0 #F3F3F33F;
+    outline: 1px outset #2E2E2E3F;
+    /* filter: brightness(110%); */
+}
+
+.tile-select:active {
+    /* background-image: linear-gradient(#A5A5A53F 0%, #2E2E2E3F min(60%, 8rem)); */
+    box-shadow: inset 0 0 2rem 0 #F3F3F37F;
+}
+
+div.drop-expand>div {
+    position: absolute;
+    transition: opacity 250ms;
+    opacity: 0;
+    width: max-content;
+    max-width: 64ch;
+    left: 3rem;
+    transform: translate(-3rem, 0.25rem);
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* .drop-expand>div * {
+    position: relative;
+} */
+
+.drop-expand>div iframe {
+    display: none;
+    width: 60ch;
+    height: 33.75ch;
+    overflow: scroll;
+    resize: vertical;
+}
+
+.drop-expand>button {
+    opacity: 1;
+}
+
+.drop-expand.expanded * {
+    opacity: 1;
+    pointer-events: all;
+    ;
+}
+
+.word-select {
+    padding: 0.45rem 2ch;
+    width: fit-content;
+    border: 1pt solid #00000000;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    color: #f3f3f3;
+    text-shadow: 0 0 4px #2E2E2E;
+}
+
+/* a.word-select::after {
+    padding-left: 1ch;
+    content: "⧉";
+} */
+
+/* a.word-select::after {
+    content: "⧉";
+    width: 1em;
+    height: 1em;
+    padding-left: 1ch;
+    margin-left: 1ch;
+    border-left: 1pt solid #2E2E2E3F;
+} */
+
+.word-select:hover {
+    border: 1pt outset #2E2E2E3F;
+    background-image: linear-gradient(#a5a5a57f, #a5a5a500, #a5a5a500);
+    box-shadow: inset 0 0 1rem #f3f3f37f;
+}
+
+a>img:hover {
+    filter: brightness(110%);
+}

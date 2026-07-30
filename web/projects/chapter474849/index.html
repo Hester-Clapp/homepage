@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computational Thinking</title>
+    <style>
+        img {
+            width: 50%;
+            height: auto;
+        }
+
+        img.hr {
+            width: 80%;
+            height: auto;
+            margin: 1rem 0;
+        }
+
+        img.inlinegif {
+            display: inline;
+            height: 1.5rem;
+            width: auto;
+            vertical-align: middle;
+            padding: 0 1ch;
+        }
+
+        img.gif {
+            display: inline;
+            vertical-align: middle;
+            padding: 0 2ch;
+            height: 4rem;
+            width: auto;
+        }
+
+        body {
+            background-image: url("spacebgani.gif");
+            font-family: "Comic Sans MS";
+        }
+
+        h1 {
+            color: red;
+            text-decoration: underline;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: purple;
+            text-decoration: underline;
+            font-size: 2rem;
+        }
+
+        p {
+            margin: 0 1rem;
+        }
+
+        #content {
+            background-color: #fcc;
+            outline: 8px dashed green;
+            margin-left: 15%;
+            margin-right: 15%;
+            padding: 2rem 0;
+            border-radius: 4rem;
+            text-align: center;
+        }
+
+        ol,
+        ul {
+            display: inline-block;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="https://cms-compsci.deno.dev/hester"><img src="back.gif" class="gif"></a>
+    <br>
+    <div id="content">
+        <h1><img src="./computer_surfing_sm.gif" class="gif">Computational Thinking<img src="./brain.gif" class="gif">
+        </h1>
+        <p>A way of solving problems by designing an algorithm and using a computer</p>
+        <img src="computer-ani.gif" class="gif">
+        <p>The algorithm needs to give the right answer, and do so efficiently</p>
+        <p>some algorithms are better than others</p>
+        <img src="speedtest.gif" class="gif">
+        <br>
+        <img src="./hrult.gif" class="hr">
+        <h2>Abstraction</h2>
+        <p>Making a problem simpler by removing pieces of information that aren't important to solving it</p>
+        <p>e.g. the tube map</p>
+        <img src="./original.png" class="png">
+        <div>
+            <ol>
+                <li>it's ugly<img src="./yucky.gif" class="inlinegif"></li>
+                <li>it's too detailed</li>
+            </ol>
+        </div>
+        <p>it doesn't matter where the lines actually go, just which stations they serve and how they connect</p>
+        <img src="./abstracted.png" class="png">
+        <p>this contains the same amount of useful information, but no more</p>
+        <p>this makes it easier to read<img src="smilegira.gif" class="inlinegif"></p>
+        <br>
+        <p>also bridges of Königsberg</p>
+        <img src="./same-picture.png" class="png">
+        <br>
+        <p>High level languages are an abstraction of machine code</p>
+        <img src="py.gif" class="gif">
+        <br>
+        <h2>Thinking ahead</h2>
+        <div>
+            <ul>
+                <li>Think about the required inputs of an algorithm</li>
+                <li>Ensure these are met using checks, or specifying preconditions</li>
+            </ul>
+        </div>
+        <br>
+        <p>If you compute the same value many times, store it in cache to save time</p>
+        <img src="filing.gif" class="gif">
+        <br>
+        <img src="./line.gif" class="hr">
+        <h2>Procedural Abstraction</h2>
+        <p>aka encapsulation</p>
+        <p>You can use subroutines without knowing how they work, just what they do</p>
+        <p>these could be imported from a library<img src="./ezgif.com-optimize.gif" class="gif"></p>
+        <p>e.g. graphics rendering</p>
+        <p>you can use a procedure to draw a shape without knowing how the individual pixels to colour are calculated
+        </p>
+        <img src="line25.gif" class="hr">
+        <h2>Top-down Decomposition</h2>
+        <p>break a problem into simpler sub-tasks</p>
+        <p>easier to solve, test and maintain</p>
+    </div>
+</body>
+
+<script>
+    let t = Date.now();
+    (function flash() {
+        document.querySelectorAll("p, li, h1, h2, img.png").forEach(v => {
+            v.style.color = ["red", "green", "blue", "lime", "orange", "purple", "magenta", "cyan", "yellow", "white", "black", "bisque"][Math.floor(Math.random() * 12)]
+            v.style.padding = `${Math.random() * 10 - 5}px`
+        })
+        document.querySelectorAll("p").forEach(v => { v.style["font-size"] = `${Math.random() * 0.1 + 0.95}rem` })
+        setTimeout(flash, 1600 * Math.exp(-(Date.now() - t) / 50000))
+    })()
+</script>
+
+</html>

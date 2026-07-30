@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Projects | Hester's Awesome '00s Homepage</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <link rel="stylesheet" href="./assets/style.css">
+    <style>
+        #projects {
+            width: 100%;
+
+            div.left {
+                margin-right: 100px;
+            }
+
+            div.right {
+                margin-left: 100px;
+            }
+        }
+
+        #projects>div {
+            position: relative;
+            width: 500px;
+            height: 150px;
+            margin: 1rem auto;
+            border-radius: 10px;
+            box-shadow: 2px 3px 5px 1px #00000077;
+
+            * {
+                position: absolute;
+                border: none;
+                box-sizing: border-box;
+            }
+
+            div {
+                padding: 8px;
+                overflow-x: hidden;
+                overflow-y: scroll;
+
+                * {
+                    position: relative;
+                }
+
+                h3 {
+                    margin: 0;
+                    text-align: center;
+                    color: white;
+                    text-shadow: 2px 2px 0 black, 0 0 5px black;
+                    text-decoration: none;
+                }
+
+                h3.complete {
+                    color: lime;
+                }
+
+                h3.finished {
+                    color: lime;
+                }
+
+                h3.indev {
+                    color: gold;
+                }
+
+                h3.unfinished {
+                    color: gold;
+                }
+
+                h3.abandoned {
+                    color: red;
+                }
+
+                div {
+                    margin: 0.5rem;
+                    font-size: small;
+                    overflow: hidden;
+                }
+            }
+
+            div::-webkit-scrollbar-track {
+                background: none;
+                border: none;
+            }
+
+            iframe {
+                width: 640px;
+                height: 480px;
+                transform: scale(0.25);
+                transform-origin: 0 0;
+                border-radius: 4px;
+            }
+        }
+
+        #projects>div>img {
+            width: 500px;
+            height: 150px;
+            pointer-events: none;
+        }
+
+        /* For all scrollable elements */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            /* background: #000000; */
+            background: linear-gradient(to bottom, red, yellow, lime, cyan, blue, magenta);
+            ;
+            border: 1px solid #00ccff;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #00ccff, #003366);
+            border-radius: 4px;
+            border: 1px solid #006699;
+            box-shadow:
+                inset 0 0 2px #00ffff;
+        }
+    </style>
+</head>
+
+<body style="background-image: url('./assets/background.png');">
+    <header></header>
+    <table style="margin: auto">
+        <tr>
+            <td><img width="100" src="./assets/rainbow dash.gif" onclick="increase(event,'Loyalty')"></td>
+            <td rowspan="3"
+                style="background-color: #ffffff; width: 600px; padding: 1rem 4ch; box-shadow: 2px 2px 3px #00000077; vertical-align: top;">
+                <p>
+                    During my time at Cambridge Maths School, I have enjoyed creating various coding projects, as
+                    featured on this page. Some of them work better others; green projects work completely, yellow
+                    projects are partly working or in development, and red projects do not work.
+                </p>
+                <div id="projects">
+                </div>
+            </td>
+            <td><img width="100" src="./assets/applejack.gif" onclick="increase(event,'Honesty')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/pinkie pie.gif" onclick="increase(event,'Laughter')"></td>
+            <td><img width="100" src="./assets/fluttershy.gif" onclick="increase(event,'Kindness')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/rarity.gif" onclick="increase(event,'Generosity')"></td>
+            <td><img width="100" src="./assets/twilight.gif" onclick="increase(event,'Magic')"></td>
+        </tr>
+    </table>
+    <footer></footer>
+</body>
+<script src="./assets/fetch-common.js"></script>
+<script src="./assets/friendship is magic.js"></script>
+<script>
+    const data = [
+        {
+            "href": "/projects/cassette/audio.html",
+            "title": "Audiobook Reader",
+            "status": "finished",
+            "type": "other",
+            "desc": "I like listening to audiobooks, but most MP3 players are designed more for music, leading to a finnicky experience. I decided to make my own player which is designed for audiobooks.<br><br>The player is completely client-side, and you have to upload your own audio files to listen to them. Once you upload one, it will be stored in the browser cache, so you can come back to it even after closing the tab or restarting the browser.<br><br>Another QOL feature is bookmarks, a great invention that isn't often replicated for audiobooks. You can press the anchor symbol to create a bookmark at the current time, and then you can use the skip buttons to navigate between bookmarks quickly. To remove a bookmark, navigate to it and then press the anchor again. Bookmarks are also saved in the browser, along with your current progress through the book.<br><br>The final feature is sleep timers. You can set a sleep timer for 15 or 30 minutes, which will gradually fade out the audio and then stop.",
+            "date": "29/03/2025"
+        },
+        {
+            "href": "https://exploding-ponies.hester-465.deno.net",
+            "title": "Exploding Ponies",
+            "status": "complete",
+            "type": "other",
+            "desc": "In My Little Pony there is a character called Big Mac who only says \"Eeyup\" and \"Nnope\". In the card game Exploding Kittens, there is a Nope card that lets you stop another player from doing something, which you can also use as a Yup by playing it on another Nope card. This gave me the idea to make a My Little Pony themed spinoff of Exploding Kittens, where all of the cards are characters or scenes from the show.<br><br>I made this into an online card game, hosted on a different subdomain so I could have more control of the backend. It includes all of the cards in the original edition, each with a My Little Pony twist, and supports multiplayer as well as bots.<br><br>The codebase for this project is much more structured than many of my other projects, making use of OOP principles I learned while studying Java at TU Delft. I hope to set new standards for code quality in my projects going forwards, especially for more complex projects to keep them maintainable.",
+            "date": "06/03/2026"
+        },
+        {
+            "href": "/projects/friendship-express/index.html",
+            "title": "Friendship Express",
+            "status": "indev",
+            "type": "other",
+            "desc": "A steam train simulation and eventual game set in the world of Equestria from the TV show My Little Pony Friendship Is Magic. The simulation models a coal fire heating water, creating steam, powering pistons and the kinematics of the train, including dynamically synthesised sound effects and a parallax scrolling background of the rail line near Ponyville.",
+            "date": "14/12/2025"
+        },
+        {
+            "href": "/projects/phydeaux/index.html",
+            "title": "Phydeaux Bridge",
+            "status": "complete",
+            "type": "other",
+            "desc": "Inspired by the work we are currently doing on statics in applied maths, I decided to attempt to make a clone of the game Poly Bridge. The goal is to make a bridge spanning a river, which is strong enough to support a car (or in my case, a dog called Phydeaux) crossing the bridge, as well as being under a specified budget. The bridge is practically a graph, made of joints (nodes), some of which are fixed to the terrain, and materials (edges) that connect the joints.",
+            "date": "26/11/2024"
+        },
+        {
+            "href": "/projects/paper-ide/index.html",
+            "title": "Paper IDE",
+            "status": "complete",
+            "type": "other",
+            "desc": "A terrible JavaScript development environment designed to parody writing code in a paper-based exam. If you make a mistake, you have to cross it out and write it again underneath. If you run out of space, then ... good luck",
+            "date": "3/11/2025"
+        },
+        {
+            "href": "/projects/lijst/index.html",
+            "title": "Shopping List",
+            "status": "complete",
+            "type": "other",
+            "desc": "A very simple shopping list, mostly for personal use.",
+            "date": "22/8/2025"
+        },
+        {
+            "href": "/projects/semiconductors/index.html",
+            "title": "Semiconductor Simulator",
+            "status": "abandoned",
+            "type": "other",
+            "desc": "A failed simulation of a semiconductor, which was supposed to demonstrate how electrons and holes move through a semiconductor material, and how they can be manipulated by applying a voltage.",
+            "date": "1/6/2025"
+        },
+        {
+            "href": "/projects/thrust/index.html",
+            "title": "Thrust",
+            "status": "indev",
+            "type": "other",
+            "desc": "A recreation of the 1986 game for the BBC Micro, Thrust. The goal is to navigate a spaceship through a cave system, collecting a pod and dodging enemy turrets.        <br>Controls:        <ul>            <li>Thrust: Shift, W</li>            <li>Steer Left: Z, A</li>            <li>Steer Right: X, D</li>            <li>Fire Weapons: Enter, Q</li>            <li>Shield / Tractor Beam: Space, E</li>        </ul>",
+            "date": "7/5/2025"
+        },
+        {
+            "href": "/projects/exam-timetable/index.html",
+            "title": "Exam Timetable",
+            "status": "complete",
+            "type": "other",
+            "desc": "An interactive exam timetable for OCR-MEI Maths and Further Maths, OCR A Physics and OCR Computer Science 2025 A-Level exams.",
+            "date": "13/5/2025"
+        },
+        {
+            "href": "/projects/cset/index.html",
+            "title": "CSET and Driverless Cars",
+            "status": "complete",
+            "type": "classwork",
+            "desc": "A website outlining the Cambridge South East Transport scheme and some legal and ethical implications of technology for a class presentation.",
+            "date": "10/3/2025"
+        },
+        {
+            "href": "/projects/logical-proof/index.html",
+            "title": "Logical Proof",
+            "status": "complete",
+            "type": "other",
+            "desc": "Recently I have been revising for my Computer Science entrance exam for TU Delft. One part of this test is about logic, including propositional logic, Boolean algebra, logic circuits, predicate logic and logical deduction. Whilst studying this, I was allocated some lesson time to code up some data structures, although I had already done this earlier for every structure I needed to know about. Instead, I decided to make this program, combining OOP and expression trees with formal proof, deduction and simplification of logical propositions. You can enter an argument (a series of propositions which you claim lead to a conclusion) and the program will prove that the argument is valid or find a counter-example to disprove it.        <br><br>        To use the program, first enter the conclusion of the argument, and then add each premise individually below. The logic input supports propositonal variables (formed of upper and lowercase letters and underscores) and 5 logical operators: Negation (not), Conjunction (and), Disjunction (or), Implication and Biconditionality. You can also input a tautology (a proposition which is always true) by typing T,        true or 1, and likewise a contradiction (always false) by typing F,        false or 0. Finally press the Prove button to prove or disprove the argument.        <br><br>        The first thing that happens is all logical symbols are standardised. Then, the input is tokenised - propositional variables are grouped together to form atomic units while operators are split up. The tokens are then converted to postfix notation using the shunting yard algorithm (see my Train Calculator for more info) and finally an expression tree is built. This is an instance of the Proposition class. Each premise is then wrapped in a Deduction object (which stores a proposition known to be true, the other deductions that imply this, and a description of how the link was made) and stored in an array inside an Argument object.        <br><br>        The first attempt at proving the argument is a direct proof, which makes a series of logical steps to deduce the conclusion from the premises. The array of premises is iterated through, and each deduction is considered individually as well as paired with every other deduction. At this stage, standard rules of deduction such as Modus Ponens (if (p → q) is true and p is true then q is also true) are applied to deduce new propositions.        <br><br>        When new propositions are deduced, they are also simplified. This works by performing a depth-first post-order traversal of the expression tree, and applying the laws of Boolean Algebra such as de Morgan's Law (¬(p ∨ q) === ¬p ∧ ¬q) to each stage of the tree. This is repeated until the simplification becomes idempotent, that is simplying the tree yields the same tree that you started with. This simplified proposition is added to the list of deductions as well.        <br><br>        This process repeats, breaking down propositions and deducing new ones until hopefully the conclusion falls out of the logic. In this case, the program takes the deduction that deduced the conclusion and retraces the steps that were taken to get there, by recursively looking at the premises of the deduction until it reaches the premises of the argument. These are then formatted and displayed to the user. However, it might reach a state where the conclusion hasn't been reached but no new information can be deduced. In this event, the program tries again, this time using proof by contradiction.        <br><br>        A new deduction is made equivalent to the negation of the conclusion, and added to the list. The goal of the function now is not to reach the conclusion, but to reach a contradiction. This would imply that the conclusion is always true, since (assuming the conclusion is false) is always false. The same process of deductions is made, terminating if a contradiction is found.        <br><br>        If the proof by contradiction also falls short, then it is likely that the argument is not actually valid after all, and it is impossible to prove. The algorithm tries to disprove the argument by finding a counter-example, a configuration of truth values that make all of the premises true but the conclusion false. The primitive propositional variables are first isolated, and then the list of deductions is scanned to see if any of them are known to be true or false. The program then takes any variables which are unknown and constructs a truth table of every possible assignment of true/false values to them. In each case, it computes the truth value of the conclusion and each of the premises making use of another post-order recursive function evaluate(). If it ever finds a permutation which makes all premises true but not the conclusion, then it has found a counter-example, which is output to the user. If it does not succeed this time either, then it has proven the argument valid by exhaustion.",
+            "date": "10/3/2025"
+        },
+        {
+            "href": "/projects/memory/index.html",
+            "title": "Memory Management",
+            "status": "complete",
+            "type": "other",
+            "desc": "I started this as an object-oriented programming exercise, and to teach myself more about paging and segmentation for memory management. I made a visualisation of an operating system (very heavily inspired by Windows Vista) in which you can use apps, and you can see pages of memory being allocated to them and feel the effects of virtual memory when RAM runs out of space. By the end of the day I was starting to ignore my initial goals and ended up just having a lot of fun making little apps for my user interface. Segmentation coming soon maybe.",
+            "date": "26/1/2025"
+        },
+        {
+            "href": "/projects/lz77/index.html",
+            "title": "LZ77 Compression",
+            "status": "abandoned",
+            "type": "other",
+            "desc": "This is supposed to be a demonstration of the LZ77 compression algorithm, which makes text smaller by finding substrings that repeat and replacing subsequent occurrences with a pointer. My implementation doesn't really work, or actually show you how the algorithm works.",
+            "date": "13/12/2024"
+        },
+        {
+            "href": "/projects/calculator/index.html",
+            "title": "Train Calculator",
+            "status": "complete",
+            "type": "other",
+            "desc": "A metaphorical visualisation for the workings of a calculator by representing the input as train carriages moving around a yard. Demonstrates the process of tokenising the input by merging carriages part of the same number, shows conversion to reverse Polish postfix notation using the shunting yard algorithm and shows how the calculation is carried out using the stack.",
+            "date": "13/12/2024"
+        },
+        {
+            "href": "/projects/nea.html",
+            "title": "NEA - Journey Planner",
+            "status": "complete",
+            "type": "nea",
+            "desc": "20% of the computer science involves doing a coding project (and creating a massive writeup document alongside it!), and I chose to make a journey planner for the UK train system. This link will take you to a landing page from which you can try out the project and give feedback on usability (which I would greatly appreciate!).",
+            "date": "24/10/2024"
+        },
+        {
+            "href": "/projects/fjords/index.html",
+            "title": "Fjord Generation",
+            "status": "complete",
+            "type": "other",
+            "desc": "Following a trip to Norway, I was inspired to make a simulation to generate some fjords of my own. My first instinct was to simulate erosion, but this difficult as glaciers are quite complex. Instead, I used an algorithm called diffusion-limited aggregation (DLA), which simulates particles following a random walk due to Brownian motion until they hit another particle, which they then stick to and grow a fjord-shaped Brownian tree.",
+            "date": "24/8/2024"
+        },
+        {
+            "href": "/projects/matrix/index.html",
+            "title": "Matrix Inverter",
+            "status": "complete",
+            "type": "other",
+            "desc": "To find the determinant of an n by n matrix, you need to split it into minor (n-1) by (n-1) matrices and find their determinants. The base case is a 1 by 1 matrix, the determinant of which is just the number in it. This is a very recursive process, so I made a computer do it for me.",
+            "date": "8/5/2024"
+        },
+        {
+            "href": "/projects/sorting/explained.html",
+            "title": "Sorting Explanation",
+            "status": "complete",
+            "type": "homework",
+            "desc": "Completed as part of an own-choice homework to accompany my visualisation program. This website explains all of the sorting algorithms I've implemented (plus a couple of others), describing the steps, comparing time complexities and explaining other related topics, such as Big O notation and stable sorting by categories.",
+            "date": "11/5/2024"
+        },
+        {
+            "href": "/projects/sorting/visualised.html",
+            "title": "Sorting Visualisation",
+            "status": "complete",
+            "type": "classwork",
+            "desc": "A simulation and visualisation of various sorting algorithms, including:            <ul><li>Selection Sort</li><li>Bubble Sort</li><li>Insertion Sort</li><li>Recursive Merge Sort</li><li>Parallelised Iterative Merge Sort</li><li>Quick Sort</li><li>Heap Sort</li><li>Couting/Pigeonhole Sort</li><li>Base-4 LSD Radix Sort</li></ul><br>            Press shuffle to randomise the items, then select one of the above algorithms at the bottom of the page and press run.            <br><br>            The main array is displayed at the top, and an auxiliary array below it for the algorithms that use it. Red indicates array writes, green indicates reads, and blue shows the position of pointers.<br><br>            You can adjust the number of items and the speed of execution with the sliders, and see how many comparisons each algorithm makes to sort the array. You can press terminate to kill the current running algorithm if it is lagging or taking too long.",
+            "date": "11/5/2024"
+        },
+        {
+            "href": "/projects/ksp/mono.html",
+            "title": "Gravity Simulator",
+            "status": "abandoned",
+            "type": "other",
+            "desc": "It's like Kerbal Space Programme, but a bit broken                        (just like KSP 2)",
+            "date": "30/3/2024"
+        },
+        {
+            "href": "/projects/chapter505152/index.html",
+            "title": "Computational Thinking II",
+            "status": "complete",
+            "type": "homework",
+            "desc": "Annoyed that I had to do *another* one of these, I decided to work with <a href = 'https://cms-compsci.deno.dev/louise' class = 'external'>Louise Hardy</a> from the other class, in order to reduce the workload over the DofE training weekend and learn practically about git branches and conflict resolution.            <br><br>            These chapters talk about problem solving, and how to apply the computational thinking skills discussed in <a href='chapter474849/' class='external'>previous chapters</index.htmla> to actually help tackle real-world problems (and contrived chess puzzles that are secretly about graph theory!)",
+            "date": "27/3/2024"
+        },
+        {
+            "href": "/projects/sma/index.html",
+            "title": "Shape Memory Alloy",
+            "status": "complete",
+            "type": "homework",
+            "desc": "This is actually for Physics, not Computer Science. I needed to research and present on a material for a PAG, and decided to do it through the medium of a website, similar to the one I made on <a href = 'pathfinding-interactive/' class = 'external'>pathfinding.</index.htmla>",
+            "date": "12/3/2024"
+        },
+        {
+            "href": "/projects/chapter474849/index.html",
+            "title": "Computational Thinking",
+            "status": "complete",
+            "type": "homework",
+            "desc": "A website with a '90s GeoCities aesthetic, summarising chapters 47,48 and 49 of the textbook in precisely 200 words.",
+            "date": "3/3/2024"
+        },
+        {
+            "href": "/projects/pacman/image.html",
+            "title": "Pacman",
+            "status": "complete",
+            "type": "other",
+            "desc": "<a href='./pacman/table.html' class='external'>Table-based (unfinished)</a><br>            <a href='./pacman/image.html' class='external'>Image-based (complete)</a><br>            <a href='./pacman/canvas.html' class='external'>Canvas-based (abandoned)</index.htmla><br>            <br>I shouldn't have to explain what Pacman is.            <br>I was inspired to make this after learning about the different ghosts' targets and personalities, following a school trip to the Centre for Computing History. It ended up also involving binary encoding the status of different tiles on the map, whether they are walls and which pellets they contain.",
+            "date": "18/3/2024"
+        },
+        {
+            "href": "/projects/transport-challenge/index.html",
+            "title": "London Transport Challenge",
+            "status": "complete",
+            "type": "other",
+            "desc": "On a week with no train strikes or major engineering works, I decided to do another transport challenge. Heavily inspired by the London Transport Race (which I didn't know was still happening 6 random stations are selected from each fare zone, and your job is to visit them all in one day. I had previously written a dodgy python program to select stations for me, but decided to use my new knowledge to improve it with a cleaner ui and better data structures.",
+            "date": "22/2/2024"
+        },
+        {
+            "href": "/projects/data-structures/index.html",
+            "title": "Data Structures",
+            "status": "complete",
+            "type": "homework",
+            "desc": "Websites to explain and demonstrate various data structures we have been learning about for the exam.",
+            "date": "20/2/2024"
+        },
+        {
+            "href": "/projects/slider.html",
+            "title": "Slider",
+            "status": "complete",
+            "type": "other",
+            "desc": "Just a joke about complex numbers.",
+            "date": "15/2/2024"
+        },
+        {
+            "href": "/projects/huffman/huffman.html",
+            "title": "Huffman Encoding",
+            "status": "complete",
+            "type": "other",
+            "desc": "Made as part of my long-term project on the same topic. You can input a message, and it will count up the letter frequencies and construct a Huffman tree. It will then encode the original message and calculate how much space is saved by compressing the text.",
+            "date": "8/5/2024"
+        },
+        {
+            "href": "/projects/redstone/index.html",
+            "title": "Redstone Simulator",
+            "status": "abandoned",
+            "type": "other",
+            "desc": "Inspired by redstone flying machines in Minecraft, this is a 2D cellular automaton where you can design contraptions with pistons and slimeblocks and watch them move.",
+            "date": "15/1/2024"
+        },
+        {
+            "href": "/projects/onifluid/index.html",
+            "title": "ONI Fluid Simulator",
+            "status": "abandoned",
+            "type": "other",
+            "desc": "A tile-based fluid simulation inspired by the game Oxygen Not Included. Tiles can contain solids which do not move, gases which expand to fill the space, and liquids which fall through gas but not through solid, and spread out based on viscosity.",
+            "date": "19/12/2023"
+        },
+        {
+            "href": "/projects/todo.html",
+            "title": "To-Do list",
+            "status": "complete",
+            "type": "homework",
+            "desc": "A simple to-do list manager using local storage. You can add tasks with the form on the right, which are added to the list and stored in the browser, so they are still there next time you visit the website. Tasks are automatically sorted by priority, and by deadline if the priorities are the same. You can click on tasks to cross them off, which will stop them from being stored, meaning there is time to cancel the completion until the page is closed.",
+            "date": "24/11/2023"
+        },
+        {
+            "href": "/projects/pathfinding-interactive/index.html",
+            "title": "Pathfinding",
+            "status": "complete",
+            "type": "homework",
+            "desc": "An interactive educational website about a topic in Computer Science. I am doing mine on pathfinding, introducing graphs and networks, demonstrating Dijkstra's algorithm, improving it to the A* algorithm and using it to solve mazes.",
+            "date": "20/11/2023"
+        },
+        {
+            "href": "/projects/BBB/BBB.html",
+            "title": "Bob's Bed & Breakfast",
+            "status": "abandoned",
+            "type": "classwork",
+            "desc": "This is a rather rushed project to demonstrate the waterfall model of software development. <a href = 'https://cms-compsci.deno.dev/lucy' class = 'external'>Lucy Gray</index.htmla> and I designed it for a client, who we could only communicate with once, before writing a specification and only after that writing and testing code. The website is lazily put together in under an hour, and many of our plans did not come to fruition.",
+            "date": "21/11/2023"
+        },
+        {
+            "href": "/projects/deciphering-tools/substitution.html",
+            "title": "Deciphering Tools",
+            "status": "complete",
+            "type": "other",
+            "desc": "This is a collection of pages to help solve the weekly <a class = 'external' href = 'https://www.cipherchallenge.org/schedule/'>cipher challenge</a>. I currently have solvers for:<br><br><a class = 'external' href = 'deciphering-tools/substitution.html'>Substitution Ciphers</a><br><a class = 'external' href = 'deciphering-tools/polyalphabetic.html'>Polyalphabetic Ciphers</index.htmla>",
+            "date": "8/11/2023"
+        },
+        {
+            "href": "/projects/scheduling.html",
+            "title": "Processor Scheduling Algorithms",
+            "status": "complete",
+            "type": "homework",
+            "desc": "This was an assigned task to help us undertand scheduling algorithms and interrupt handling. Base code was provided by <a class = 'external' href = 'https://cms-compsci.deno.dev/mrgordon'>Mr Gordon</a>, which we had to read, understand and then extend, to implement more algorithms, interrupts and priorities. <br><br>I have also added support for parallel-processing, with the option to have multiple cores on the CPU. I have also tried to prevent multiple input/index.htmloutput tasks being processed simulaneously, though this does not quite function as intended.",
+            "date": "5/11/2023"
+        },
+        {
+            "href": "/projects/minesweeper.html",
+            "title": "Infinite Minesweeper",
+            "status": "complete",
+            "type": "other",
+            "desc": "To practice my OOP skills, I made a game of Minesweeper, using Tile objects with attributes for x, y, whether it is a mine, a flag, whether it has been revealed and the number of mines surrounding it, and methods which are called when the tile is clicked or right clicked.<br><br>I used another class for a Board, which contains a 2D array of tiles, and stored the boards in another 2D array. I added code to move the 'camera' around, and then made functions to load in new boards as the player moves further from the origin. This allows the game to grow procedurally, making it virtually endless.",
+            "date": "21/10/2023"
+        },
+        {
+            "href": "/projects/game-loop.html",
+            "title": "Physics Engine",
+            "status": "unfinished",
+            "type": "classwork",
+            "desc": "We then did more work with game loops, making a gravity simulation. On this project, I started using Object-Oriented Programming, with classes for vectors and balls, but the project has gradually become messy, and will likely remain unfinished.",
+            "date": "2/10/2023"
+        },
+        {
+            "href": "/projects/whack-a-mole/whack-a-mole.html",
+            "title": "Whack-a-Mole",
+            "status": "complete",
+            "type": "classwork",
+            "desc": "We were challenged to make a basic web game using a game loop, in groups of two and three. I was working with <a href = 'https://cms-compsci.deno.dev/lucy' class = 'external'>Lucy Gray</index.htmla> on a game of Whack-a-Mole. The game contains an html table of images (moles or empty), which if clicked on when in the mole state increase the score. Additionally, the game grid expands when the score reaches a power of 2, to make the game more intense.<br><br>Initially, the game had a 3 minute timer, with a local high-score to beat, but this was removed for demonstration at the open evening.",
+            "date": "25/9/2023"
+        },
+        {
+            "href": "/projects/east anglian trains/eastangliantrains.html",
+            "title": "East Anglian Trains",
+            "status": "abandoned",
+            "type": "classwork",
+            "desc": "This was my first experience with web development. It is a simle website about trains used by Greater Anglia, with text, images, links and CSS formatting.",
+            "date": "19/9/2023"
+        }
+    ]
+    const projects = document.getElementById("projects");
+    data.forEach((project, i) => {
+        const projectDiv = document.createElement("div");
+        const previewFrame = document.createElement("iframe");
+        previewFrame.src = `${project.href}`;
+        previewFrame.width = "160";
+        previewFrame.height = "120";
+        previewFrame.style.top = "15px";
+        previewFrame.loading = "lazy";
+        const infoPane = document.createElement("div");
+        infoPane.style.width = "300px";
+        infoPane.style.height = "120px";
+        infoPane.style.top = "15px";
+        infoPane.innerHTML = `
+                    <a href="${project.href}"><h3 class="${project.status}">${project.title}</h3></a>
+                    <div>${project.desc}</div>
+                    <i>${project.date}</i>
+                `;
+        if (i % 2 === 0) {
+            // Left side
+            projectDiv.className = "left";
+            projectDiv.innerHTML = `<img src="./assets/project frame left.png">`;
+            previewFrame.style.left = "15px";
+            infoPane.style.left = "185px";
+        } else {
+            // Right side
+            projectDiv.className = "right";
+            projectDiv.innerHTML = `<img src="./assets/project frame right.png">`;
+            previewFrame.style.left = "325px";
+            infoPane.style.left = "15px";
+        }
+        projectDiv.appendChild(previewFrame);
+        projectDiv.appendChild(infoPane);
+        projects.appendChild(projectDiv);
+    })
+</script>
+
+</html>

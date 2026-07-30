@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Me | Hester's Awesome '00s Homepage</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <link rel="stylesheet" href="./assets/style.css">
+    <style>
+        summary {
+            /* display: block; */
+            margin: 0.5rem 0;
+            cursor: pointer;
+
+            h2 {
+                display: inline;
+                font-family: 'Orbitron', sans-serif;
+            }
+        }
+
+        /* details>div {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+
+            img {
+                width: 180px;
+                height: auto;
+                border-radius: 5px;
+            }
+        } */
+    </style>
+</head>
+
+<body style="background-image: url('./assets/background.png');">
+    <header></header>
+    <table style="margin: auto">
+        <tr>
+            <td><img width="100" src="./assets/rainbow dash.gif" onclick="increase(event,'Loyalty')"></td>
+            <td rowspan="3"
+                style="background-color: #ffffff; width: 600px; padding: 1rem 4ch; box-shadow: 2px 2px 3px #00000077; vertical-align: top;">
+                <p>Hi, I'm Hester! I'm <span id="age"></span> years old and this is my website!</p>
+                <details>
+                    <summary>
+                        <h2>Coding Experience</h2>
+                    </summary>
+                    <h3>Scratch</h3>
+                    <div class="image-paragraph">
+                        <img src="./assets/scratch.png" alt="Scratch logo">
+                        <p>
+                            Everyone has to start somewhere! I had dabbled with bits of Scratch throughout primary
+                            school -
+                            I remember Scratch 2.0 coming out in 2013 - but I really got into it in 2015, when I started
+                            making games and educational projects alongside schoolwork. A few of my projects are public
+                            on
+                            my <a href="https://scratch.mit.edu/users/legogobo/">Scratch profile</a>, although many of
+                            them
+                            are forks of other people's projects. I went back to Scratch briefly during the pandemic,
+                            but I
+                            have since moved on to more advanced languages.
+                        </p>
+                    </div>
+                    <h3>Lua (Roblox)</h3>
+                    <div class="image-paragraph">
+                        <p>
+                            During the summer holidays in 2015, I went on a 5-day course to learn how to use the Roblox
+                            Studio game engine. This makes it easy to create meshes and handles physics and server
+                            management for you, making it straight forward to create a basic game with little coding.
+                            Although slow at first, I did gradually start to learn to use Lua scripts to add more
+                            complex
+                            functionality. However, questionable business practices from Roblox have left me with little
+                            motivation to use the game engine, and I have mostly moved on from this now.
+                        </p>
+                        <img src="./assets/roblox.png" alt="Roblox Studio logo">
+                    </div>
+                    <h3>JavaScript (p5js)</h3>
+                    <div class="image-paragraph">
+                        <img src="./assets/p5js.png" alt="p5js logo">
+                        <p>
+                            In 2018 I joined secondary school, and began having regular computer science lessons every 2
+                            weeks. In year 7, we spent a short while using C# to make simple text-based programs, though
+                            I
+                            did not learn enough to make anything more than this. While the majority of year 7 content
+                            was
+                            focused on ethics, online safety and fundamental content such as logic and binary, we did
+                            more
+                            coding in year 8 using a JavaScript library similar to the HTML canvas 2d context called <a
+                                href="https://p5js.org/">p5js</a>, which allowed us to draw shapes and make flags. This
+                            was
+                            my first experience with JavaScript, and I quite enjoyed it, though most of my projects were
+                            static vector images with little interactivity.
+                        </p>
+                    </div>
+                    <h3>Python</h3>
+                    <div class="image-paragraph">
+                        <p>
+                            At the end of 2021, I started the GCSE course, and we would be learning Python for use in
+                            the
+                            exam. I gradually worked through exercises on CSNewbs when not learning new content.
+                        </p>
+                        <img src="./assets/python.png" alt="Python logo">
+                    </div>
+                    <h3>JavaScript (HTML and Bun)</h3>
+                    <div class="image-paragraph">
+                        <img src="./assets/js.png" alt="JavaScript logo">
+                        <p>
+                            Upon joining Cambridge Maths School in 2023, I revisisted JavaScript, but this time in a
+                            web
+                            environment. I picked it up quite quickly due to my previous experience with p5js, and I
+                            was
+                            inspired to make an infinite version of Minesweeper, which I had had the idea for in
+                            secondary
+                            school but failed to get working at the time. This success led me to make more
+                            canvas-based
+                            projects, a few of which drew inspiration from my concurrent school work in Computer
+                            Science
+                            and
+                            other subjects. JavaScript has since become my main programming language, and due to its
+                            versatility I have used it almost exclusively for the last two years
+                        </p>
+                    </div>
+                    <div class="image-paragraph">
+                        <p>
+                            Alongside front-end JavaScript, we also used a modern runtime environment called <a
+                                href="https://bun.sh">Bun</a>, which had only been released on our second day of
+                            school! We
+                            used back-end JavaScript while working on a database project using Bun and SQLite, and I
+                            also
+                            tried to make an io game inspired by Ultimate Frisbee using websockets. Later in the
+                            course I
+                            used both of these technologies to make a train journey planner for my NEA coursework.
+                        </p>
+                        <img src="./assets/bun.png" alt="Bun logo">
+                    </div>
+                    <h3>Java</h3>
+                    <div class="image-paragraph">
+                        <img src="./assets/java.png" alt="Java logo">
+                        <p>
+                            As part of my programme at TU Delft, I had to learn Java as a default high-level language for teaching programming concepts. While the strong-typed syntax took a little getting used to, it was very interesting to learn about object-oriented programming in a practical setting. Before starting at university, I had always seen objects as representations of physical objects like people or cars, but I soon learned to treat them more like components of a larger system that contain the knowledge and functionality of a certain part of the system. Furthermore, I learned about layered architectures which divide classes into layers from the UI at the top, business logic in the middle and backend processing at the lower level. Using classes in layers like this makes it much easier to add or improve features without affecting other parts of the program. While I prefer to code in JavaScript, I have started to apply these object-oriented principles in my personal projects as well as university assignments.
+                        </p>
+                    </div>
+                </details>
+                <details>
+                    <summary>
+                        <h2>Music</h2>
+                    </summary>
+                    <h3>Currently Listening To:</h3>
+                    <div class="slideshow-container">
+                        <div class="slideshow-item">
+                            <a href="https://www.offspring.com/description?albumId=4">
+                                <img src="./assets/albums/Rise And Fall, Rage And Grace.jpg">
+                            </a>
+                        </div>
+                        <div class="slideshow-item">
+                            <a href="https://maneskin.com/">
+                                <img src="./assets/albums/Teatro d'ira Vol I.png">
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <h3>All-time Favourites:</h3>
+                    <div class="slideshow-container">
+                        <div class="slideshow-item" title="Linkin Park - Hybrid Theory">
+                            <a href="https://lprk.co/hybridtheory">
+                                <img src="./assets/albums/Hybrid Theory.jpg">
+                            </a>
+                        </div>
+                        <div class="slideshow-item" title="Avril Lavigne - The Best Damn Thing">
+                            <a href="https://avrillavigne.com/">
+                                <img src="./assets/albums/The Best Damn Thing.png">
+                            </a>
+                        </div>
+                        <div class="slideshow-item" title="The Offspring - Rise And Fall, Rage And Grace">
+                            <a href="https://www.offspring.com/description?albumId=4">
+                                <img src="./assets/albums/Rise And Fall, Rage And Grace.jpg">
+                            </a>
+                        </div>
+                        <div class="slideshow-item" title="Avril Lavigne - Love Sux">
+                            <a href="https://avrillavigne.com/">
+                                <img src="./assets/albums/Love Sux.png">
+                            </a>
+                        </div>
+                        <div class="slideshow-item" title="Joost Klein - Unity">
+                            <a href="https://www.youtube.com/playlist?list=OLAK5uy_kWH855UrJj-CBDNIwuD9jnyEh9bMT68-8">
+                                <img src="./assets/albums/Unity.jpg">
+                            </a>
+                        </div>
+                    </div>
+                </details>
+            </td>
+            <td><img width="100" src="./assets/applejack.gif" onclick="increase(event,'Honesty')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/pinkie pie.gif" onclick="increase(event,'Laughter')"></td>
+            <td><img width="100" src="./assets/fluttershy.gif" onclick="increase(event,'Kindness')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/rarity.gif" onclick="increase(event,'Generosity')"></td>
+            <td><img width="100" src="./assets/twilight.gif" onclick="increase(event,'Magic')"></td>
+        </tr>
+    </table>
+    <footer></footer>
+</body>
+<script src="./assets/fetch-common.js"></script>
+<script src="./assets/friendship is magic.js"></script>
+<script>
+    document.querySelector("#age").innerHTML = Math.floor((Date.now() - 1174608000000) / 31557600000);
+</script>
+
+</html>

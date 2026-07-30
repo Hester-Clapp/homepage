@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computatinal Thinking II</title>
+    <link rel="icon" href="favicon.png">
+    <style>
+        body {
+            margin: 0;
+            text-align: center;
+        }
+
+        h1 {
+            text-align: center;
+            text-decoration: underline;
+            font-size: 2rem;
+            font-weight: 600;
+            padding: 1rem 1ch;
+            margin-bottom: 1rem;
+            margin: 0;
+            background: #445;
+            color: white;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: rgb(43, 76, 56);
+            background-color: rgb(205, 230, 198);
+            margin: 1rem auto;
+            margin-top: 4rem;
+            margin-bottom: 2rem;
+            width: fit-content;
+            padding: 1rem 5ch;
+        }
+
+        h3 {
+            background-color: rgb(219, 179, 255);
+            color: rgb(0, 21, 255);
+            font-size: 1.5rem;
+            margin: auto;
+        }
+
+        ol,
+        ul {
+            display: inline-block;
+            text-align: left;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        #cipherButton {
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 2rem;
+            padding: 1rem 1ch;
+            margin: 0;
+            border: 0;
+            background-color: #445;
+            color: #445;
+        }
+
+        #cipherButton:hover {
+            background-color: #667;
+            color: white;
+        }
+
+        #cipher {
+            text-align: left;
+            display: none;
+        }
+
+        #cipher img {
+            position: absolute;
+        }
+
+        p {
+            margin: 1ch 1rem;
+        }
+
+        img {
+            margin: 1ch 1rem;
+            width: 40ch;
+            height: auto;
+        }
+
+        img.exact {
+            width: fit-content;
+            height: fit-content;
+        }
+
+        img.inline {
+            display: inline;
+            height: 1.5rem;
+            width: auto;
+            vertical-align: middle;
+            padding: 0 1ch;
+            margin: 0;
+        }
+
+        table {
+            margin: auto;
+        }
+
+        td {
+            border: 1px solid black;
+            padding: 1ch 1rem;
+        }
+
+        footer {
+            margin-top: 8rem;
+            padding: 1rem 1ch;
+            background-color: #445;
+            color: white;
+        }
+
+        footer ul {
+            display: flex;
+            gap: 2ch;
+            align-self: center;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        footer ul a {
+            color: white;
+            padding: 1rem 4ch;
+            background-color: #445;
+        }
+
+        footer ul a:hover {
+            background-color: #667;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Computational Thinking</h1>
+    <button id="cipherButton">Decipher</button>
+    <div id="cipher">
+        <img src="./caesar-inner.png" draggable="false">
+        <img id="outer" src="./caesar-outer.png" draggable="false">
+    </div>
+    <h2>Logical Thinking</h2>
+    <!-- srsly wtf is this chapter -->
+    <h3>The structured approach</h3>
+    <p>literally just programming</p>
+    <p>basically do it properly</p>
+    <img src="./structured.png">
+    <h3>Program Design</h3>
+    <p>Use flow charts or pseudocode to lay out the algorithm</p>
+    <img src="./flowchart.jpg">
+    <p>Test it with a trace table</p>
+    <p>(or just use an IDE that tells you what went wrong)</p>
+    <h2>Concurrent Processing</h2>
+    <iframe width="560" height="315"
+        src="https://www.youtube.com/embed/tVg25_60sNo?si=gFXimSIMLT2J8c5T&autoplay=1&mute=1&loop=1&controls=0&playlist=tVg25_60sNo"
+        title="YouTube video player" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <div>
+        <ul>
+            <li>Concurrent processing is where multiple tasks are worked on at the same time, where the processor
+                alternates between them.</li>
+            <li>Parallel processing is where multiple instructions are executed simultaneously on different cores of the
+                processor.</li>
+        </ul>
+    </div>
+    <p>Sequential: </p><img src="sequential.png" class="exact">
+    <p>Concurrent: </p><img src="concurrent.png" class="exact">
+    <p>Parallel: </p><img src="parallel.png" class="exact">
+    <h3>Concurrent Processing</h3>
+    <p>+ reduces downtime</p>
+    <p>- takes longer to finish tasks</p>
+    <h3>Parallel Processing</h3>
+    <p>+ completes tasks faster</p>
+    <p>- requires more expensive hardware</p>
+    <h2>Problems</h2>
+    <p>A problem is computable if:</p>
+    <div>
+        <ol>
+            <li>It can be solved by an algorithm</li>
+            <li>In a finite amount of time</li>
+            <li>For any case</li>
+        </ol>
+    </div>
+    <h3>Simulation</h3>
+    <p>If you want to do something, but you don't want to actually do it, you can create a model and simulate
+        doing it. This saves time and money
+    </p>
+    <h3>Divide and Conquer</h3>
+    <p>A method of solving problems by making them smaller and simpler, until they are trivial, then combining
+        them back up to the original. Examples of algorithms that use this include binary search and quicksort.</p>
+    <img src="infinite-dragon-dream-feet-loop.gif">
+    <h3>Backtracking</h3>
+    <p>This involves making decisions and keeping track of them until you reach a dead end, then retracing your steps
+        with the knowledge that the choice you made doesn't work. Used in algorithms such as depth-first search and
+        recursive backtracking maze generators.</p>
+    <h3>Abstraction</h3>
+    <p>If you have a problem, try using graph theory. The problem may be isomorphic to something very simple</p>
+    <h3>Automation</h3>
+    <p>(is this just the same as abstract modelling?)</p>
+    <h2>Problem Solving</h2>
+    <h3>Visualisation</h3>
+    <p>Many problems can easily be visualised with a graph or a tree. This makes it easy to spot obvious solutions,
+        avoiding unnecessary work with a simple diagram. (Miss McEwan would agree)</p>
+    <h3>Data Mining</h3>
+    <i>
+        <p>“Big data is big. Really big. You just won't believe how vastly, hugely, mind-bogglingly big it is. I mean,
+            you may think it's a long way down the road to the chemist's, but that's just peanuts to big data!”</p>
+    </i>
+    <p>Data mining is about searching for patterns and correlations in datasets that are so large, conventional methods
+        cannot be used.</p>
+    <h3>Pipelining</h3>
+    <p>Pipelining is basically where you break up a task into lots of little ones then overlap their processing. For
+        example, when one is being processed one way, another is being processed in another, etc.</p>
+    <h2>Travelling Salesman Problem</h2>
+    <p>Says that given a list of places and the distances between them, find the shortest route that the salesman can go
+        to visit each town once and get back to where he started.</p>
+    <img src="TSP.jpg">
+    <p>Its said to be intractable because it will take a long
+        time with a very fast computer to find an optimal solution to a problem with a small amount of cities. It
+        becomes impossible as the number of cities increases. 😔</p>
+    <h3>Comparing time complexities</h3>
+    <p>Time complexity is a measure of how long an algorithm takes as the number of inputs scales. It doesn't tell us
+        exactly how long the algorithm will take to complete, but rather how much longer it would take when the problem
+        gets bigger.</p>
+    <p>Time complexities often end up falling into categories, the highest order term in the polynomial function. These
+        are, in ascending order of size:</p>
+    <table>
+        <tr>
+            <td>O(1)</td>
+            <td>O(log n)</td>
+            <td>O(n)</td>
+            <td>O(n log n)</td>
+            <td>O(n²)</td>
+            <td>O(2ⁿ)</td>
+            <td>O(n!)</td>
+        </tr>
+    </table>
+    <img src="time-complexity.png">
+    <h3>Heuristics</h3>
+    <p>Problems can be solved enough by: getting a solution with a high probability of being correct, solving a simpler
+        version or by applying a methodology not guaranteed to be optimal but is sufficient (the heuristic approach).
+        The aim is to find a good solution within a reasonable time frame.</p>
+    <p>Some heuristic solutions have already been comprised for solving the travelling salesman problem, knight's tour,
+        and are used to optimise</p><a href="https://cms-compsci.deno.dev/hester/pathfinding-interactive/index.html">A*
+        pathfinding</a>
+    <footer>
+        <p>Contributors:</p>
+        <ul>
+            <a href="https://cms-compsci.deno.dev/hester">Hester</a>
+            <a href="https://cms-compsci.deno.dev/louise">Louise</a>
+        </ul>
+    </footer>
+</body>
+<script>
+    const disableCipher = false
+
+    let shift = disableCipher ? 0 : (Math.floor(Math.random() * 25) + 1)
+    const content = []
+    document.querySelectorAll("h1,h2,h3,p,li").forEach((p, i) => { content[i] = encrypt(p.innerHTML); p.innerHTML = content[i] })
+    const button = document.getElementById("cipherButton")
+    const cipher = document.getElementById("cipher")
+    const disk = document.getElementById("outer")
+    const rev = 2 * Math.PI
+    let initAngle = 0
+    let diskAngle = 0
+    let isOpen = false
+    function getMouseAngle(e) { return Math.atan2(e.clientY - 160, e.clientX - 160) }
+    function getDiskAngle(e) { return normalise(getMouseAngle(e) - initAngle + diskAngle) }
+    function normalise(angle) { return (angle + rev) % rev }
+    function rotate(e) { disk.style.transform = `rotate(${getDiskAngle(e)}rad)` }
+    function encrypt(v) {
+        return v.split("").map(v => {
+            const c = v.charCodeAt(0);
+            if (c >= 65 && c <= 90) return String.fromCharCode(((c - 65 + shift) % 26) + 65)
+            if (c >= 97 && c <= 122) return String.fromCharCode(((c - 97 + shift) % 26) + 97)
+            return v
+        }).join("")
+    }
+    function mouseDown(e) {
+        initAngle = normalise(getMouseAngle(e))
+        cipher.addEventListener("mousemove", rotate)
+    }
+    function mouseUp(e) {
+        cipher.removeEventListener("mousemove", rotate)
+        diskAngle = getDiskAngle(e)
+        shift = Math.round((1 - diskAngle / rev) % 1 * 26)
+        document.querySelectorAll("h1,h2,h3,p,li").forEach((p, i) => { p.innerText = encrypt(content[i]) })
+    }
+    button.addEventListener("click", () => {
+        if (isOpen) {
+            isOpen = false
+            cipher.removeEventListener("mousedown", mouseDown)
+            cipher.removeEventListener("mouseup", mouseUp)
+            cipher.style.display = "none"
+        } else {
+            isOpen = true
+            cipher.addEventListener("mousedown", mouseDown)
+            cipher.addEventListener("mouseup", mouseUp)
+            cipher.style.display = "block"
+        }
+    })
+    setTimeout(() => { button.style.color = "white" }, 2000)
+</script>
+
+</html>

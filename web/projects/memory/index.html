@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Management</title>
+    <link rel="stylesheet" href="../aero.css">
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .PageRenderer {
+            /* width: fit-content; */
+            display: flex;
+        }
+
+        .PageRenderer ul {
+            display: flex;
+            list-style-type: none;
+            padding: 0;
+            margin: 0.25rem 0;
+            width: fit-content;
+        }
+
+        .PageRenderer ul li {
+            /* margin: 1px; */
+            margin: 0;
+            height: 2.5rem;
+            box-sizing: border-box;
+        }
+
+        .SegmentRenderer {
+            display: flex;
+        }
+
+        .SegmentRenderer>div {
+            position: relative;
+            box-sizing: border-box;
+            height: 2.5rem;
+            padding: 0;
+            margin: 0.5rem 0;
+        }
+
+        .SegmentRenderer>div>* {
+            box-sizing: border-box;
+            position: absolute;
+            transform: translate(-1pt, -1pt);
+            box-shadow: none;
+        }
+
+        .GUI {
+            position: relative;
+            width: 48rem;
+            height: 27rem;
+            border: 4px groove #2e2e2e;
+            background-image: url(./vista.jpeg);
+            background-size: cover;
+        }
+
+        .GUI * {
+            position: relative;
+        }
+
+        #taskbar,
+        #taskbar-right {
+            position: absolute;
+            width: 48rem;
+            height: 2rem;
+            top: 25rem;
+            padding: 0;
+            border-radius: 0;
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
+            box-sizing: border-box;
+        }
+
+        #taskbar-right {
+            width: 16rem;
+            right: 0rem;
+            text-align: right;
+        }
+
+        #taskbar *,
+        #taskbar-right * {
+            display: inline;
+            box-sizing: border-box;
+            height: 2rem;
+            color: white;
+            vertical-align: middle;
+            font-size: small;
+        }
+
+        #taskbar-right p {
+            margin: 0 1ch;
+        }
+
+        #taskbar button {
+            border: none;
+            padding: 0 1ch;
+            border-radius: 4px;
+        }
+
+        #taskbar button {
+            min-height: 0;
+        }
+
+        #apps div.header>button {
+            height: 1.1rem;
+            width: 1.5rem;
+            font-size: 0.75rem;
+        }
+
+        #apps div.header>div {
+            height: 1.2rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: bold;
+            color: black;
+            text-shadow: 0 0 8px white;
+            cursor: default;
+            overflow: hidden;
+        }
+
+        #apps div.header {
+            display: flex;
+            flex-flow: row-reverse;
+            float: right;
+            position: absolute;
+            margin: 0;
+            padding: 0 1rem;
+            padding-left: auto;
+            box-sizing: border-box;
+            transform: translate(-0.5rem, -1.5rem);
+            width: 100%;
+        }
+
+        #apps div>textarea {
+            width: 100%;
+            height: 100%;
+            resize: none;
+            border: none;
+            outline: none;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            background-color: #f3f3f3;
+        }
+
+        #apps div>iframe {
+            width: 200%;
+            height: 200%;
+            resize: none;
+            border: none;
+            border-radius: 0.5rem;
+            box-sizing: border-box;
+            background-color: #f3f3f3;
+            transform: scale(0.5) translate(-50%, -50%);
+
+        }
+    </style>
+</head>
+
+<body>
+</body>
+<script>
+    // Paging
+    class MemoryManager {
+        constructor(os) {
+            this.os = os
+            this.capacity = os.memoryCapacity
+        }
+
+        async allocate(appID, size) { }
+        async deallocate(appID) { }
+
+        async #sleep(index) {
+            return new Promise(resolve => {
+                setTimeout(resolve, 80)
+            })
+        }
+    }
+    class Pager extends MemoryManager { // Inheritance (woohoo!)
+        #pages = [] // Encapsulation (woohoo!)
+
+        static pageSize
+        maxPages // Pages beyond maxPages are considered to be in virtual memory
+        static get length() { this.pageFile.length }
+
+        constructor(os, pageSize) {
+            super(os)
+            this.pageSize = pageSize
+            this.maxPages = Math.floor(this.capacity / pageSize)
+
+            this.allocate = async function (appID, size) {
+                let numRequiredPages = size / this.pageSize
+                let allocatedPages = []
+                for (let i = 0; allocatedPages.length < numRequiredPages; i++) {
+                    if (await this.isFree(i)) { // If page is not being used
+                        await this.#allocatePage(i, appID) // Allocate the page to this app instance
+                        allocatedPages.push(i)
+                    }
+                }
+            }
+
+            this.deallocate = async function (appID) {
+                let freePages = [] // Pages that have been freed up
+
+                for (let i = 0; i < this.#pages.length; i++) { // Iterate through virtual memory
+                    if (await this.isAllocatedTo(i, appID)) { // If page is allocated to the app
+                        await this.#deallocatePage(i) // Deallocate it
+                        if (i < this.maxPages) { // We are looking in RAM
+
+                            freePages.push(i) // Keep track of the free page
+
+                        } else { // We are looking in virtual memory
+
+                            if (!await this.isFree(i) && freePages.length > 0) { // If there is a page in virtual memory and a free page in RAM
+                                let freePageID = freePages.shift()
+                                await this.#allocatePage(freePageID, await this.query(i))
+                                await this.#deallocatePage(i) // Remove it from virtual memory
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        async #sleep(pageIndex) {
+            return new Promise(resolve => {
+                setTimeout(resolve, pageIndex > this.maxPages ? 800 : 80)
+            })
+        }
+        async query(pageIndex) {
+            // await this.#sleep(pageIndex)
+            return this.#pages[pageIndex] || 0
+        }
+        queryWithoutSleep(pageIndex) {
+            return this.#pages[pageIndex] || 0
+        }
+        async isFree(pageIndex) {
+            return await this.query(pageIndex) == false
+        }
+        async isAllocatedTo(pageIndex, appID) {
+            return await this.query(pageIndex) === appID
+        }
+        async #allocatePage(pageIndex, appID) {
+            await this.#sleep(pageIndex)
+            this.#pages[pageIndex] = appID
+            this.os.renderPage(pageIndex)
+        }
+        async #deallocatePage(pageIndex) {
+            await this.#sleep(pageIndex)
+            this.#pages[pageIndex] = 0
+            this.os.renderPage(pageIndex)
+        }
+    }
+
+    class Segmenter extends MemoryManager {
+        #segments = {
+            0: { end: 0, next: -1 },
+        }
+        #nextSegmentID = 1
+
+        constructor(os) {
+            super(os)
+        }
+
+        #segment(segmentID) {
+            return this.#segments?.[String(segmentID)]
+        }
+        forEach(func, startAt0 = false) {
+            for ( // Iterate through linked list
+                let segmentID = startAt0 ? 0 : this.#segment(0).next;
+                segmentID !== -1;
+                segmentID = this.#segment(segmentID).next
+            ) {
+                let returnVal = func(segmentID)
+                if (returnVal) return returnVal
+            }
+        }
+        queryIndex(index) {
+            return this.forEach(segmentID => {
+                let segment = this.#segment(segmentID)
+                if (index < segment.end) {
+                    if (index >= segment.start) { // The index is in the segment
+                        return segment.appID
+                    } else { // The index is in the gap between this segment and the previous segment
+                        return 0
+                    }
+                } // else move on
+            }) || 0
+        }
+        querySegment(segmentID) {
+            return this.#segments[segmentID]
+        }
+        get nextFreeSpace() {
+            return this.forEach(segmentID => {
+                let segment = this.#segment(segmentID)
+                if (segment.next > 0) {
+                    let nextSegment = this.#segment(segment.next)
+                    let gap = nextSegment.start - segment.end
+                    if (gap > 0) {
+                        return { index: segment.end, before: segmentID, after: segment.next, length: gap }
+                    }
+                } else {
+                    return { index: segment.end, before: segmentID, after: -1 }
+                }
+            }, true)
+        }
+        allocate(appID, size) {
+            let allocatedSpace = 0
+            while (allocatedSpace < size) {
+                let space = this.nextFreeSpace
+                let length = size - allocatedSpace
+                // if (space.index)
+                if (space?.length) length = Math.min(length, space.length)
+                console.log(space, length)
+
+
+                this.#segments[this.#nextSegmentID] = {
+                    start: space.index,
+                    end: space.index + length,
+                    appID,
+                    next: space.after
+                }
+
+                this.#segments[space.before].next = this.#nextSegmentID
+                this.os.renderSegment(this.#nextSegmentID)
+
+                this.#nextSegmentID++
+
+                allocatedSpace += length
+            }
+        }
+        deallocate(appID) {
+            this.forEach(segmentID => {
+                let prevSegment = this.#segment(segmentID)
+                let segment = this.#segment(prevSegment.next)
+
+                if (segment?.appID === appID) {
+                    console.log(prevSegment.next)
+                    this.os.renderSegment(prevSegment.next, true)
+
+                    let nextPointer = prevSegment.next
+                    prevSegment.next = segment.next
+                    delete this.#segments[nextPointer]
+                }
+
+            }, true)
+        }
+    }
+
+    class App {
+        constructor(id, appData, memory) {
+            this.id = id
+            this.appData = appData
+            this.memory = memory
+
+            this.window = document.createElement("div")
+            this.window.innerHTML = this.appData.content
+        }
+    }
+
+    class OS {
+        #runningApps = {}
+        #newAppID = 1
+        #installedApps = {
+            red: {
+                title: "ｳｯｰｳｯｰｳﾏｳﾏ(ﾟ∀ﾟ)",
+                content: `
+                    <div style="background-image: url('./caramelldansen.gif'); background-size: contain; background-repeat: no-repeat; background-position: center; height:100%; width: 100%;"></div>
+                    <audio loop hidden autoplay>
+                        <source src="./caramelldansen.mp3" type="audio/mpeg">
+                    </audio>`,
+                style: "red aero",
+                size: 17
+            },
+            green: {
+                title: "Koalas to the max",
+                content: "<iframe src='https://koalastothemax.com/'>",
+                style: "green aero",
+                size: 25
+            },
+            blue: {
+                title: "Notepad--",
+                content: `<textarea></textarea>`,
+                style: "blue aero",
+                size: 15
+            },
+            yellow: {
+                title: "Always judge a book by its cover",
+                content: `<iframe src="https://alwaysjudgeabookbyitscover.com/">`,
+                style: "yellow aero",
+                size: 20
+            },
+            purple: {
+                title: "CMS Compsci",
+                content: `<iframe src="https://cms-compsci.deno.dev">`,
+                style: "purple aero",
+                size: 28
+            },
+        }
+
+        // #memory
+        #pager
+        #segmenter
+        memoryCapacity = 96
+        widthPerMemoryUnit = 0.4
+
+        interface
+        audio = false
+        focusedApp
+
+        constructor() {
+            let pageSize = 4
+            this.#pager = new Pager(this, pageSize)
+            // this.#memory = new Segmenter(this.#memoryRenderer)
+            this.#segmenter = new Segmenter(this)
+
+            this.interface = document.createElement("div")
+            this.interface.className = "GUI"
+            this.interface.style.cursor = "default"
+            this.interface.innerHTML += `
+            <div id="apps">
+                </div>
+            <div id="taskbar" class="black aero">
+                <button id="red" class="black aero tile-select">
+                    <div class="red aero flat" style="padding: 0; width: 1.8rem; display: inline-block; height: 1.2rem; border-radius: 6px;">
+                    </div>
+                </button>
+                <button id="green" class="black aero tile-select">
+                    <div class="green aero-orb" style="padding: 0; width: 1.4rem; display: inline-block; height: 1.4rem;">
+                    </div>
+                </button>
+                <button id="blue" class="black aero tile-select">
+                    <div class="blue aero" style="padding: 0; width: 1.2rem; display: inline-block; height: 1.6rem; border-radius: 4px;">
+                    </div>
+                </button>
+                <button id="yellow" class="black aero tile-select">
+                    <div class="yellow aero flat" style="padding: 0; width: 1.2rem; display: inline-block; height: 1.2rem; border-radius: 4px; transform: rotate(45deg);">
+                    </div>
+                </button>
+                <button id="purple" class="black aero tile-select">
+                    <div class="purple aero" style="padding: 0; width: 1.8rem; display: inline-block; height: 1rem; border-radius: 4px;">
+                    </div>
+                </button>
+            </div>
+            <div id="taskbar-right">
+                <img src="./taskbar.png">
+                <span class="word-select" style="padding: 2px; border-radius: 4px;">
+                    <img id="audio-toggle" src="./taskbar-audio-off.png" style="cursor: pointer;">
+                </span>
+                <p id="clock"></p>
+            </div>`
+            document.querySelector("body").appendChild(this.interface)
+
+            Object.keys(this.#installedApps).forEach(app => {
+                this.interface.querySelector(`button#${app}`).addEventListener("click", this.startApp.bind(this, app))
+            })
+
+            function setTime() { // Taken from GeeksForGeeks
+                let date = new Date();
+                let formatter = new Intl.DateTimeFormat("en-US", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                });
+                let formattedTime = formatter.format(date);
+                document.querySelector("#clock").innerHTML = formattedTime
+            }
+            setTime()
+            setInterval(setTime, 10000)
+
+            document.onclick = this.#audioOn.bind(this)
+            this.interface.querySelector("#audio-toggle").onclick = this.#toggleAudio.bind(this)
+
+            let visualMemory = document.createElement("div")
+            visualMemory.appendChild(this.#buildPageRenderer())
+            visualMemory.appendChild(this.#buildSegmentRenderer())
+            document.body.appendChild(visualMemory)
+        }
+
+        async allocate(appID, size) {
+            let pageAllocation = this.#pager.allocate(appID, size)
+            let segmentAllocation = this.#segmenter.allocate(appID, size)
+            await Promise.all([pageAllocation, segmentAllocation])
+        }
+        async deallocate(appID) {
+            let pageAllocation = this.#pager.deallocate(appID)
+            let segmentAllocation = this.#segmenter.deallocate(appID)
+            await Promise.all([pageAllocation, segmentAllocation])
+        }
+
+        async startApp(app) {
+            if (this.interface.style.cursor !== "wait") {
+                let appData = this.#installedApps[app]
+                if (appData) {
+                    let id = this.#newAppID
+                    let size = appData.size
+
+                    this.interface.style.cursor = "wait"
+
+                    this.#runningApps[id] = new App(id, appData)
+                    await this.allocate(id, size)
+                    this.#newAppID++
+                    this.renderAllMemory()
+
+                    let html = document.createElement("div")
+                    html.id = `app${id}`
+                    html.className = "blue aero glass"
+                    html.style.position = "absolute"
+                    html.style.width = "16rem"
+                    html.style.height = "12rem"
+                    html.style["padding-top"] = "1.5rem"
+                    let header = document.createElement("div")
+                    header.className = "header"
+                    header.innerHTML = `
+                    <button class="red close aero-button">X</button>
+                    <button class="blue aero-button">&#128470</button>
+                    <button class="blue aero-button">&#128469</button>
+                    <div>${this.#installedApps[app].title}</div>
+                `
+                    html.appendChild(header)
+                    html.innerHTML += this.#installedApps[app].content
+                    dragElement(html)
+
+                    header.addEventListener("click", () => { console.log("hello") })
+
+                    this.interface.querySelector("#apps").appendChild(html)
+                    html.querySelector("button.close").onclick = this.closeApp.bind(this, id)
+
+                    this.focusApp(id)
+                    html.addEventListener("pointerdown", this.focusApp.bind(this, id))
+
+                    this.interface.style.cursor = "default"
+                } else {
+                    throw new Error(`Unknown app: ${app.title}`)
+                }
+            }
+        }
+
+        async closeApp(appID) {
+            this.interface.querySelector(`#app${appID}`).remove()
+            delete this.#runningApps[appID]
+            await this.deallocate(appID)
+            this.renderAllMemory()
+        }
+
+        focusApp(appID) {
+            this.focusedApp = appID
+            document.querySelectorAll("#apps>div").forEach(app => app.style["z-index"] = 1)
+            document.querySelector(`#app${appID}`).style["z-index"] = 2
+        }
+
+        #audioOn() {
+            document.querySelectorAll("audio").forEach(audio => audio.play())
+            this.interface.querySelector("#audio-toggle").src = "./taskbar-audio-on.png"
+            this.audio = true
+            document.onclick = () => { }
+        }
+
+        #audioOff() {
+            document.querySelectorAll("audio").forEach(audio => audio.pause())
+            this.interface.querySelector("#audio-toggle").src = "./taskbar-audio-off.png"
+            this.audio = false
+        }
+
+        #toggleAudio() {
+            if (this.audio) {
+                this.#audioOff()
+            } else {
+                this.#audioOn()
+            }
+        }
+
+        #buildPageRenderer() {
+            let div = document.createElement("div")
+            this.visualPages = div
+
+            div.className = "blue aero glass PageRenderer"
+
+            let ul = document.createElement("ul")
+            let virtualUl = document.createElement("ul")
+            virtualUl.id = "virtualPages"
+
+            for (let i = 0; i < this.#pager.maxPages; i++) {
+                let li = document.createElement("li")
+                li.id = `page${i}`
+                li.style = `width: ${this.widthPerMemoryUnit * this.#pager.pageSize}rem; padding: 0; border-radius: 4px;`
+                li.className = "black aero"
+
+                ul.appendChild(li)
+            }
+
+            div.appendChild(ul)
+            div.appendChild(virtualUl)
+            // document.querySelector("body").appendChild(div)
+            return div
+        }
+        #buildSegmentRenderer() {
+            let div = document.createElement("div")
+            this.visualSegments = div
+
+            div.className = "blue aero glass SegmentRenderer"
+
+            let main = document.createElement("div")
+            let virtual = document.createElement("div")
+
+            main.id = "segments"
+            main.className = "black aero"
+            main.style["border-radius"] = "2px"
+            // main.style.width = `${Math.floor(this.capacity * 32 / 96)}rem`
+            let numPages = Math.floor(this.memoryCapacity / this.#pager.pageSize)
+            main.style.width = `${this.memoryCapacity * this.widthPerMemoryUnit}rem`
+            div.appendChild(main)
+
+            virtual.className = "black aero glass"
+            virtual.style["border-radius"] = "2px"
+            virtual.style["flex-grow"] = "1"
+            div.appendChild(virtual)
+
+            // document.querySelector("body").appendChild(div)
+            return div
+        }
+
+        renderAllMemory() {
+            for (let i = 0; i < this.#pager.maxPages; i++) {
+                this.renderPage(i)
+            }
+            // this.#segmenter.forEach(this.renderSegment.bind(this))
+        }
+
+        renderPage(pageIndex) {
+            let appID = this.#pager.queryWithoutSleep(pageIndex)
+            let app = this.#runningApps?.[appID]
+            if (pageIndex < this.#pager.maxPages) {
+                if (app) {
+                    this.visualPages.querySelector(`#page${pageIndex}`).className = app.appData.style
+                } else {
+                    this.visualPages.querySelector(`#page${pageIndex}`).className = "black aero"
+                }
+            } else {
+                if (app) {
+                    let page = document.createElement("li")
+                    page.className = `${app.appData.style} glass`
+                    page.id = `#page${pageIndex}`
+                    page.style = `width: ${this.widthPerMemoryUnit * this.#pager.pageSize}rem; padding: 0; border-radius: 4px;`
+                    document.querySelector("#virtualPages").appendChild(page)
+                } else {
+                    let page = document.querySelector(`#page${pageIndex}`)
+                    if (page) {
+                        page.remove()
+                    }
+                }
+            }
+        }
+
+        renderSegment(segmentID, remove = false) {
+            let segment = this.#segmenter.querySegment(segmentID)
+            let appID = segment.appID
+            let app = this.#runningApps?.[appID]
+            if (remove) { // If the segment has been removed from memory but is still on the visualisation
+                document.querySelector(`#segments #segment${segmentID}`).remove()
+            }
+            if (app && !document.querySelector(`#segments #segment${segmentID}`)) { // If the segment exists in memory but not on the visualisation
+                if (segment.end < this.memoryCapacity) {
+                    let newSegment = document.createElement("div")
+                    newSegment.id = `segment${segmentID}`
+                    newSegment.className = `${app.appData.style} segment`
+                    newSegment.style["border-radius"] = "2px"
+                    newSegment.style.padding = "0"
+                    newSegment.style.left = `${segment.start * this.widthPerMemoryUnit}rem`
+                    newSegment.style.width = `${(segment.end - segment.start) * this.widthPerMemoryUnit}rem`
+                    newSegment.style.height = "2.5rem"
+                    document.querySelector("#segments").appendChild(newSegment)
+                }
+            }
+        }
+    }
+
+    function dragElement(elmnt) { // Taken and modified from w3schools
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        if (elmnt.querySelector(".header")) {
+            // if present, the header is where you move the DIV from:
+            elmnt.querySelector(".header").addEventListener("pointerdown", dragMouseDown)
+            elmnt.querySelector(".header").addEventListener("pointerdown", dragMouseDown)
+        } else {
+            // otherwise, move the DIV from anywhere inside the DIV:
+            elmnt.addEventListener("pointerdown", dragMouseDown)
+        }
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            // e.preventDefault();
+            // get the pointer cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.addEventListener("pointerup", closeDragElement)
+            // call a function whenever the cursor moves:
+            document.addEventListener("pointermove", elementDrag)
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            // stop moving when pointer button is released:
+            document.removeEventListener("pointerup", this)
+            document.removeEventListener("pointermove", elementDrag)
+        }
+    }
+
+    let Vista = new OS("Paging")
+
+</script>
+
+</html>

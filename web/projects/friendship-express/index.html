@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friendship Express</title>
+    <style>
+        img {
+            width: auto;
+            height: 32rem;
+        }
+
+        #game {
+            width: 64rem;
+            height: 36rem;
+            overflow: hidden;
+            margin: auto;
+            border: groove 0.5rem #aaa;
+            position: relative;
+
+            * {
+                position: absolute;
+            }
+
+            #initial-screen {
+                width: 100%;
+                height: 100%;
+                left: 0;
+                top: 0;
+                background-color: rgba(0, 0, 0, 0.8);
+                color: white;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-family: sans-serif;
+                font-size: 1.5rem;
+                text-align: center;
+                z-index: 10;
+                cursor: pointer;
+            }
+
+            .backdrop {
+                height: 100%;
+            }
+
+            .backdrop img {
+                width: auto;
+                height: 100%;
+                top: 0;
+                left: 0;
+            }
+
+            .train {
+                right: 30%;
+                top: 58.5%;
+                height: 15%;
+            }
+
+            #hud {
+                position: relative;
+                width: 100%;
+                height: 100%;
+            }
+
+            #throttle {
+
+                left: 8%;
+                width: 16%;
+                bottom: 45%;
+                height: 15%;
+
+                img {
+                    left: 0;
+                    bottom: 0;
+                    height: auto;
+                    width: 50%;
+                    transform-origin: 50% 50%;
+                    transform: translate(50%, 0) rotate(-180deg);
+                }
+
+                input[type=range] {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    opacity: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ew-resize;
+                }
+
+                input[type=range]::-moz-range-thumb {
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ew-resize;
+                }
+            }
+
+            #reverser {
+                left: 25%;
+                width: 10%;
+                bottom: 5%;
+                height: 15%;
+
+                img:nth-child(1) {
+                    left: 25%;
+                    bottom: -15%;
+                    height: auto;
+                    width: 50%;
+                }
+
+                img:nth-child(2) {
+                    left: 40%;
+                    bottom: 0;
+                    height: 100%;
+                    width: auto;
+                    transform-origin: 50% 100%;
+                }
+
+                input[type=range] {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    opacity: 0;
+                    width: 100%;
+                    height: 100%;
+                    transform-origin: 50% 50%;
+                    transform: rotate(-60deg);
+                    /* writing-mode: vertical-lr;
+                    direction: rtl;
+                    vertical-align: middle; */
+                }
+
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ne-resize;
+                }
+
+                input[type=range]::-moz-range-thumb {
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ne-resize;
+                }
+            }
+
+            #brake {
+                left: 60%;
+                width: 10%;
+                bottom: 10%;
+                height: 10%;
+
+                img:nth-child(1) {
+                    left: 5%;
+                    bottom: -65%;
+                    height: auto;
+                    width: 50%;
+                }
+
+                img:nth-child(2) {
+                    left: 20%;
+                    bottom: -50%;
+                    height: 150%;
+                    width: auto;
+                    transform-origin: 50% 100%;
+                }
+
+                input[type=range] {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    opacity: 0;
+                    width: 100%;
+                    height: 100%;
+                    transform-origin: 50% 50%;
+                    transform: rotate(-120deg);
+                    /* writing-mode: vertical-lr;
+                    direction: rtl;
+                    vertical-align: middle; */
+                }
+
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: nw-resize;
+                }
+
+                input[type=range]::-moz-range-thumb {
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: nw-resize;
+                }
+            }
+
+            #whistle {
+                left: 85%;
+                width: 8%;
+                top: 10%;
+                height: 20%;
+
+                img {
+                    left: 30%;
+                    top: -180%;
+                    height: 200%;
+                    width: auto;
+                }
+
+                input[type=range] {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    opacity: 0;
+                    width: 100%;
+                    height: 100%;
+                    writing-mode: vertical-lr;
+                    direction: ltr;
+                    vertical-align: middle;
+                }
+
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    appearance: none;
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ns-resize;
+                }
+
+                input[type=range]::-moz-range-thumb {
+                    width: 0;
+                    height: 0;
+                    opacity: 0;
+                    cursor: ns-resize;
+                }
+            }
+
+            #gauges {
+
+                left: 0%;
+                width: 20%;
+                bottom: 20%;
+                height: 50%;
+
+                img:first-child {
+                    left: 0%;
+                    bottom: 0;
+                    height: auto;
+                    width: 100%;
+                }
+
+                .needle {
+                    transform-origin: 20% 50%;
+                    width: 15%;
+                    height: auto;
+                }
+
+                .pressure {
+                    left: 33%;
+                    bottom: 72%;
+                }
+
+                .temperature {
+                    left: 43%;
+                    bottom: 37%;
+                }
+            }
+
+            #firebox {
+
+                left: 50%;
+                width: 20%;
+                bottom: 0;
+                height: 20%;
+                transform: translateX(-50%);
+
+                img.firebox {
+                    left: 0;
+                    bottom: -15%;
+                    height: auto;
+                    width: 100%;
+
+                    /* background-image: linear-gradient(to bottom,
+                            #FFF75D 0%,
+                            #FFC11F 20%,
+                            #FE650D 40%,
+                            #F33C04 60%,
+                            #DA1F05 80%,
+                            #A10100 100%); */
+                }
+
+                img.coal {
+                    left: 20%;
+                    top: 0;
+                    height: auto;
+                    width: 50%;
+                }
+
+                div.fire {
+                    left: 20%;
+                    bottom: 0;
+                    height: 100%;
+                    width: 60%;
+                }
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game">
+        <div id="sky" class="backdrop"><img src="./assets/backdrop/sky.png"><img src="./assets/backdrop/sky.png"></div>
+        <div id="parallax3" class="backdrop"><img><img></div>
+        <div id="parallax2" class="backdrop"><img><img></div>
+        <div id="parallax1" class="backdrop"><img><img></div>
+
+        <img id="carriages" class="train" src="./assets/carriages.png">
+        <img id="loco" class="train" src="./assets/loco.png" style="transform-origin: 50% 100%;">
+
+        <div id="foreground" class="backdrop"><img><img></div>
+
+        <div id="hud">
+            <div id="gauges">
+                <img src="./assets/hud/friendship-express/gauges.png">
+                <img src="./assets/hud/friendship-express/needle.png" class="pressure needle">
+                <img src="./assets/hud/friendship-express/needle.png" class="temperature needle">
+            </div>
+            <div id="throttle">
+                <img class="throttle" src="./assets/hud/friendship-express/regulator.png">
+                <input type="range" min="0" max="1" step="0.01" value="0"
+                    oninput="train.setThrottle(Number(this.value))">
+            </div>
+            <div id="reverser">
+                <img src="./assets/hud/friendship-express/reverser-hub.png">
+                <img src="./assets/hud/friendship-express/reverser-lever.png">
+                <input type="range" min="-1" max="1" step="1" value="1" oninput="train.setReverser(Number(this.value))">
+            </div>
+            <div id="brake">
+                <img src="./assets/hud/friendship-express/brake-hub.png">
+                <img src="./assets/hud/friendship-express/brake-lever.png">
+                <input type="range" min="0" max="1" step="0.01" value="0" oninput="train.setBrake(Number(this.value))">
+            </div>
+            <div id="firebox" onclick="train.addCoal(3)">
+                <div class="fire"></div>
+                <img src="./assets/hud/friendship-express/coal.png" class="coal">
+                <img src="./assets/hud/friendship-express/firebox.png" class="firebox">
+            </div>
+            <div id="whistle">
+                <img class="whistle" src="./assets/hud/friendship-express/whistle.png">
+                <input type="range" min="0" max="1" step="0.01" value="0" oninput="train.setHorn(Number(this.value))">
+            </div>
+            <div id="audio">
+                <audio class="hiss" hidden>
+                    <source src="./assets/audio/hiss.wav" type="audio/wav" />
+                </audio>
+                <audio class="brake" hidden loop>
+                    <source src="./assets/audio/brake.wav" type="audio/wav" />
+                </audio>
+                <audio class="shovel" hidden>
+                    <source src="./assets/audio/shovel.wav" type="audio/wav" />
+                </audio>
+                <audio class="fire" hidden loop>
+                    <source src="./assets/audio/fire.wav" type="audio/wav" />
+                </audio>
+                <audio class="clank" hidden>
+                    <source src="./assets/audio/clank.mp3" type="audio/mp3" />
+                </audio>
+            </div>
+        </div>
+
+        <div id="initial-screen" onclick="this.remove(); initialise()">Play</div>
+    </div>
+</body>
+<script>
+    class Train {
+        position = 0
+        velocity = 0
+        acceleration = 0
+        incline = 0 // tangent
+
+        mass = 100
+        wheelRadius = 3
+        wheelFriction = 0.03
+        airResistance = 0.02
+        brakeForce = 500
+
+        throttle = 0
+        brake = 1
+        reverser = 1
+        horn = 0
+
+        hud
+        sounds = {
+            trackNoise: undefined,
+        }
+        lastFrameTime = 0.1
+
+        constructor(hud) {
+            this.hud = hud;
+
+            let synth = new Synth()
+            this.sounds.trackNoise = synth.trackNoise()
+        }
+
+        update(dt, drivingForce) {
+            if (dt > 1) return; // prevent large jumps
+            this.lastFrameTime = dt
+
+            // Air Resistance
+            let resistanceForce = -this.airResistance * (this.velocity ** 2) * Math.sign(this.velocity);
+
+            // Gravity
+            resistanceForce -= this.mass * this.incline;
+
+            // Friction
+            resistanceForce -= this.wheelFriction * this.velocity // Rolling resistance
+
+            let absFriction = this.brake * this.brakeForce
+            let friction = -absFriction * Math.sign(this.velocity) // Brake
+            let netForce
+
+            if (this.velocity === 0 && Math.abs(drivingForce + resistanceForce) < absFriction) {
+                netForce = 0
+            } else {
+                netForce = drivingForce + resistanceForce + friction
+            }
+
+            // Kinematics
+            this.acceleration = (netForce) / this.mass;
+            const dv = this.acceleration * dt;
+            if (this.velocity !== 0 && Math.abs(this.velocity) < dv) {
+                this.velocity = 0;
+                this.hud.querySelector("audio.hiss").play();
+            } else {
+                this.velocity += dv;
+            }
+            this.position += this.velocity * dt;
+
+            // Visuals
+            setBackground(this.position);
+
+            // Brake squeal
+            if (this.brake > 0 && Math.abs(this.velocity) > 0) {
+                this.hud.querySelector("audio.brake").volume = Math.tanh(this.brake * Math.abs(this.velocity) / 40);
+                if (this.hud.querySelector("audio.brake").paused) {
+                    this.hud.querySelector("audio.brake").play();
+                }
+            } else {
+                this.hud.querySelector("audio.brake").pause();
+            }
+
+            // Track Noise
+            this.sounds.trackNoise.setVolume(0.5 * Math.tanh(Math.abs(this.velocity) / 20));
+        }
+
+        setThrottle(value) {
+            this.throttle = Math.max(0, Math.min(1, value));
+            this.hud.querySelector("#throttle img").style.transform = `translate(50%, 0) rotate(${this.throttle * 300}deg)`;
+        }
+
+        setBrake(value) {
+            // if (this.brake > 0 && value === 0) {
+            //     this.hud.querySelector("audio.hiss").play();
+            // }
+            this.brake = Math.max(0, Math.min(1, value));
+            this.hud.querySelector("#brake img:nth-child(2)").style.transform = `rotate(${40 - this.brake * 40}deg)`;
+        }
+
+        setReverser(value) {
+            this.reverser = Math.sign(value);
+            this.hud.querySelector("#reverser img:nth-child(2)").style.transform = `rotate(${this.reverser * 10}deg)`;
+            const audio = this.hud.querySelector("audio.clank");
+            audio.paused ? audio.play() : audio.currentTime = 0;
+        }
+
+        setHorn(amount) {
+            this.horn = Math.max(0, Math.min(1, amount));
+            this.hud.querySelector("#whistle img").style.transform = `translateY(${amount * 40}%)`;
+        }
+
+        get isCrossingSceneBoundary() {
+            let result = Math.floor(this.position / 100) !== Math.floor((this.position - this.velocity * this.lastFrameTime * 1.5) / 100);
+            return result;
+        }
+
+    }
+
+    class SteamTrain extends Train {
+        coalInFirebox = 20
+        maxCoal = 25
+        fireTemperature = 400 // Kelvin
+        coalEnergyDensity = 500; // degrees per unit of coal
+        coalBurnRate = 0.00001
+
+        waterTemperature = 300 // Kelvin
+        waterTempIncreaseRate = 0.01
+        boilingPoint = 373; // Kelvin
+
+        steamPressure = 0
+        maxPressure = 10000
+        get relativePressure() { return this.steamPressure / this.maxPressure; }
+        get oomph() { return this.relativePressure * this.throttle * Math.abs(this.reverser); }
+        get signedOomph() { return this.relativePressure * this.throttle * this.reverser; }
+
+        constructor(hud) {
+            super(hud);
+
+            let synth = new Synth()
+            this.sounds.ambientHiss = synth.ambientHiss();
+            this.sounds.safetyValve = synth.safetyValve()
+            this.sounds.pistonChuff = synth.pistonChuff()
+            this.sounds.whistle = synth.whistle()
+
+            this.sounds.ambientHiss.setVolume(0.05)
+        }
+
+        update(dt) {
+            if (dt > 1) return; // prevent large jumps
+
+            // Burn coal
+            const coalBurned = Math.min(this.coalInFirebox * this.fireTemperature * this.coalBurnRate * dt, this.coalInFirebox / 5);
+            this.coalInFirebox -= coalBurned;
+
+            // Increase fire temperature based on coal burned
+            this.fireTemperature += coalBurned * this.coalEnergyDensity;
+            this.fireTemperature -= (this.fireTemperature - ambientTemperature) * 0.1 * dt; // natural cooling
+
+            // Increase water temperature based on fire temperature
+            this.waterTemperature += (this.fireTemperature - this.waterTemperature) * this.waterTempIncreaseRate * dt;
+
+            // Boil Water
+            const relativeTemperature = this.waterTemperature - this.boilingPoint
+            const boilingRate = relativeTemperature + Math.sqrt(relativeTemperature ** 2 + 10); // smooth transition
+            this.waterTemperature -= boilingRate * dt * 0.2; // lose heat to boiling
+            this.steamPressure += boilingRate * dt * 10; // increase pressure
+
+            // Safety Valve
+            if (this.steamPressure > this.maxPressure) {
+                this.sounds.safetyValve.setVolume(0.2, 0.25);
+                this.steamPressure = this.maxPressure
+            } else {
+                this.sounds.safetyValve.setVolume(0, 0.25);
+            }
+
+            // Whistle
+            this.steamPressure -= this.steamPressure * 0.3 * this.horn * dt;
+
+            // Drive Pistons
+            const steamUsed = this.oomph * this.maxPressure * 0.1 * dt;
+            this.steamPressure -= steamUsed;
+            const phase = this.position / this.wheelRadius
+            const efficiency = 10 * Math.abs(Math.cos(phase)) + Math.abs(Math.sin(phase))
+            const drivingForce = steamUsed * efficiency * this.reverser;
+
+            super.update(dt, drivingForce);
+
+            // Visuals
+            this.hud.querySelector("#firebox .coal").style.transform = `translateY(${100 - (this.coalInFirebox / this.maxCoal) * 50}%)`;
+            this.hud.querySelector("#firebox .fire").style["background-image"] = `linear-gradient(to bottom, ${this.getFireColour(this.fireTemperature - 100)} 0%, ${this.getFireColour(this.fireTemperature + 100)} 100%)`;
+
+            this.hud.querySelector("#gauges .pressure").style.transform = `rotate(${this.steamPressure * 270 / this.maxPressure - 225}deg)`;
+            const normalisedWaterTemp = Math.max(0, Math.min(1, (this.waterTemperature - 300) / 200));
+            this.hud.querySelector("#gauges .temperature").style.transform = `rotate(${normalisedWaterTemp * 100 - 130}deg)`;
+
+            document.querySelector("#loco").style.transform = `scaleY(${100 + 3 * Math.cos(4 * phase) * this.oomph}%)`;
+
+            // Sound Effects
+            this.sounds.ambientHiss.setVolume(0.05 * Math.tanh(10 * this.relativePressure), dt);
+
+            this.sounds.pistonChuff.setVolume(3 * (Math.sin(phase * 2) ** 4) * this.oomph, dt);
+            this.sounds.pistonChuff.setPan(Math.sin(phase * 2) * 0.6, dt);
+
+            this.sounds.whistle.setPull(this.horn, 0.1);
+            this.sounds.whistle.setVolume(this.horn * 2 * Math.tanh(4 * this.relativePressure), 0.1);
+
+            // Crackling fire
+            if (this.fireTemperature > 300) {
+                this.hud.querySelector("audio.fire").volume = 0.5 * Math.tanh((this.fireTemperature - 300) / 1000);
+                if (this.hud.querySelector("audio.fire").paused) {
+                    this.hud.querySelector("audio.fire").play();
+                }
+            } else {
+                this.hud.querySelector("audio.fire").pause();
+            }
+        }
+
+        addCoal(amount) {
+            const audio = this.hud.querySelector("audio.shovel");
+            audio.paused ? audio.play() : audio.currentTime = 0;
+            setTimeout(() => { this.coalInFirebox = Math.min(this.maxCoal, this.coalInFirebox + amount); }, 1500);
+        }
+
+        getFireColour(kelvin) {
+            const stops = [
+                { t: 200, rgb: [0, 0, 0] },
+                { t: 600, rgb: [50, 20, 0] },             // dark brown/black for cold
+                { t: 900, rgb: [161, 1, 0] },             // #A10100
+                { t: 1200, rgb: [218, 31, 5] },           // #DA1F05
+                { t: 1500, rgb: [243, 60, 4] },           // #F33C04
+                { t: 1800, rgb: [254, 101, 13] },         // #FE650D
+                { t: 2200, rgb: [255, 193, 31] },         // #FFC11F
+                { t: 2600, rgb: [255, 247, 93] },         // #FFF75D
+                { t: 3500, rgb: [255, 255, 255] }         // #FFFFFF
+            ];
+
+            // clamp input
+            if (kelvin <= stops[0].t) {
+                const [r, g, b] = stops[0].rgb;
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+            if (kelvin >= stops[stops.length - 1].t) {
+                const [r, g, b] = stops[stops.length - 1].rgb;
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            // find surrounding stops
+            let lower = stops[0], upper = stops[stops.length - 1];
+            for (let i = 0; i < stops.length - 1; i++) {
+                if (kelvin >= stops[i].t && kelvin <= stops[i + 1].t) {
+                    lower = stops[i];
+                    upper = stops[i + 1];
+                    break;
+                }
+            }
+
+            // interpolate
+            const range = upper.t - lower.t;
+            const factor = (kelvin - lower.t) / range;
+            const r = Math.round(lower.rgb[0] + (upper.rgb[0] - lower.rgb[0]) * factor);
+            const g = Math.round(lower.rgb[1] + (upper.rgb[1] - lower.rgb[1]) * factor);
+            const b = Math.round(lower.rgb[2] + (upper.rgb[2] - lower.rgb[2]) * factor);
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+    }
+
+    class Synth {
+        whiteNoiseBuffer() {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            return buffer;
+        }
+
+        ambientHiss() {
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = this.whiteNoiseBuffer();
+            noise.loop = true;
+
+            const bandpass = audioCtx.createBiquadFilter();
+            bandpass.type = "bandpass";
+            bandpass.frequency.value = 1200;
+            bandpass.Q.value = 1.5;
+
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0;
+
+            noise.connect(bandpass).connect(gain);
+            noise.start();
+
+            return new Sound(gain);
+        }
+
+        safetyValve() {
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = this.whiteNoiseBuffer();
+            noise.loop = true;
+
+            const bandpass = audioCtx.createBiquadFilter();
+            bandpass.type = "bandpass";
+            bandpass.frequency.value = 1500;
+            bandpass.Q.value = 2;
+
+            const lowpass = audioCtx.createBiquadFilter();
+            lowpass.type = "lowpass";
+            lowpass.frequency.value = 4000;
+
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0; // silent initially
+
+            noise.connect(bandpass).connect(lowpass).connect(gain);
+            noise.start();
+
+            return new Sound(gain);
+        }
+
+        pistonChuff() {
+
+            // White noise for steam hiss
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = this.whiteNoiseBuffer();
+            noise.loop = true;
+            const noiseBand = audioCtx.createBiquadFilter();
+            noiseBand.type = "bandpass";
+            noiseBand.frequency.value = 300;
+            noiseBand.Q.value = 2;
+
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0;
+            noise.connect(noiseBand).connect(gain);
+
+            noise.start();
+
+            return new Sound(gain);
+        }
+
+        trackNoise() {
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0; // external control
+
+            const audioBase64 = "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waZFbZHK0i+tA/+1/Z81Pf+42hLYV/L76mQnI4025KAB/e4VBZODSoQQg6AAAFVA1tiCbA5FCqmCiFNlAhi0qRaQHq3tWWYZYotBktXjKf/jKMS8IWs+xZ4SRhWZ4jGgMfd3fPHs4lREIGZoaqSMDrPTnARxHNqbBiiAFJJDby3/+JChcyBQtBCHNcmKVGGHfItM1tM+22hFL/GH+QAJO8tJvn3cnOpuWM01P3Weq4J09u3laVbgAH9eaY8+DaBwuLUimkiFBEolcYj7InjULYppJNo5Zc7/JqEqmaMXJv/jOMS5Iyq+zl4yRnFR9RN5XXKLbMFbtRaWW3WWqJLwrM3fNlh58wYr5GM3ZpCybzbPjL/DUsoW4YMqEeblvrkccpyXJ+/Mj/6euZObsrlEMjY8j7woX5ezNyeVcNHLV0XT1VCEfQSrX6rO9qaxu3AAfpStmf2cEK7UhPazBR5tVCoXSUTUeerKqUU1l88G9uDfnOOMERZR4sVsephgoKB8ccYo5REcUpjRhxQqCzuhWYkrnRyFHIp6otOzaEYh1IU7Le8ppGVLrKlz1OqLcyvyyHYys7eZEv/jKMT3IhwewPZJhlmEVlI6Lcp7trVnSXRtSlYjHqY9LlToVo5TGOa7ZEOiHtGsrMzSiOUmAYA2AUTCYKhUGh2p9hoWBhQOJCQqEAgv//1uqGyt+AwQDFJpKYCqf/+XeepH6IBwJIYLAQak//+8/0FsqlbchCBNkCJZSz53////1Ui9UvcJ02Cw66IFgRKSFv/jKMTxJTxCzb9JKAH7kl9kem7/////7SJNfdqegWFRN+IfGSBcSWRdVyVMhA8KDWI1///////9W4S5Na5i4MAQFAbivigBBNi5zI0XEqmpyFCcx6K////////1r8ZsO9KY9L45Eo/ehqZyvI3MqeFDklU776I3KSLm0rWv/////////W8JVS/zV3VN9vOzM//jSMTfPiN6nvmawEC9KKtJgRhztQSwpkTnLllrOhQKVLXH3biwVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/jGMTEAAADSAHAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ=="
+
+            const binaryString = atob(audioBase64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            audioCtx.decodeAudioData(bytes.buffer, (buffer) => {
+                const trackNoise = audioCtx.createBufferSource();
+                trackNoise.buffer = buffer;
+                trackNoise.loop = true;
+
+                // Connect to your master gain
+                trackNoise.connect(gain);
+                trackNoise.start();
+            });
+
+            return new Sound(gain);
+        }
+
+        whistle() {
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0; // external control
+
+            const audioBase64 = "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"
+
+            const binaryString = atob(audioBase64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+
+            let sound = new Sound(gain);
+
+            audioCtx.decodeAudioData(bytes.buffer, (buffer) => {
+                const whistle = audioCtx.createBufferSource();
+                whistle.buffer = buffer;
+                whistle.loop = true;
+
+                // Connect to your master gain
+                whistle.connect(gain);
+                whistle.start();
+
+                sound.source = whistle
+            });
+
+            return sound;
+        }
+    }
+
+    class Sound {
+        gain
+        pan
+        source
+
+        constructor(gain) {
+            this.gain = gain
+            this.pan = new StereoPannerNode(audioCtx, { pan: 0 });
+
+            this.gain.connect(this.pan).connect(audioCtx.destination);
+        }
+
+        setVolume(value, dt = 0.01) {
+            const now = audioCtx.currentTime;
+            this.gain.gain.cancelScheduledValues(now);
+            this.gain.gain.setTargetAtTime(value, now, dt);
+        }
+
+        setPan(value) {
+            this.pan.pan.value = value;
+        }
+
+        setPull(amount, dt = 0.2) {
+            const now = audioCtx.currentTime;
+            // this.setVolume(amount, dt);
+            if (this.source) {
+                this.source.playbackRate.cancelScheduledValues(now);
+                this.source.playbackRate.setTargetAtTime(0.95 + 0.05 * amount, now, dt);
+            }
+        }
+    }
+
+    class Backdrop {
+        imgPath
+        parallax
+        position
+
+        constructor(imgPath, parallax = 1, position = 0) {
+            this.imgPath = imgPath
+            this.parallax = parallax
+            this.position = position
+        }
+
+        get exists() {
+            return this.imgPath && this.imgPath.length > 0;
+        }
+
+        get fullPath() {
+            return ("./assets/backdrop/" + this.imgPath) || "";
+        }
+
+        static empty() {
+            let backdrop = new Backdrop("")
+            backdrop.exists = () => false
+            return backdrop
+        }
+    }
+
+    class Scene {
+        position
+        foreground = []
+        parallax1 = []
+        parallax2 = []
+        parallax3 = []
+
+        constructor(position, foreground, parallax1, parallax2, parallax3) {
+            this.position = position
+            this.foreground = foreground.map(path => new Backdrop(path)).fill(Backdrop.empty, foreground.length, 4)
+            this.parallax1 = parallax1.map(path => new Backdrop(path)).fill(Backdrop.empty, parallax1.length, 4)
+            this.parallax2 = parallax2.map(path => new Backdrop(path, 2)).fill(Backdrop.empty, parallax2.length, 2)
+            this.parallax3 = parallax3.map(path => new Backdrop(path, 3)).fill(Backdrop.empty, parallax3.length, 1)
+        }
+
+        merge(other) {
+            ["foreground", "parallax1", "parallax2", "parallax3"].forEach(layer => {
+                other[layer].forEach((backdrop, index) => {
+                    if (backdrop.exists()) this[layer][index] = backdrop;
+                });
+            });
+        }
+
+        static plains(position = 0) {
+            return new Scene(
+                position,
+                [],
+                ["plains/grass.png", "plains/grass.png", "plains/grass.png", "plains/grass.png"],
+                ["plains/hills.png", "plains/hills.png"],
+                ["plains/mountains.png"],
+            )
+        }
+
+        static ponyville(position = 0) {
+            return new Scene(
+                position,
+                [],
+                ["ponyville/grass-to-ground.png", "ponyville/station.png", "ponyville/ground.png", "ponyville/ground-to-grass.png"],
+                ["ponyville/near-1.png", "ponyville/near-2.png"],
+                ["ponyville/distant.png"],
+            )
+        }
+
+        static sweetAppleAcres(position = 0) {
+            return new Scene(
+                position,
+                [],
+                ["plains/grass.png", "plains/grass.png", "plains/grass.png", "sweet-apple-acres/grass-to-ground.png"],
+                ["sweet-apple-acres/barn.png", "sweet-apple-acres/hills-to-foreground.png"],
+                ["sweet-apple-acres/mountains-to-distant.png"],
+            )
+        }
+
+        static everfreeForest(position = 0) {
+            return new Scene(
+                position,
+                ["everfree-forest/foreground.png", "everfree-forest/foreground.png", "everfree-forest/foreground.png", "everfree-forest/foreground.png"],
+                ["everfree-forest/ground.png", "everfree-forest/ground.png", "everfree-forest/ground.png", "everfree-forest/ground.png"],
+                ["everfree-forest/near.png", "everfree-forest/near.png"],
+                ["everfree-forest/distant.png"],
+            )
+        }
+    }
+
+    class Route {
+        defaultScenes = [
+            Scene.plains(0),
+            Scene.ponyville(400),
+            Scene.sweetAppleAcres(800),
+            Scene.everfreeForest(1200),
+            // Scene.plains(4000),
+        ]
+
+        currentScene = this.defaultScenes[0]
+
+        getScene(position, parallax = 1) {
+            return this.defaultScenes
+                .filter(s => s.position <= position)
+                .reduce((max, scene) => scene.position > max.position ? scene : max, Scene.plains());
+        }
+
+        updateScene(scene) {
+            if (train?.isCrossingSceneBoundary) {
+                this.updateImages()
+            }
+
+            this.currentScene = scene
+        }
+
+        updateImages(position = train?.position || 0) {
+            [0, 1].forEach(offset => {
+                let scene = this.getScene(position + offset * 100);
+
+                ["foreground", "parallax1", "parallax2", "parallax3"].forEach(layer => {
+                    let index
+                    if (layer === "parallax3") {
+                        index = 0
+                        scene = this.getScene(position + offset * 400);
+                    }
+                    else {
+                        index = Math.floor(position / 100 + offset) % 4
+                        if (layer === "parallax2") {
+                            index = Math.floor(index / 2)
+                            scene = this.getScene(position + offset * 200);
+                        }
+                    }
+
+                    let img = document.querySelector(`#${layer} img:nth-child(${offset + 1})`)
+                    let src = scene[layer][index]?.fullPath
+                    if (src) {
+                        img.src = src
+                        img.style.display = "block"
+                    } else img.style.display = "none"
+                })
+            })
+        }
+
+
+
+        floorn(n) {
+            let cache = {}
+            return function (x) {
+                if (x in cache) return cache[x];
+                else {
+                    let result = Math.floor(x / n) * n
+                    cache[x] = result
+                    return result
+                }
+            }
+        }
+        floor100 = this.floorn(100)
+        floor200 = this.floorn(200)
+        floor400 = this.floorn(400)
+    }
+
+</script>
+<script>
+    const ambientTemperature = 293 // Kelvin
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let train
+
+    let route = new Route()
+
+    function initialise() {
+        // for (const layer in route.currentScene) {
+        //     if (!route.currentScene[layer]) continue
+        //     document.querySelectorAll(`#${layer} img`).forEach(img => img.src = `./assets/backdrop/${route.currentScene[layer]}`);
+        // }
+        route.updateImages(0)
+        train = new SteamTrain(document.querySelector("#hud"));
+        train.position = 0
+        train.velocity = 0
+        train.brake = 0
+        loop()
+    }
+
+    function setBackground(position) {
+        let scene = route.getScene(position)
+        route.updateScene(scene)
+
+        let relative = -position
+        while (relative < -800) relative += 800;
+        while (relative > 0) relative -= 800;
+
+        let formulas = [
+            x => x % 100,
+            x => x % 100,
+            x => (x % 200) / 2,
+            x => (x % 400) / 4,
+            x => x / 8,
+        ];
+
+        [0, 1].forEach(offset => {
+            ["#foreground", "#parallax1", "#parallax2", "#parallax3", "#sky"].forEach((layer, i) => {
+                document.querySelector(`${layer} img:nth-child(${offset + 1})`).style.transform = `translateX(${formulas[i](relative) + offset * 100}%)`;
+            });
+        });
+    }
+
+    let last = 0
+    function loop(timestamp) {
+        const dt = (timestamp - last) / 1000 || 0; // convert to seconds
+        last = timestamp;
+        train.update(dt);
+
+        requestAnimationFrame(loop);
+    }
+
+    document.addEventListener("visibilitychange", async () => {
+        if (document.hidden) {
+            await audioCtx.suspend();
+        } else {
+            await audioCtx.resume();
+        }
+    });
+
+</script>
+
+</html>

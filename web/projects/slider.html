@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Slider</title>
+</head>
+
+<body>
+    <canvas width="400px" height="100px" style="outline: 1px solid black">
+        <script>
+            const canvas = document.currentScript.parentElement
+            const ctx = canvas.getContext("2d")
+            ctx.font = "24px Arial"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            const scaleX = canvas.width * 0.004
+            const scaleY = canvas.height * 0.5
+            const bound = canvas.getBoundingClientRect()
+            let real = 0
+            let imaginary = 0
+            let mousedown = false
+            drawSlider(scaleX * 140, scaleY)
+            function drawSlider(x, y) {
+                real = Math.floor(x / scaleX - 100)
+                imaginary = Math.ceil((y - scaleY) / scaleX)
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                ctx.beginPath()
+                ctx.moveTo(scaleX * 100, scaleY)
+                ctx.lineTo(scaleX * 200, scaleY)
+                ctx.stroke()
+                ctx.beginPath()
+                ctx.arc(x, y, scaleX * 5, 0, 2 * Math.PI)
+                ctx.fill()
+                ctx.fillText(imaginary ? (imaginary < 0 ? `${real} + ${-imaginary}i` : `${real} - ${imaginary}i`) : real, scaleX * 50, scaleY)
+            }
+            window.addEventListener("mousedown", e => { mousedown = true })
+            window.addEventListener("mouseup", e => { mousedown = false })
+            window.addEventListener("mouseout", e => { mousedown = false })
+            window.addEventListener("mousemove", e => { if (mousedown) { drawSlider(e.clientX - bound.left, e.clientY - bound.top) } })
+        </script>
+    </canvas>
+</body>
+
+
+</html>

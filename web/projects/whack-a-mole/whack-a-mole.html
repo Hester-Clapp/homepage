@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<style>
+    body {
+        background-color: black;
+    }
+
+    h1,
+    h2 {
+        color: white;
+    }
+
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    img,
+    td {
+        width: 64px;
+        height: 64px;
+        border: 0px;
+        padding: 0px;
+        padding-left: 1px;
+        padding-right: 1px;
+        margin: 0px;
+    }
+</style>
+
+<html>
+
+<body>
+
+    <h1>Whack-a-Mole</h1>
+
+    <!-- <h2 id="timeReadout">Time Left: 180</h2> -->
+
+    <h2 id="scoreReadout">Score: <span id="displayedScore">0</span></h2>
+
+    <!-- <h2 id="highScoreReadout">Local Highscore: <span id="displayedHighScore">0</span></h2> -->
+
+    <table id="grid">
+
+    </table>
+
+    <!-- <a href="multiplayer.html">Multiplayer</a> -->
+
+    <br>
+</body>
+
+<script>
+    let table = document.getElementById("grid")
+    //let scoreReadout = document.getElementById("scoreReadout")
+
+    // let playing = true
+    // let timer = 180
+    let score = 0
+    // let highscore = 0
+    let width = 1
+    let target = 2
+    
+    createGrid(width)
+    
+    spawnMole()
+
+    // let loop = setInterval(play,1000)
+    
+    function play() {
+        timer -= 1
+        timeReadout.innerHTML = "Time Left: " + timer
+        if (timer == 0) {
+            playing = false
+            timeReadout.innerHTML = "Time Up!"
+            // highscore = Math.max(score, highscore)
+            // document.getElementById("displayedHighScore").innerHTML = highscore
+            clearInterval(loop)
+            
+            let replayButton =  document.createElement("button")
+            replayButton.id = "replayButton"
+            replayButton.innerHTML = "Play Again!"
+            replayButton.onclick = replay
+            document.body.appendChild(replayButton)
+        }
+    }
+
+    function replay() {
+        document.getElementById("replayButton").remove()
+        playing = true
+        score = 0
+        document.getElementById("displayedScore").innerHTML = score
+        timer = 180
+        timeReadout.innerHTML = "Time Left: " + 0
+        clearInterval(loop)
+        spawnMole()
+        loop = setInterval(play,1000)
+    }
+
+    function spawnMole() {
+        // if (playing) {
+            let mole = getRandomMole()
+            mole.className = "up"
+            mole.src = "./assets/mole.jpg"
+            setTimeout(() => { mole.className = "down"; mole.src = "./assets/unmole.jpg" }, 1000)// + Math.floor(Math.random() * 16 * (timer + 100)))
+            setTimeout(spawnMole, Math.floor(Math.random() * 2500))
+            mole.onclick = () => {
+                if (mole.className == "up") {
+                    score += 1
+                    document.getElementById("displayedScore").innerHTML = score
+                    if (score == target) {
+                        target = target * 2
+                        expandTable()
+                    }
+                    mole.src = "./assets/unmole.jpg"
+                    mole.className = "down"
+                }
+            }
+        // }
+    }
+
+    function createGrid(w) {
+        for (let x = 0; x < w; x++) {
+            let row = document.createElement("tr")
+            for (let y = 0; y < w; y++) {
+                let cell = document.createElement("td")
+                let mole = document.createElement("IMG")
+                mole.src = "./assets/unmole.jpg"
+                mole.className = "down"
+                cell.appendChild(mole)
+                row.appendChild(cell)
+            }
+            table.appendChild(row)
+        }
+    }
+
+    function expandTable() {
+        width++
+        for (let i = 0; i < table.children.length; i++) {
+            let cell = document.createElement("td")
+            let mole = document.createElement("IMG")
+            mole.src = "./assets/unmole.jpg"
+            mole.className = "down"
+            cell.appendChild(mole)
+            table.children[i].appendChild(cell)
+        }
+        let row = document.createElement("tr")
+        for (let i = 0; i < width; i++) {
+            let cell = document.createElement("td")
+            let mole = document.createElement("IMG")
+            mole.src = "./assets/unmole.jpg"
+            mole.className = "down"
+            cell.appendChild(mole)
+            row.appendChild(cell)
+        }
+        table.appendChild(row)
+    }
+
+    function getRandomMole() {
+        let x = Math.floor(Math.random() * width)
+        let y = Math.floor(Math.random() * width)
+        return table.children[x].children[y].firstChild
+    }
+</script>
+
+</html>

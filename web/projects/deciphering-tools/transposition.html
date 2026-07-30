@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<style>
+    #across {
+        display: flex;
+        flex-direction: row;
+    }
+
+    #down {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #outputDiv {
+        border: 4px gray outset;
+        padding: 10px;
+        margin-top: 10px;
+        margin-left: 10px;
+    }
+    h3 {
+        margin: 0px;
+    }
+</style>
+
+<html>
+<label for="ctInput">Input ciphertext:</label>
+
+<input type="text" id="ctInput" size="20" />
+
+<label for="lengthInput">Key length:</label>
+
+<input type="text" id="lengthInput" size="5" />
+
+<button id="nextButton">Increase length</button>
+
+<!-- <div id="across">
+        <div id="keyDiv">
+            <h3>Key:</h3>
+            
+            <button onclick="keyGen()">Generate Key</button>
+
+            <table id="inputKey">
+                <tr>
+                    <th>Cipher:</th>
+                    <th>Message:</th>
+                </tr>
+            </table>
+        </div>
+
+        <div id="down">
+            <div id="chrCountDiv">
+                <h3>Most Frequent Letters:</h3>
+
+                <input type="range" id="numChrs" min="0" max="26" value="5" step="1" onchange="countChrs()"/>
+
+                <button onclick="countChrs()">Count Letters</button>
+
+                <button onclick="autoKeyGen()">Auto Generate Key</button>
+
+                <div id="chrRanks"></div>
+            </div>
+
+            <div id="wordCountDiv">
+                <h3>Most Frequent Words:</h3>
+
+                <input type="range" id="numWords" min="0" max="20" value="5" step="1" onchange="countWords()"/>
+
+                <button onclick="countWords()">Count Words</button>
+                
+                <div id="wordRanks"></div>
+            </div>
+        </div> -->
+
+<div id="outputDiv">
+    <h3>Decrypted Message:</h3>
+
+    <p id="outputText" style="word-wrap: break-word;"></p>
+</div>
+</div>
+
+</html>
+
+<script>
+    let cipherText = ""
+    let columns = []
+    let key, length
+    let spaces = true
+    const nonLetters = ["", "\n", " ", ".", ",", "!", "?", "'", "-", ":", "’"]
+
+    document.getElementById("ctInput").onchange = () => {
+        console.log(document.getElementById("ctInput").value)
+        cipherText = document.getElementById("ctInput").value.toUpperCase().split("").filter(v => !nonLetters.includes(v))
+        length = cipherText.length
+    }
+
+    document.getElementById("lengthInput").onchange = () => {
+        key = document.getElementById("lengthInput").value.split("").map(v => v.charCodeAt(0))
+        length = key.length
+        // length = parseInt(document.getElementById("lengthInput").value)
+        decrypt()
+    }
+
+    document.getElementById("nextButton").onclick = () => {
+        length += 1
+        decrypt()
+    }
+
+    function decrypt() {
+        columns = []
+        cipherText
+            .forEach((v, i) => {
+                let column = key[i%length]
+                columns[column] = columns[column] || []
+                columns[column][Math.floor(i / length)] = v
+            })
+
+
+
+        columns = columns
+            .map(v => v.reduce((a, b) => a + b, "") + spaces ? " ":"")
+            .reduce((a, b) => a + b, "")
+
+        document.getElementById("outputText").innerHTML = columns
+    }
+
+
+</script>

@@ -1,0 +1,35 @@
+{
+    "Address": {
+        "street": "String",
+        "number": "int",
+        "zipCode": "String",
+        "city": "String"
+    },
+    "Equipment": {
+        "requirements": "String"
+    },
+    "ConcreteMixer": {
+        "extends": "Equipment"
+    },
+    "JackHammer": {
+        "extends": "Equipment"
+    },
+    "ScaffoldingTower": {
+        "extends": "Equipment"
+    },
+    "Torch": {
+        "extends": "Equipment"
+    },
+    "Date": {
+        "day": "int",
+        "month": "int",
+        "year": "int"
+    },
+    "Job": {
+        "jobNumber": "int",
+        "location": "Address",
+        "description": "String",
+        "requiredEquipment": "List<Equipment>",
+        "plannedDate": "Date"
+    }
+}

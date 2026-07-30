@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Kerbal Space Programme</title>
+    <style>
+        * {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #222;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    function resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener("resize", resize)
+
+    function log(v) { return Math.log10(v) }
+    function exp(v) { return 10 ** v }
+    function sf(m, e) { return m * 10 ** e }
+
+    const halfPi = Math.PI / 2
+    const G = sf(6.6743, -11)
+    // const G = 0.001
+    const bodies = { // All numbers stored as logarithms
+        planet0: {
+            x: 300,
+            y: 0,
+            radius: 100,
+            mass: sf(1, 9),
+            color: "green",
+            velocity: {
+                x: -1,
+                y: 0
+            },
+        },
+        planet1: {
+            x: 0,
+            y: 300,
+            radius: 100,
+            mass: sf(1, 9),
+            color: "lime",
+            velocity: {
+                x: 1,
+                y: 0
+            },
+        },
+        earth: {
+            x: 0,
+            y: sf(6.4, 6),
+            radius: sf(6.4, 6),
+            // mass: sf(6, 24),
+            mass: sf(6, 22),
+            color: "blue",
+            velocity: {
+                x: 0,
+                y: 0
+            },
+        },
+        // moon: {
+
+        // },
+        // sun: {
+
+        // },
+        rocket: {
+            x: 0,
+            y: -200,
+            dir: 3 * halfPi,
+            radius: 10,
+            mass: 1000,
+            color: "grey",
+            velocity: {
+                x: 0,
+                y: 0
+            },
+
+            dv: 10000,
+            thrust: {
+                x: 0,
+                y: 1
+            },
+        },
+    }
+    let scale = 1 //px per metre
+    let speed = 1
+    const elasticity = 0.5
+    window.addEventListener("keydown", e => {
+        console.log(e.key)
+        switch (e.key) {
+            case "ArrowUp": scale *= 2; break
+            case "ArrowDown": scale *= .5; break
+            case "w": bodies.rocket.thrust.y += 10; break
+            case "s": bodies.rocket.thrust.y -= 10; break
+            case "d": bodies.rocket.dir += halfPi / 6; break
+            case "a": bodies.rocket.dir -= halfPi / 6; break
+        }
+    })
+
+    function arctan(v) { return (Math.atan2(v.y, v.x) + 4 * Math.PI) % (4 * Math.PI) }
+    function add(v0, v1) { return { x: v0.x + v1.x, y: v0.y + v1.y } }
+    function from(v0, v1) { return { x: v1.x - v0.x, y: v1.y - v0.y } }
+    function stretch(v, k) { return { x: v.x * k, y: v.y * k } }
+    function magnitude(v) { return Math.hypot(v.x, v.y) }
+    function normalise(v) { return stretch(v, 1 / magnitude(v)) }
+    function dot(v0, v1) { return v0.x * v1.x + v0.y * v1.y }
+    function resolve(v, angle) {
+        const mag = magnitude(v)
+        const angleDiff = angle - arctan(v)
+        return {
+            normal: {
+                x: mag * Math.cos(angleDiff) * Math.cos(angle),
+                y: mag * Math.cos(angleDiff) * Math.sin(angle)
+            },
+            tangent: {
+                x: -mag * Math.sin(angleDiff) * Math.sin(angle),
+                y: mag * Math.sin(angleDiff) * Math.cos(angle)
+            },
+        }
+    }
+
+    function update() {
+        // Update positions
+        Object.values(bodies).forEach(v => {
+            v.x += v.velocity.x * speed
+            v.y += v.velocity.y * speed
+        })
+
+        // Thrust from rockets
+        bodies.rocket.velocity = add(bodies.rocket.velocity, resolve(bodies.rocket.thrust, bodies.rocket.dir).normal)
+
+        let collisions = []
+
+        // Calculate gravitational forces
+        Object.values(bodies).forEach((v, x) => {
+            Object.keys(bodies).forEach((k, y) => {
+                let u = bodies[k]
+                if (u !== v) {
+                    const d = from(u, v)
+                    const r2 = d.x ** 2 + d.y ** 2
+                    const F = G * u.mass * v.mass / r2
+                    const t = arctan(d)
+                    bodies[k].velocity.x += F * Math.cos(t) / u.mass
+                    bodies[k].velocity.y += F * Math.sin(t) / u.mass
+                }
+            })
+        })
+
+        // Check for collisions
+        Object.keys(bodies).forEach((a, x) => {
+            Object.keys(bodies).forEach((b, y) => {
+                if (a !== b && magnitude(from(bodies[a], bodies[b])) < bodies[a].radius + bodies[b].radius) {
+                    let pair = bodies[a].mass > bodies[b].mass ? [a, b] : [b, a]
+                    if (collisions.filter(p => p[0] === pair[0] && p[1] === pair[1]).length === 0) collisions.push(pair)
+                }
+            })
+        })
+
+        // Handle collisions
+        collisions.forEach(pair => {
+            const a = bodies[pair[0]]
+            const b = bodies[pair[1]]
+
+            const gap = from(a, b)
+            const distance = magnitude(gap)
+
+            const phi = arctan(gap)
+
+            const mass = a.mass + b.mass
+            const overshoot = stretch(from(a, b), ((a.radius + b.radius - distance) / distance))
+            a.x -= overshoot.x / 2
+            a.y -= overshoot.y / 2
+            b.x += overshoot.x / 2
+            b.y += overshoot.y / 2
+
+            // source: https://code.tutsplus.com/when-worlds-collide-simulating-circle-circle-collisions--gamedev-769t
+            const va = stretch(add(stretch(a.velocity, a.mass - b.mass), stretch(b.velocity, b.mass * 2)), elasticity / mass)
+            const vb = stretch(add(stretch(b.velocity, b.mass - a.mass), stretch(a.velocity, a.mass * 2)), elasticity / mass)
+
+            bodies[pair[0]].velocity = va
+            bodies[pair[1]].velocity = vb
+        })
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        let offsetX = window.innerWidth / 2 - bodies.rocket.x * scale
+        let offsetY = window.innerHeight / 2 - bodies.rocket.y * scale
+        Object.values(bodies).forEach(v => {
+            ctx.fillStyle = v.color
+            ctx.beginPath()
+            ctx.moveTo(v.x * scale + offsetX, v.y * scale + offsetY)
+            ctx.arc(v.x * scale + offsetX, v.y * scale + offsetY, v.radius * scale, 0, 4 * halfPi)
+            ctx.closePath()
+            ctx.fill()
+            ctx.lineWidth = scale * 2
+            if (v === bodies.rocket) {
+                ctx.strokeStyle = "red"
+                ctx.beginPath()
+                ctx.moveTo(v.x * scale + offsetX, v.y * scale + offsetY)
+                ctx.lineTo((v.x + v.radius * Math.cos(v.dir)) * scale + offsetX, (v.y + v.radius * Math.sin(v.dir)) * scale + offsetY)
+                ctx.stroke()
+                ctx.strokeStyle = "purple"
+                ctx.beginPath()
+                ctx.moveTo(v.x * scale + offsetX, v.y * scale + offsetY)
+                ctx.lineTo((v.x + v.thrust.x) * scale + offsetX, (v.y + v.thrust.x) * scale + offsetY)
+                ctx.stroke()
+            }
+            ctx.strokeStyle = "orange"
+            ctx.beginPath()
+            ctx.moveTo(v.x * scale + offsetX, v.y * scale + offsetY)
+            ctx.lineTo((v.x + v.velocity.x) * scale + offsetX, (v.y + v.velocity.y) * scale + offsetY)
+            ctx.stroke()
+        })
+    }
+    function tick() {
+        update()
+        draw()
+        window.requestAnimationFrame(tick)
+    }
+    tick()
+</script>
+
+</html>

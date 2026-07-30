@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man</title>
+    <style>
+        body {
+            background: black;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+            border-spacing: 0;
+        }
+
+        td {
+            background: black;
+            color: white;
+            width: 16px;
+            height: 16px;
+            padding: 0;
+        }
+
+        td.wall {
+            background: blue;
+        }
+
+        img {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tbody id="table"></tbody>
+    </table>
+</body>
+<script>
+    const wallPieces = {
+        // 0: blank
+        // 1: horizontal
+        // 2: vertical
+        // 3: top-left
+        // 4: top-right
+        // 5: bottom-left
+        // 6: bottom-right
+        // 7: ghost house door
+        0b00000000: "0",
+        0b11111111: "0",
+        0b00011111: "1",
+        0b00111111: "1",
+        0b10011111: "1",
+        0b11111000: "1",
+        0b11111001: "1",
+        0b11111100: "1",
+        0b11010110: "2",
+        0b11010111: "2",
+        0b11110110: "2",
+        0b01101011: "2",
+        0b01101111: "2",
+        0b11101011: "2",
+        0b00010110: "3",
+        0b11111011: "3",
+        0b00001011: "4",
+        0b11111110: "4",
+        0b11010000: "5",
+        0b01111111: "5",
+        0b01101000: "6",
+        0b11011111: "6"
+    }
+    //Format: bits 1-3: wall type, bits 4-5: pellet type 
+    let mapData = [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+        [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1],
+        [1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1],
+        [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+        [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    ]
+    mapData = mapData.map((row, y) =>
+        row.map((tile, x) => {
+            let nbrs = [
+                (x > 0 && y > 0) ? mapData[y - 1][x - 1] : 1,
+                (y > 0) ? mapData[y - 1][x] : 1,
+                (x < 27 && y > 0) ? mapData[y - 1][x + 1] : 1,
+                (x > 0) ? mapData[y][x - 1] : 1,
+                (x < 27) ? mapData[y][x + 1] : 1,
+                (x > 0 && y < 30) ? mapData[y + 1][x - 1] : 1,
+                (y < 30) ? mapData[y + 1][x] : 1,
+                (x < 27 && y < 30) ? mapData[y + 1][x + 1] : 1,
+            ]
+            return (parseInt(
+                (y === 12 && x > 12 && x < 15) ? "7" :
+                    (tile === 0 ? "0" : wallPieces[parseInt(nbrs.map(v => v > 0 ? "1" : "0").join(""), 2)])
+            ) << 2) + ((tile === 0 && !(x !== 6 && x !== 21 && y > 8 && y < 20)) ? 1 : 0)
+        })
+    )
+    mapData[3][1]++
+    mapData[3][26]++
+    mapData[23][1]++
+    mapData[23][26]++
+    let sprites = {
+        pacman: {
+            x: 14,
+            y: 23,
+            dir: 2,
+            targetdir: 2
+        },
+        blinky: {
+            name: "blinky",
+            x: 14,
+            y: 11,
+            dir: 2,
+            targetx: 25,
+            targety: 0
+        },
+        pinky: {
+            name: "pinky",
+            x: 12,
+            y: 11,
+            dir: 2,
+            targetx: 2,
+            targety: 0
+        },
+        inky: {
+            name: "inky",
+            x: 16,
+            y: 11,
+            dir: 2,
+            targetx: 27,
+            targety: 30
+        },
+        clyde: {
+            name: "clyde",
+            x: 10,
+            y: 11,
+            dir: 2,
+            targetx: 0,
+            targety: 30
+        }
+    }
+    let ghostMode = 0 // 0: scatter, 1: chase, 2: frightened
+    let frame = 0
+    const table = document.getElementById("table")
+    function setup() {
+        for (let y = 0; y < 31; y++) {
+            const tr = document.createElement("tr")
+            for (let x = 0; x < 28; x++) {
+                const td = document.createElement("td")
+                if (mapData[y][x] >> 2 > 0) {
+                    td.innerHTML = `<img src="./assets/wall` + (mapData[y][x] >> 2) + `.png">`
+                } else {
+                    if (mapData[y][x] % 4 > 0) td.innerHTML = `<img src="./assets/pellet` + mapData[y][x] % 4 + `.png">`
+                }
+                tr.appendChild(td)
+            }
+            table.appendChild(tr)
+        }
+    }
+    function getTile(pos) { return table.children[pos.y].children[pos.x] }
+    function getMapData(pos) { return mapData[pos.y][pos.x] }
+    function ahead(sprite, length = 1, dir = sprite.dir) { return { x: Math.round(sprite.x + Math.cos(Math.PI * dir / 2) * length), y: Math.round(sprite.y + Math.sin(Math.PI * dir / 2) * length) } }
+    function setTargets() {
+        if (ghostMode === 0) {
+            sprites.blinky.targetx = 25
+            sprites.blinky.targety = 0
+            sprites.pinky.targetx = 2
+            sprites.pinky.targety = 0
+            sprites.inky.targetx = 27
+            sprites.inky.targety = 30
+            sprites.clyde.targetx = 0
+            sprites.clyde.targety = 30
+        }
+        if (ghostMode === 1) {
+            sprites.blinky.targetx = sprites.pacman.x
+            sprites.blinky.targety = sprites.pacman.y
+            sprites.pinky.targetx = ahead(sprites.pacman, 4).x
+            sprites.pinky.targety = ahead(sprites.pacman, 4).y
+            sprites.inky.targetx = 2 * ahead(sprites.pacman, 2).x - sprites.blinky.x
+            sprites.inky.targety = 2 * ahead(sprites.pacman, 2).y - sprites.blinky.y
+            if ((sprites.clyde.x - sprites.pacman.x) ** 2 + (sprites.clyde.y - sprites.pacman.y) ** 2 > 64) {
+                sprites.clyde.targetx = sprites.pacman.x
+                sprites.clyde.targety = sprites.pacman.y
+            } else {
+                sprites.clyde.targetx = 0
+                sprites.clyde.targety = 30
+            }
+        }
+    }
+    function tick() {
+        frame++
+        if (frame === 30) { frame = 0; ghostMode = (ghostMode + 1) % 2 }
+        if (getMapData(ahead(sprites.pacman, 1, sprites.pacman.targetdir)) < 4) { sprites.pacman.dir = sprites.pacman.targetdir }
+        let next = ahead(sprites.pacman)
+        if (getMapData(next) < 4) {
+            getTile(sprites.pacman).innerHTML = ""
+            mapData[sprites.pacman.y][sprites.pacman.x] = getMapData(sprites.pacman) >> 2 << 2
+            sprites.pacman = { ...sprites.pacman, ...next }
+            if (sprites.pacman.x === 27 && sprites.pacman.dir === 0) sprites.pacman.x = 0
+            if (sprites.pacman.x === 0 && sprites.pacman.dir === 2) sprites.pacman.x = 27
+            getTile(sprites.pacman).innerHTML = `<img src="./assets/pacman${sprites.pacman.dir}.gif">`
+        }
+        if (ghostMode > 0) setTargets()
+        let ghosts = [sprites.blinky, sprites.pinky, sprites.inky, sprites.clyde]
+        ghosts.forEach(ghost => {
+            let dirs = [ghost.dir, (ghost.dir + 1) % 4, (ghost.dir + 3) % 4].filter(dir => getMapData(ahead(ghost, 1, dir)) < 4)
+            if (dirs.length === 1) {
+                ghost.dir = dirs[0]
+            } else {
+                let tiles = dirs.map(v => {
+                    let tile = ahead(ghost, 1, v)
+                    return (tile.x - ghost.targetx) ** 2 + (tile.y - ghost.targety) ** 2
+                })
+                ghost.dir = dirs[tiles.indexOf(Math.min(...tiles))]
+            }
+            getTile(ghost).innerHTML = getMapData(ghost) % 4 ? `<img src="./assets/pellet${getMapData(ghost) % 4}.png">` : ""
+            if (ghost.x === 26 && ghost.dir === 0) ghost.x = 0
+            if (ghost.x === 1 && ghost.dir === 2) ghost.x = 27
+            sprites[ghost.name] = { ...ghost, ...ahead(ghost) }
+            if (ghost.name === "blinky") console.log(ghost.x, sprites.blinky.x)
+            getTile(sprites[ghost.name]).innerHTML = `<img src="./assets/${ghost.name}.png">`
+            if (ghost.x === sprites.pacman.x && ghost.y === sprites.pacman.y) gameOver()
+        })
+    }
+    function gameOver() {
+        clearInterval(gameLoop)
+        for (let sprite of Object.values(sprites)) {
+            getTile(sprite).innerHTML = getMapData(sprite) % 4 ? `<img src="./assets/pellet${getMapData(sprite) % 4}.png">` : ""
+        }
+    }
+    window.addEventListener("keydown", e => {
+        switch (e.key) {
+            case "ArrowRight": sprites.pacman.targetdir = 0; break
+            case "ArrowDown": sprites.pacman.targetdir = 1; break
+            case "ArrowLeft": sprites.pacman.targetdir = 2; break
+            case "ArrowUp": sprites.pacman.targetdir = 3; break
+        }
+    })
+
+    setup()
+    getTile(sprites.pacman).innerHTML = `<img src="./assets/pacman2.gif">`
+    getTile(sprites.blinky).innerHTML = `<img src="./assets/blinky.png">`
+    let gameLoop = setInterval(tick, 300)
+
+
+
+</script>
+
+</html>

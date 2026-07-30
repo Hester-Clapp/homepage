@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <link rel="stylesheet" href="./styles.css">
+
+</head>
+
+<body>
+
+    <h1>Dispatching Minigame</h1>
+
+    <a href="./index.html">Back</a>
+
+    <div id="train0">
+
+    </div>
+
+    <script>
+        let train0 = document.getElementById("train0")
+        train0.style.top = 200 + 'px';
+        
+        let pos = -300
+
+        let arrive = setInterval(() => {
+            if (pos > 100) {
+                clearInterval(arrive);
+            } else {
+                pos ++
+                train0.style.left = pos + "px" 
+            }
+        }, 5);
+
+        train0.onclick = () => {
+            let depart = setInterval(() => {
+            if (pos == -300) {
+                clearInterval(depart);
+                train0.style.opacity = 0
+            } else {
+                pos --
+                train0.style.left = pos + "px" 
+            }
+        }, 5);
+        }
+    </script>
+
+</body>
+
+</html>

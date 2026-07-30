@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEA - Journey Planner</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        p {
+            margin: 1em 0;
+        }
+
+        #status {
+            width: 100%;
+            text-align: center;
+        }
+
+        #link {
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        div {
+            width: 100%;
+        }
+
+        iframe {
+            width: 40vw;
+            height: 50vw;
+            margin: 1rem 4vw;
+            border: 2px inset;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="status">Starting server...</p>
+
+    <a href="https://nea23-hester.onrender.com" id="link">Journey Planner NEA</a>
+
+    <div>
+        <p>While you wait for the page to load, you can play pacman:</p>
+        <p>Click to start, use the arrow keys to move</p>
+        <iframe src="./pacman/image.html"></iframe>
+    </div>
+</body>
+<script>
+    fetch("https://nea23-hester.onrender.com", { mode: "no-cors" }).then(res => {
+        if (res.ok) {
+            document.getElementById("status").innerHTML = "Redirecting..."
+            window.location.href = "https://nea23-hester.onrender.com"
+        } else {
+            document.getElementById("status").innerHTML = `Cannot load page. Please use the link. Status ${res.status}`
+        }
+    }).catch(err => {
+        document.getElementById("status").innerHTML = `An error has occurred: ${err}`
+    })
+</script>
+
+</html>

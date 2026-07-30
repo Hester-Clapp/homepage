@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hester's Awesome '00s Homepage</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <link rel="stylesheet" href="./assets/style.css">
+    <style>
+        @keyframes bounce-marquee {
+            0% {
+                left: 0;
+            }
+
+            100% {
+                left: 60%;
+            }
+
+            /* bounce to right edge */
+        }
+
+        summary {
+            margin: 0.5rem 0;
+            cursor: pointer;
+
+            h4 {
+                text-decoration: underline;
+                display: inline;
+            }
+        }
+    </style>
+</head>
+
+<body style="background-image: url('./assets/background.png');">
+    <header></header>
+    <table style="margin: auto">
+        <tr>
+            <td><img width="100" src="./assets/rainbow dash.gif" onclick="increase(event,'Loyalty')"></td>
+            <td rowspan="3"
+                style="background-color: #ffffff; width: 600px; padding: 1rem 4ch; box-shadow: 2px 2px 3px #00000077; vertical-align: top;">
+                <div style="width: 100%; 
+                    border: 5px ridge blue;
+                    background: aqua">
+                    <div style=" display: inline-block; position: relative; width: 40%; text-align:center; color:blue; animation: bounce-marquee 2s
+                    linear infinite alternate;">
+                        Welcome to my website!!</div>
+                </div>
+                <p>
+                    Hi, I'm Hester, a former computer science student at <a href="https://cms.tela.org.uk/">Cambridge
+                        Maths School</a>. I have been learning to code using JavaScript and make basic websites with
+                    HTML. I love trains and railways, and I occasionally make transit maps which you can view or
+                    download here too!
+                </p>
+                <hr>
+                <table style="width: 100%; text-align: center; margin: auto;">
+                    <tr>
+                        <td>
+                            <a href="/coding"><img src="./assets/coding.gif"></a>
+                        </td>
+                        <td>
+                            <a href="/maps"><img src="./assets/maps.gif"></a>
+                        </td>
+                    </tr>
+                </table>
+
+                <details>
+                    <summary>
+                        <h4>Changelog</h4>
+                    </summary>
+                    <ul>
+                        <li>3/11/25 - Paper IDE and spelling fixes to MRDH map</li>
+                        <li>26/10/25 - Uploaded the mega Metropoolregio Rotterdam Den Haag metro map (and trams and
+                            trains)!</li>
+                        <li>3/9/25 - Uploaded train/tram map of Manchester</li>
+                        <li>1/7/25 - Added maps and about pages</li>
+                        <li>27/6/25 - Redesigned homepage in a y2k aesthetic. <img
+                                src="./assets/it-is-evolving-just-backwards.gif"></li>
+                    </ul>
+                </details>
+                <details>
+                    <summary>
+                        <h4>Links</h4>
+                    </summary>
+                    <ul>
+                        <li><a href="https://cms-compsci.deno.dev">CMS Computer Science website (class of 2023)</a></li>
+                        <ul>
+                            <li><a href="https://cms-compsci.deno.dev/hester">including my old homepage!</a></li>
+                        </ul>
+                        <li><a href="https://www.mathsuniverse.com/">The Maths Universe</a></li>
+                        <li><a href="https://web.archive.org/">Internet Archive Wayback Machine</a></li>
+                        <li><a href="https://www.desmos.com/calculator">Desmos Graphing Calculator</a></li>
+                        <ul>
+                            <li><a href="https://www.desmos.com/3D">and 3D mode</a></li>
+                        </ul>
+                        <li><a href="https://news.ycombinator.com/">Hacker News</a></li>
+                        <li><a href="https://www.codewars.com/">Codewars</a></li>
+                        <li><a href="https://www.learnanything.com/">Learn Anything</a></li>
+                        <li><a href="https://www.perplexity.ai/">Perplexity AI</a></li>
+                        <li><a href="https://theuselessweb.com/">The Useless Web</a></li>
+                        <li><a href="https://app.diagrams.net/">Draw-io - Flowchart/Diagram Editor (I use this to make
+                                my maps!)</a></li>
+                        <li><a href="https://detexify.kirelabs.org/classify.html">Detexify - converts hand drawn maths
+                                symbols to LaTeX</a></li>
+                        <li><a href="https://www.unicodeit.net/">Unicode it - converts LaTeX to Unicode</a></li>
+                    </ul>
+                </details>
+            </td>
+            <td><img width="100" src="./assets/applejack.gif" onclick="increase(event,'Honesty')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/pinkie pie.gif" onclick="increase(event,'Laughter')"></td>
+            <td><img width="100" src="./assets/fluttershy.gif" onclick="increase(event,'Kindness')"></td>
+        </tr>
+        <tr>
+            <td><img width="100" src="./assets/rarity.gif" onclick="increase(event,'Generosity')"></td>
+            <td><img width="100" src="./assets/twilight.gif" onclick="increase(event,'Magic')"></td>
+        </tr>
+    </table>
+    <footer></footer>
+</body>
+<script src="./assets/fetch-common.js"></script>
+<script src="./assets/friendship is magic.js"></script>
+
+</html>

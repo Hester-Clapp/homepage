@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+
+<html>
+<h1>Pathfinding</h1>
+
+<p>Put simply, a pathfinding algorithm is an algorithm which finds the shortest path between two points on a graph.</p>
+
+<h2>Graphs and Networks</h2>
+
+<p>
+    A <span class="keyTerm">graph</span> is a collection of nodes (or vertices), connected by edges.
+    <br>
+    A <span class="keyTerm">network</span> is a special type of graph where the edges have weights.
+    <br><br>
+    Nodes and edges are a way of representing a problem, and can mean whatever we want.
+</p>
+
+<h2>Dijkstra's Algorithm</h2>
+
+<p>Edsger Dijkstra was a Dutch mathematician in the 1950s. One day, he was in a cafe in Amsterdam, when he thought to
+    himself:</p>
+
+<p class="grey">What's the fastest way to get from Rotterdam to Groningen?</p>
+
+<p>He had the idea of turning the Dutch train network into a mathematical network, with nodes representing stations and
+    edges representing train routes. The weight of each edge was the travel time between the stations.</p>
+
+<img src="assets/nl-network.jpeg" width="520px" height="440px">
+
+<!--
+        Amsterdam - Den Haag:   60 min
+        Rotterdam - Den Haag:   30 min
+        Rotterdam - Amsterdam:  80 min
+        Rotterdam - Utrecht:    40 min
+        Rotterdam - Eindhoven:  80 min
+        Rotterdam - Den Bosch:  70 min
+        Eindhoven - Den Bosch:  20 min
+        Den Bosch - Arnhem:     50 min
+        Utrecht   - Arnhem:     40 min
+        Utrecht   - Den Bosch:  30 min
+        Utrecht   - Amersfoort: 10 min
+        Amsterdam - Amersfoort: 40 min
+        Zwolle    - Amersfoort: 40 min
+        Zwolle    - Groningen:  60 min
+    -->
+
+<p>He then used this network to eventually come up the following algorithm:</p>
+
+<p class="grey">
+    Start at Rotterdam <br><br>
+    Imagine simultaneously travelling on every train out of Rotterdam <br><br>
+    When you get to a station, imagine travelling out of that station on every train<br><br>
+    Repeat until a train gets to Groningen<br><br>
+    Work out where it came from
+</p>
+
+<p>
+    To solve this computationally, we take the network, and definte two sets of nodes: the open set and the closed set.
+    The closed set is everywhere we have been (initially just Rotterdam), and the open set is everywhere which is one
+    train away from a node in the closed set. There may be stations which are in neither set.<br><br>
+
+    For example:
+</p>
+
+<img src="assets/nl-network-sets.jpeg" width="520px" height="440px">
+
+<p>
+    We look through every node in the open set, and assign it a travel time. Since every open node is one train away
+    from a closed node, the travel time is equal to the travel time of the closed node, plus the length of the train
+    journey between them.<br><br>
+
+    Example 1: The travel time of Den Haag = travel time of Rotterdam (0) + travel time between Rotterdam and Den Haag
+    (30) = 30 minutes<br><br>
+
+    Example 2: The travel time of Amersfoort = travel time of Utrecht (40) + travel time between Utrecht and Amersfoort
+    (10) = 50 minutes<br><br>
+
+    For each open node, we also keep track of the train we used to get there. This allows us to retrace our steps once
+    we get to Groningen to find the actual route.<br><br>
+
+    Dijkstra's algorithm chooses the open node with the shortest travel time, and adds it to the closed set. It then
+    finds any stations which are now one train away from the new node, and calculates the travel time for all adjacent
+    nodes, repeating until the target is reached.
+</p>
+
+<canvas id="nlDijkstra" width="780px" height="660px"></canvas>
+<br>
+<button id="nlDijkstraStep" onclick="dStep()">Calculate travel times</button>
+
+<h3>Benefits of Dijkstra's algorithm:</h3>
+
+<p>
+    - It always finds the shortest path
+    - It works on any graph with non-negative weights
+</p>
+
+<h3>Drawbacks of Dijkstra's algorithm:</h3>
+
+<p>
+    - It uses a computationally-intensive brute force approach
+    - It explores many nodes which do not get it closer to the target
+</p>
+
+<h2>Heuristics</h2>
+
+<p>
+    Dijkstra's algorithm is greedy - it doesn't consider the big picture, and just tries to find the next shortest path
+    in the short term. It doesn't even know where Groningen is until it gets to Zwolle! This is why it ends up exploring
+    the entire network, including towns like Roosendaal that don't get it any closer to Groningen.
+</p>
+
+<p>
+    We can prevent this using a function known as a heuristic. When we have multiple options, the heuristic will give us
+    a rough idea of which option is best. It doesn't need to be perfect, it just needs to point us in the right
+    direction.
+</p>
+
+<p>Consider this scenario:</p>
+
+<img src="assets/choice.jpeg" width="520px" height="440px">
+
+<div class="grey">
+    <p>There are 3 open nodes: Amsterdam, Eindhoven and Zwolle. Which one should we discover next?</p>
+    <span><button
+            onclick="document.getElementById('explanation').innerHTML = 'Dijkstra\'s Algorithm would agree with you, but that\'s because Amsterdam is alphabetically the first. Going to Amsterdam does get you slightly closer to Groningen, but you\'ll find a giant lake in the way!'">Amsterdam</button></span>
+    <span><button
+            onclick="document.getElementById('explanation').innerHTML = 'Eindhoven is clearly the worst option. It\'s very far away from Groningen, and you\'ve already discovered places that are much closer.'">Eindhoven</button></span>
+    <span><button
+            onclick="document.getElementById('explanation').innerHTML = 'Correct! Zwolle is much closer to Groningen than the other two. <br><br>In order to travel to Groningen, we have to move towards it, so minimising the remaining distance to travel can help inform us about the best next move.'">Zwolle</button></span>
+    <p id="explanation"></p>
+</div>
+
+<h2>A* Algorithm</h2>
+
+<h3>Costs</h3>
+
+<p>
+    So far, we've been giving each node a travel time.<br>
+    This is called a <span class="keyTerm">cost</span>, and we use it to choose the best node.<br><br>
+
+    In Dijkstra's algorithm, the cost is calculated by the total travel time, or the distance from Rotterdam to that
+    node. <br>From now on, we will refer to this "distance from start" cost as the <span
+        class="keyTerm">G-cost.</span><br><br>
+
+    We will now introduce a new cost called the <span class="keyTerm">H-cost</span>, and this will represent the
+    distance from the node to Groningen. The H stands for heuristic, since we don't actually know the exact travel time
+    left. (If we did, we would already know the shortest path!)
+</p>
+
+<h3>Calculating the heuristic</h3>
+
+<p>
+    We've established that a good heuristic would be distance. That way, the algorithm is rewarded for going towards
+    Groningen, and straying from the best path would punish it twice.<br><br>
+
+    To calculate this, I'm going to measure the distance from Groningen to every station in our network:
+</p>
+
+<table>
+    <tr>
+        <th>Station:</th>
+        <th>Distance from Groningen<br>(in kilometres):</th>
+    </tr>
+    <tr>
+        <td>Arnhem</td>
+        <td>140</td>
+    </tr>
+    <tr>
+        <td>Amersfoort</td>
+        <td>140</td>
+    </tr>
+    <tr>
+        <td>Amsterdam</td>
+        <td>140</td>
+    </tr>
+    <tr>
+        <td>Den Haag</td>
+        <td>200</td>
+    </tr>
+    <tr>
+        <td>'s Hertogenbosch</td>
+        <td>190</td>
+    </tr>
+    <tr>
+        <td>Eindhoven</td>
+        <td>210</td>
+    </tr>
+    <tr>
+        <td>Groningen</td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td>Roosendaal</td>
+        <td>230</td>
+    </tr>
+    <tr>
+        <td>Rotterdam</td>
+        <td>200</td>
+    </tr>
+    <tr>
+        <td>Utrecht</td>
+        <td>160</td>
+    </tr>
+    <tr>
+        <td>Zwolle</td>
+        <td>80</td>
+    </tr>
+</table>
+
+<p>
+    However, there's a problem with this. The H-cost is measured in km, but the G-cost is measured in minutes. Ideally,
+    the G-cost and H-cost should be measured in the same units, or the algorithm would favour one more than the
+    other.<br><br>
+
+    The G-cost of the starting node is 0, because we have travelled no distance, and the H-cost of the target node is
+    also 0, because we have no distance yet to travel. We can use this fact to calibrate our distances such that the
+    H-cost of the starting node, (the distance we have to travel), is the same as the G-cost of the target node, (the
+    distance we actually travel).<br><br>
+
+    Since we have already found the G-cost of Groningen is 140 minutes and the distance to Rotterdam is 200km, we can
+    multiply all of our distances by 1.43, the ratio of these numbers. This does kind of defeat the point, since we need
+    to find the G-cost of the target, but we can now use this constant for all other journeys on this network.<br><br>
+
+    <span class="grey">(Fun fact: Since the constant is equal to 200 <span class="keyTerm">kilometres</span> divided by
+        140 <span class="keyTerm">minutes</span>, we get a number in <span class="keyTerm">kilometres per minute</span>,
+        which is the average speed of the train!)</span>
+</p>
+
+<table>
+    <tr>
+        <th>Station:</th>
+        <th>H-cost<br>(in minutes):</th>
+    </tr>
+    <tr>
+        <td>Arnhem</td>
+        <td>100</td>
+    </tr>
+    <tr>
+        <td>Amersfoort</td>
+        <td>100</td>
+    </tr>
+    <tr>
+        <td>Amsterdam</td>
+        <td>100</td>
+    </tr>
+    <tr>
+        <td>Den Haag</td>
+        <td>140</td>
+    </tr>
+    <tr>
+        <td>'s Hertogenbosch</td>
+        <td>130</td>
+    </tr>
+    <tr>
+        <td>Eindhoven</td>
+        <td>150</td>
+    </tr>
+    <tr>
+        <td>Groningen</td>
+        <td>0</td>
+    </tr>
+    <tr>
+        <td>Roosendaal</td>
+        <td>160</td>
+    </tr>
+    <tr>
+        <td>Rotterdam</td>
+        <td>140</td>
+    </tr>
+    <tr>
+        <td>Utrecht</td>
+        <td>110</td>
+    </tr>
+    <tr>
+        <td>Zwolle</td>
+        <td>60</td>
+    </tr>
+</table>
+
+<h3>The algorithm</h3>
+
+<p>
+    We are now almost ready to implement the A* pathfinding algorithm! We just need to learn 1 more term:<br><br>
+
+    The <span class="keyTerm">F-cost</span> is simply equal to the G-cost plus the H-cost. While Dijkstra's algorithm
+    finds the path with the smallest G-cost, the A* algorithm finds the path with the smallest F-cost.
+</p>
+
+<canvas id="nlAStar" width="780px" height="660px"></canvas>
+<br>
+<button id="nlAStarStep" onclick="aStep()">Calculate travel times</button>
+
+<!-- <p>f = g + h</p> -->
+
+<h2>Solving mazes</h2>
+
+<p>So far we've looked at Dijkstra and A* pathfinding on the Dutch rail network, but these algorithms work on any
+    network. In fact, the majority of A* applications are on a grid-based system.</p>
+
+<img src="assets/grid-network.jpg">
+
+<p>If you think about it, a grid is just a network, where each square is a node, and there are edges between adjacent
+    squares. If you want to include diagonals, you simply add edges between diagonal squares, with a weight ~1.4 times
+    the weight of the orthogonal edges. But for simplicity, we will only allow orthogonal movement, and each edge will
+    have a weight of 1.</p>
+
+<p>
+    A maze is arguably even simpler than a grid. We simply remove edges between squares with walls between them, so the
+    algorithm cannot go over the wall.
+</p>
+
+<img src="assets/maze-network.jpg">
+
+<p>
+    We can calculate the H-cost as the manhattan distance between two squares, since this is the distance away if there
+    were no walls. If the target is 3 squares down and 5 squares to the right of our current square, the H-cost is 3 + 5
+    = 8.
+</p>
+
+<img src="assets/h-cost-eg.jpg">
+
+<p>Combining all this with our existing A* algorithm, we get this:</p>
+
+<br>
+
+<button id="mazeStep" onclick="mazeStep()">Calculate travel times</button>
+<button id="autoStep" onclick="autoStep()">Solve automatically</button>
+<button id="autoStep" onclick="setupMaze()">Reset maze</button>
+<br>
+<canvas id="maze" style="padding: 5px;"></canvas>
+<br>
+
+<p>
+    Click on a square to set it as the target. This will then calculate all the H-costs.<br>
+    Then, you can press Calculate travel times to step through the algorithm, or press Solve automatically to do
+    that.<br>
+    Press Reset maze to generate a new maze. You will then need to click on a target again.
+</p>
+
+<script>
+    const big = 2 ** 16
+
+    // function lerp(a,b,t) {return a+(b-a)*t}
+
+    class Node {
+        constructor(name, x, y, left) {
+            this.name = name
+            this.x = x * 60
+            this.y = y * 60
+            this.left = left
+
+            this.open = false
+            this.closed = false
+            this.from = null
+            this.gCost = big
+            this.path = false
+        }
+
+        draw(ctx, f = 0) {
+            ctx.fillStyle = "#ffffff"
+            ctx.strokeStyle = (this.path) ? "blue" : (this.closed) ? "red" : (this.open) ? "green" : "black"
+            ctx.lineWidth = 2
+            ctx.beginPath()
+            ctx.arc(this.x, this.y, 16, 0, 2 * Math.PI)
+            ctx.fill()
+            ctx.stroke()
+
+            ctx.fillStyle = "#000000"
+            ctx.font = "24px Calibri"
+            ctx.textAlign = (this.left) ? "right" : "left"
+            ctx.textBaseline = "middle"
+            ctx.fillText(this.name, (this.left) ? this.x - 20 : this.x + 20, this.y)
+
+            ctx.fillStyle = "#000000"
+            ctx.font = "16px Roboto"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            if (f) {
+                ctx.fillText((f >= big) ? "∞" : f, this.x, this.y)
+            } else {
+                ctx.fillText((this.gCost >= big) ? "∞" : this.gCost, this.x, this.y)
+            }
+        }
+    }
+
+    class A_Node extends Node {
+        constructor(name, x, y, left, h) {
+            super(name, x, y, left)
+            this.hCost = h
+            this.fCost = this.gCost + this.hCost
+        }
+
+        draw(ctx) {
+            super.draw(ctx, this.fCost)
+            ctx.fillStyle = "#000000"
+            ctx.font = "10px Roboto"
+            ctx.textAlign = "center"
+            ctx.fillText(this.hCost, this.x, this.y + 10)
+            ctx.fillText((this.gCost >= big) ? "∞" : this.gCost, this.x, this.y - 10)
+        }
+    }
+
+    class Edge {
+        constructor(from, to, weight) {
+            this.from = from
+            this.to = to
+            this.weight = weight
+
+            this.open = false
+            this.path = false
+        }
+
+        update() {
+            let closed = null
+            let open = null
+            if (this.from.closed) {
+                closed = this.from
+                open = this.to
+            }
+            if (this.to.closed) {
+                closed = this.to
+                open = this.from
+            }
+
+            this.open = (closed) ? true : false
+
+            if (this.open) {
+                open.open = true
+                if (open.gCost > closed.gCost + this.weight) {
+                    open.gCost = closed.gCost + this.weight
+                    if (open.fCost) open.fCost = open.gCost + open.hCost
+                    open.from = closed
+                }
+            }
+        }
+
+        draw(ctx, weight) {
+            ctx.strokeStyle = (this.path) ? "blue" : "black"
+            ctx.lineWidth = (weight) ? 120 / this.weight : 2
+            ctx.beginPath()
+            ctx.moveTo(this.from.x, this.from.y)
+            ctx.lineTo(this.to.x, this.to.y)
+            ctx.closePath()
+            ctx.stroke()
+        }
+    }
+
+    let dNodes = [
+        new Node("Arnhem", 11, 8, false), // 0
+        new Node("Amersfoort", 9, 6, false), //  1
+        new Node("Amsterdam", 5, 5, true), //   2
+        new Node("Den Haag", 3, 7, true), //   3
+        new Node("'s Hertogenbosch", 9, 9, false), //  4
+        new Node("Eindhoven", 8, 10, false), // 5
+        new Node("Groningen", 11, 1, true), //  6
+        new Node("Roosendaal", 5, 10, true), //  7
+        new Node("Rotterdam", 5, 8, true), //   8
+        new Node("Utrecht", 8, 7, true), //   9
+        new Node("Zwolle", 10, 4, true) //  10
+    ]
+    let aNodes = [
+        new A_Node("Arnhem", 11, 8, false, 100), // 0
+        new A_Node("Amersfoort", 9, 6, false, 100), //  1
+        new A_Node("Amsterdam", 5, 5, true, 100), //   2
+        new A_Node("Den Haag", 3, 7, true, 140), //   3
+        new A_Node("'s Hertogenbosch", 9, 9, false, 130), //  4
+        new A_Node("Eindhoven", 8, 10, false, 150), // 5
+        new A_Node("Groningen", 11, 1, true, 0), //  6
+        new A_Node("Roosendaal", 5, 10, true, 160), //  7
+        new A_Node("Rotterdam", 5, 8, true, 140), //   8
+        new A_Node("Utrecht", 8, 7, true, 110), //   9
+        new A_Node("Zwolle", 10, 4, true, 60) //  10
+    ]
+    let dEdges = [
+        new Edge(dNodes[1], dNodes[9], 10),
+        new Edge(dNodes[4], dNodes[5], 20),
+        new Edge(dNodes[3], dNodes[8], 30),
+        new Edge(dNodes[4], dNodes[9], 30),
+        new Edge(dNodes[8], dNodes[9], 30),
+        new Edge(dNodes[0], dNodes[9], 40),
+        new Edge(dNodes[1], dNodes[2], 40),
+        new Edge(dNodes[1], dNodes[10], 40),
+        new Edge(dNodes[7], dNodes[8], 40),
+        new Edge(dNodes[0], dNodes[4], 50),
+        new Edge(dNodes[3], dNodes[2], 60),
+        new Edge(dNodes[6], dNodes[10], 60),
+        new Edge(dNodes[4], dNodes[8], 70),
+        new Edge(dNodes[2], dNodes[8], 80),
+        new Edge(dNodes[5], dNodes[8], 80),
+    ]
+    let aEdges = [
+        new Edge(aNodes[1], aNodes[9], 10),
+        new Edge(aNodes[4], aNodes[5], 20),
+        new Edge(aNodes[3], aNodes[8], 30),
+        new Edge(aNodes[4], aNodes[9], 30),
+        new Edge(aNodes[8], aNodes[9], 30),
+        new Edge(aNodes[0], aNodes[9], 40),
+        new Edge(aNodes[1], aNodes[2], 40),
+        new Edge(aNodes[1], aNodes[10], 40),
+        new Edge(aNodes[7], aNodes[8], 40),
+        new Edge(aNodes[0], aNodes[4], 50),
+        new Edge(aNodes[3], aNodes[2], 60),
+        new Edge(aNodes[6], aNodes[10], 60),
+        new Edge(aNodes[4], aNodes[8], 70),
+        new Edge(aNodes[2], aNodes[8], 80),
+        new Edge(aNodes[5], aNodes[8], 80),
+    ]
+    let dTarget = dNodes[6]
+    let dNext = dTarget
+    dNodes[8].closed = true
+    dNodes[8].gCost = 0
+
+    let aTarget = aNodes[6]
+    let aNext = aTarget
+    aNodes[8].closed = true
+    aNodes[8].gCost = 0
+    aNodes[8].fCost = aNodes[8].hCost
+
+    let dStage = 0
+    let dButton = document.getElementById("nlDijkstraStep")
+
+    function dStep() {
+        switch (dStage) {
+            case 0:
+                dEdges.forEach(v => { v.update() })
+                dStage = 1
+                dButton.innerHTML = "Choose next node"
+                break
+            case 1:
+                dNodes.forEach(v => { if (v.open && !v.closed && v.gCost < dNext.gCost) dNext = v })
+                dNext.closed = true
+                if (dNext === dTarget && dTarget.closed) {
+                    dStage = 2
+                    dButton.innerHTML = "Retrace path"
+                } else {
+                    dNext = dTarget
+                    dStage = 0
+                    dButton.innerHTML = "Calculate travel times"
+                }
+                break
+            case 2:
+                let from = dTarget
+                while (from) {
+                    from.path = true
+                    from = from.from
+                }
+                dEdges.forEach(v => { v.path = v.from.path && v.to.path })
+                dStage = 3
+                dButton.innerHTML = "Reset"
+                break
+            case 3:
+                dNodes.forEach(v => {
+                    v.open = false
+                    v.closed = false
+                    v.from = null
+                    v.gCost = big
+                    v.path = false
+                })
+                dEdges.forEach(v => {
+                    v.open = false
+                    v.path = false
+                })
+
+                dTarget = dNodes[6]
+                dNext = dTarget
+
+                dNodes[8].closed = true
+                dNodes[8].gCost = 0
+
+                dStage = 0
+                dButton.innerHTML = "Calculate travel times"
+                break
+        }
+
+        draw()
+    }
+
+    let aStage = 0
+    let aButton = document.getElementById("nlAStarStep")
+
+    function aStep() {
+        switch (aStage) {
+            case 0:
+                aEdges.forEach(v => { v.update() })
+                aStage = 1
+                aButton.innerHTML = "Choose next node"
+                break
+            case 1:
+                aNodes.forEach(v => { if (v.open && !v.closed && v.fCost < aNext.fCost) aNext = v })
+                aNext.closed = true
+                if (aNext === aTarget && aTarget.closed) {
+                    aStage = 2
+                    aButton.innerHTML = "Retrace path"
+                } else {
+                    aNext = aTarget
+                    aStage = 0
+                    aButton.innerHTML = "Calculate travel times"
+                }
+                break
+            case 2:
+                let from = aTarget
+                while (from) {
+                    from.path = true
+                    from = from.from
+                }
+                aEdges.forEach(v => { v.path = v.from.path && v.to.path })
+                aStage = 3
+                aButton.innerHTML = "Reset"
+                break
+            case 3:
+                aNodes.forEach(v => {
+                    v.open = false
+                    v.closed = false
+                    v.from = null
+                    v.gCost = big
+                    v.fCost = v.gCost + v.hCost
+                    v.path = false
+                })
+                aEdges.forEach(v => {
+                    v.open = false
+                    v.path = false
+                })
+
+                aTarget = aNodes[6]
+                aNext = aTarget
+
+                aNodes[8].closed = true
+                aNodes[8].gCost = 0
+                aNodes[8].fCost = aNodes[8].hCost
+
+                aStage = 0
+                aButton.innerHTML = "Calculate travel times"
+                break
+        }
+
+        draw()
+    }
+
+    function draw() {
+        let canvas = document.getElementById("nlDijkstra")
+        let ctx = canvas.getContext("2d")
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        dEdges.forEach(v => { v.draw(ctx, true) })
+        dNodes.forEach(v => { v.draw(ctx) })
+        canvas = document.getElementById("nlAStar")
+        ctx = canvas.getContext("2d")
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        aEdges.forEach(v => { v.draw(ctx, true) })
+        aNodes.forEach(v => { v.draw(ctx) })
+    }
+
+    draw()
+
+    // Stolen Maze Generation Code
+
+    let canvas = document.getElementById("maze")
+    let ctx = canvas.getContext("2d")
+
+    let height = 500;
+    let width = 800;
+    canvas.height = height;
+    canvas.width = width;
+    document.body.appendChild(canvas);
+    let end = false;
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, width, height);
+
+    let rows = 0;
+    let cols = 0;
+    let size = 50;
+    let cells = [];
+    let stack = [];
+    let closed = [];
+    let current;
+    let target = null;
+    let nextCell = null;
+
+    function Cell(x, y, index) {
+        this.x = x;
+        this.y = y;
+        this.top = true;
+        this.right = true;
+        this.bottom = true;
+        this.left = true;
+        this.visited = false;
+        this.index = index;
+        this.from = null;
+        this.open = false;
+        this.closed = false;
+        this.path = false;
+        this.hCost = 0
+        this.gCost = big
+        this.fCost = big
+
+        this.update = function () {
+            let nbrs = [
+                cells.filter(v => this.x - v.x == size && this.y == v.y && !this.left)[0],
+                cells.filter(v => this.y - v.y == -size && this.x == v.x && !this.bottom)[0],
+                cells.filter(v => this.x - v.x == -size && this.y == v.y && !this.right)[0],
+                cells.filter(v => this.y - v.y == size && this.x == v.x && !this.top)[0],
+            ].filter(v => v)
+            // console.log(nbrs)
+            if (this.closed) nbrs.forEach(v => {
+                if (v.gCost > this.gCost + 1) {
+                    v.from = this
+                    v.open = true
+                    v.gCost = this.gCost + 1
+                    v.fCost = v.gCost + v.hCost
+                }
+            })
+        }
+
+        this.drawWall = function (bx, by, ex, ey) {
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+            // ctx.strokeStyle = "white";
+
+            ctx.moveTo(bx, by);
+            ctx.lineTo(ex, ey);
+            ctx.stroke();
+        }
+
+        this.drawPath = function (start = false) {
+            if (start) {
+                ctx.lineWidth = 8
+                ctx.strokeStyle = "#7777ff"
+                ctx.beginPath()
+                ctx.moveTo(this.x + 25, this.y + 25)
+            }
+            if (this.from) {
+                ctx.lineTo(this.from.x + 25, this.from.y + 25)
+                this.from.drawPath()
+            } else {
+                ctx.closePath()
+                ctx.stroke()
+            }
+        }
+
+        this.draw = function () {
+            // ctx.lineWidth = "0px"
+            if (mazeStage != 3) {
+                ctx.fillStyle = "#99ccff"
+                ctx.fillRect(this.x + 1, this.y + 1, 48, 48)
+            }
+            ctx.fillStyle = (this.path) ? "#7777ff" : (this.closed) ? "#ff7777" : (this.open) ? "#77ff77" : "#99ccff"
+            ctx.beginPath()
+            ctx.arc(this.x + 25, this.y + 25, 12, 0, 2 * Math.PI)
+            ctx.fill()
+
+            ctx.beginPath();
+            // ctx.lineWidth = "2";
+            // ctx.strokeStyle = "white";
+
+            //top
+            if (this.top) {
+                ctx.strokeStyle = "#ddeeff";
+                this.drawWall(this.x, this.y, this.x + size, this.y);
+            } else if (mazeStage === 0) {
+                ctx.strokeStyle = "#99ccff";
+                this.drawWall(this.x + 10, this.y, this.x + size - 10, this.y);
+            }
+
+            //right
+            if (this.right) {
+                ctx.strokeStyle = "#ddeeff";
+                this.drawWall(this.x + size, this.y, this.x + size, this.y + size);
+            } else if (mazeStage === 0) {
+                ctx.strokeStyle = "#99ccff";
+                this.drawWall(this.x + size, this.y + 10, this.x + size, this.y + size - 10);
+            }
+
+            //bottom
+            if (this.bottom) {
+                ctx.strokeStyle = "#ddeeff";
+                this.drawWall(this.x, this.y + size, this.x + size, this.y + size);
+            } else if (mazeStage === 0) {
+                ctx.strokeStyle = "#99ccff";
+                this.drawWall(this.x + 10, this.y + size, this.x + size - 10, this.y + size);
+            }
+
+            //left
+            if (this.left) {
+                ctx.strokeStyle = "#ddeeff";
+                this.drawWall(this.x, this.y, this.x, this.y + size);
+            } else if (mazeStage === 3) {
+                ctx.strokeStyle = "#99ccff";
+                this.drawWall(this.x, this.y + 10, this.x, this.y + 10);
+            }
+            ctx.stroke();
+
+            ctx.fillStyle = "#000000"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            ctx.font = "24px Roboto"
+            ctx.fillText((this.fCost >= big) ? "∞" : this.fCost, this.x + 25, this.y + 25)
+            ctx.font = "16px Roboto"
+            ctx.fillText((this.gCost >= big) ? "∞" : this.gCost, this.x + 25, this.y + 10)
+            ctx.fillText(this.hCost, this.x + 25, this.y + 40)
+        }
+
+        this.getNeighbours = function () {
+            //rowIndex * numberOfColumns + columnIndex.
+            //columnIndex * numberOfRows + rowIndex.
+            let arrayX = this.x / size;
+            let arrayY = this.y / size;
+            let neighbours = [];
+
+            topY = arrayY - 1;
+            bottomY = arrayY + 1;
+
+            leftX = arrayX - 1;
+            rightX = arrayX + 1;
+
+            //top 
+            let top = topY >= 0 ? cells[arrayX * rows + topY] : null;
+            //right
+            let right = rightX < cols ? cells[rightX * rows + arrayY] : null;
+            //bottom
+            let bottom = bottomY < rows ? cells[arrayX * rows + bottomY] : null;
+            //left
+            let left = leftX >= 0 ? cells[leftX * rows + arrayY] : null;
+
+            if (top && !top.visited) neighbours.push(top);
+            if (right && !right.visited) neighbours.push(right);
+            if (bottom && !bottom.visited) neighbours.push(bottom);
+            if (left && !left.visited) neighbours.push(left);
+            if (neighbours.length > 0) {
+                return neighbours;
+            } else {
+                return undefined;
+            }
+        }
+
+        this.removeWall = function (cell) {
+            let newX = this.x - cell.x;
+            let newY = this.y - cell.y;
+            if (newX > 0) {
+                this.left = false;
+                cell.right = false;
+            } else if (newX < 0) {
+                cell.left = false;
+                this.right = false;
+            }
+            if (newY > 0) {
+                this.top = false;
+                cell.bottom = false;
+            } else if (newY < 0) {
+                cell.top = false;
+                this.bottom = false;
+            }
+        }
+
+    }
+
+    Cell.draw = function () {
+        ctx.fillStyle = '#99ccff';
+        ctx.fillRect(0, 0, width, height);
+        for (let i = 0; i < cells.length; i++) {
+            cells[i].draw();
+        }
+        //   ctx.save();
+        //   ctx.fillStyle = "rgba(245, 222, 179,0.8)";
+        //   ctx.fillRect(current.x, current.y, size, size);
+        //   ctx.restore();
+    }
+
+    function setupMaze() {
+        end = false
+        cells = []
+        console.log(cells)
+        cols = Math.floor(width / size);
+        rows = Math.floor(height / size);
+        for (let x = 0; x < cols; x++) {
+            for (let y = 0; y < rows; y++) {
+                cells.push(new Cell(x * size, y * size, cells.length));
+            }
+        }
+        cells[0].visited = true;
+        current = cells[0];
+        Cell.draw();
+        genMaze();
+    }
+
+    function genMaze() {
+        let neighbours = current.getNeighbours();
+        let next;
+        if (neighbours) {
+            let rand = Math.floor(Math.random() * neighbours.length);
+            next = neighbours[rand];
+            current.removeWall(next);
+            stack.push(current);
+            next.visited = true;
+            current = next;
+        } else if (stack.length > 0) {
+            current = stack.pop();
+        } else {
+            end = true;
+        }
+        Cell.draw();
+        if (!end) {
+            // requestAnimationFrame(update);
+            genMaze()
+            //setTimeout(update,1000/5);
+        }
+
+    }
+
+    let mazeStage = 0
+    let mazeButton = document.getElementById("mazeStep")
+
+    setupMaze();
+
+    window.addEventListener("click", (e) => {
+        let rect = canvas.getBoundingClientRect()
+        let mouseX = Math.floor((e.clientX - rect.left) / size) * size
+        let mouseY = Math.floor((e.clientY - rect.top) / size) * size
+        if (mouseX > 0 && mouseX < width && mouseY > 0 && mouseY < height) setupAStarMaze(mouseX, mouseY)
+    })
+
+    function setupAStarMaze(mouseX, mouseY) {
+        console.log("e")
+        target = cells.filter(v => v.x == mouseX && v.y == mouseY)[0]
+
+        cells.forEach(v => {
+            v.hCost = Math.abs(target.x - v.x) / size + Math.abs(target.y - v.y) / size
+        })
+
+        cells[0].closed = true
+        closed = [cells[0]]
+        cells[0].gCost = 0
+        cells[0].fCost = cells[0].hCost
+
+        cells.forEach(v => { v.draw() })
+    }
+
+
+    function autoStep() {
+        if (target) {
+            if (mazeStage < 3) {
+                mazeStep()
+                window.requestAnimationFrame(autoStep)
+            }
+        } else {
+            mazeButton.innerHTML = "Select target node"
+        }
+    }
+
+    function mazeStep() {
+        if (target) {
+
+            switch (mazeStage) {
+                case 0:
+                    closed.forEach(v => { v.update() })
+                    mazeStage = 1
+                    mazeButton.innerHTML = "Choose next node"
+                    break
+                case 1:
+                    // nextCell = target
+                    nextCell = cells.filter(v => v.open && !v.closed).sort((a, b) => {
+                        if (a.fCost === b.fCost) {
+                            return a.hCost - b.hCost
+                        } else return a.fCost - b.fCost
+                    })[0]
+                    // console.log(nextCell)
+                    // cells.forEach(v => { if (v.open && !v.closed && v.fCost < nextCell.fCost) nextCell = v })
+                    nextCell.closed = true
+                    closed.push(nextCell)
+                    if (nextCell === target && target.closed) {
+                        mazeStage = 2
+                        mazeButton.innerHTML = "Retrace path"
+                    } else {
+                        nextCell = target
+                        mazeStage = 0
+                        mazeButton.innerHTML = "Calculate travel times"
+                    }
+                    break
+                case 2:
+                    let from = target
+                    while (from) {
+                        from.path = true
+                        from = from.from
+                    }
+                    mazeStage = 3
+                    mazeButton.innerHTML = "Reset"
+                    break
+                case 3:
+                    cells.forEach(v => {
+                        v.open = false
+                        v.closed = false
+                        v.from = null
+                        v.gCost = big
+                        v.fCost = v.gCost + v.hCost
+                        v.path = false
+                    })
+
+                    nextCell = null
+
+                    cells[0].closed = true
+                    cells[0].gCost = 0
+                    cells[0].fCost = cells[8].hCost
+
+                    mazeStage = 0
+                    mazeButton.innerHTML = "Calculate travel times"
+                    break
+            }
+
+            if (mazeStage === 3) {
+                from = target
+                ctx.lineWidth = 12
+                ctx.strokeStyle = "#7777ff"
+                ctx.beginPath()
+                ctx.moveTo(target.x + 25, target.y + 25)
+                while (from) {
+                    console.log(from)
+                    from.path = true
+                    ctx.lineTo(from.x + 25, from.y + 25)
+                    from = from.from
+                }
+                ctx.moveTo(target.x + 25, target.y + 25)
+                ctx.closePath()
+                ctx.stroke()
+            }
+
+            cells.forEach(v => { v.draw() })
+        } else {
+            mazeButton.innerHTML = "Select target node"
+        }
+    }
+
+
+</script>
+
+<style>
+    body {
+        background-color: #ddeeff;
+    }
+
+    h1 {
+        margin-bottom: 50px;
+        font-size: 64px;
+        text-align: center;
+        background-color: #99ccff;
+        border-radius: 24px;
+    }
+
+    h2 {
+        margin-top: 50px;
+        font-size: 32px;
+        text-align: center;
+        background-color: #bbddff;
+        border-radius: 12px;
+    }
+
+    h3 {
+        margin-top: 20px;
+        font-size: 24px;
+    }
+
+    p {
+        width: 800px;
+    }
+
+    th,
+    td {
+        padding: 10px;
+        text-align: center;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #99ccff;
+    }
+
+    tr:nth-child(even) {
+        background-color: #bbddff;
+    }
+
+    button {
+        margin: 10px;
+    }
+
+    canvas {
+        margin: 10px;
+    }
+
+    .keyTerm {
+        font-weight: bold;
+    }
+
+    .grey {
+        background-color: #bbddff;
+        margin: 20px;
+        padding: 10px;
+        width: fit-content;
+    }
+</style>
+
+</html>

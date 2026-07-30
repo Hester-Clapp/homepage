@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Trees</h2>
+    <p>
+        A tree is a non-linear data structure based on a graph. Trees are a type of directed non-weighted graph, which
+        is
+        hierarchal and upholds certain properties.
+    </p>
+    <p>
+        Nodes in a tree have a hierarchy, or depth. They may have children, with a greater depth than themselves, and
+        every node except the root has exactly one parent, which has a smaller depth, and there are no edges between
+        sibling nodes, which have the same depth as each other.
+    </p>
+    <p>
+        The root node (naturally at the top of the tree...) has a depth of 0, and is the only node with no parent. Leaf
+        nodes are nodes which have no children, though they are not necessarily at the very bottom of the tree.
+    </p>
+    <p>
+        Trees are used for the directory structure of file storage, where folders contain other folders that contain
+        files. A similar approach is used for the HTML DOM, where an element's children are contained within the tags.
+    </p>
+    <p>
+        Trees are also used to improve time complexity of algorithms. Generally, for a tree of n nodes, the maximum
+        depth of the tree is approximately log(n), and is never greater than n. By writing algorithms to operate on
+        trees, the worst case scenario is often related to the depth of the tree, giving the algorithm a worst case time
+        complexity of O(log n), which is considered faster than O(n) on average.
+    </p>
+    <hr>
+    <h2>Binary Search Trees</h2>
+    <p>
+        Some trees must also follow certain rules, known as tree properties. They are similar to axioms in mathematics.
+    </p>
+    <p>A binary search tree is a tree that follows these rules:</p>
+    <ul class="treeProperties">
+        <li>Every node has at most two children</li>
+        <li>One of the child nodes has a smaller value than the parent node, and the other has a greater value than the
+            parent</li>
+    </ul>
+    <p>
+        Binary search trees can be used to perform binary search, which is usually faster than linear search. It starts
+        at the
+        root node
+        and compares the value of the node with the target. Then, if it is greater than the target, it will look at the
+        smaller
+        child, and if it is less than the target it will compare with the larger child. This continues until the target
+        is found, or a leaf node is reached with no match.
+    </p>
+    <form id="binAddForm" autocomplete="off">
+        <input id="binAddInput" placeholder="Add an item..." required>
+        <input id="binAddButton" type="submit" value="Add">
+    </form>
+    <form id="searchForm" autocomplete="off">
+        <input id="searchQuery" placeholder="Search for an item" required>
+        <input id="searchButton" type="submit" value="Search">
+    </form>
+    <p id="binTextOutput">&zwnj;</p>
+    <canvas id="binTree"></canvas>
+    <hr>
+    <h2>Heaps</h2>
+    <p>
+        Another type of tree is a heap. In order to be a heap:
+    </p>
+    <ul class="treeProperties">
+        <li>The tree is complete - every row except for the last must be full</li>
+        <li>Every node has at most two children</li>
+        <li>In a min heap, every node's value must be less than the smaller of its children (this is known as the heap
+            property)</li>
+        <li>In a max heap, every node's value must be greater than the larger of its children (heap property)</li>
+    </ul>
+    <p>
+        Heaps are commonly used as priority queues. When items are enqueued, they are given a priority and added
+        to the bottom of the tree. Then, the item sifted up, swapping with its parent until the max heap property is
+        satisfied, placing it as far into the queue as it belongs.
+    </p>
+    <p>
+        For dequeueing, the root node is removed since it necessarily has the highest priority, and is replaced by the
+        item at the bottom. Then, it is sifted down, swapping with the greater of its two children until the heap
+        property is once again upheld, preparing the tree for another dequeueing.
+    </p>
+    <form id="addForm" autocomplete="off">
+        <input id="addInput" placeholder="Add an item..." required>
+        <input id="addButton" type="submit" value="Add">
+    </form>
+    <button id="dequeueButton">Dequeue the smallest</button>
+    <p id="heapTextOutput"></p>
+    <canvas id="heap"></canvas>
+    <hr>
+    <h2>Huffman Trees</h2>
+    <p>
+        A Huffman tree is similar to a max heap, and is used for lossless compression known as <a
+            href="https://cms-compsci.deno.dev/hester/huffman.html">Huffman Encoding</a>:
+    </p>
+    <ul class="treeProperties">
+        <li>Every node has at most two children</li>
+        <li>The frequency of a node is equal to the sum of the frequencies of its children</li>
+        <li>Every node with an associated character is a leaf node (has no children)</li>
+    </ul>
+    <p>
+        Huffman trees are also classed as "tries", since the paths through the tree spell out codewords in binary.
+    </p>
+    <p>
+        Huffman trees are powerful because since every character is a leaf node, there is no ambiguity. If the binary
+        path ends on a character, you know that it must be that character, and not a combination of others.
+    </p>
+    <p>
+        Huffman trees also make use of the priority queue feature of heaps, placing more frequent letters higher up the
+        tree, so they have a shorter codeword length.
+    </p>
+</body>
+<script>
+    function x(i) { return 1024 * (i + 1.5 - 2 ** Math.floor(Math.log2(i + 1.5))) / 2 ** Math.floor(Math.log2(i + 1.5)) }
+    function y(i) { return 100 * Math.floor(Math.log2(i + 1)) + 50 }
+    function drawTree(ctx, nodes) {
+        ctx.fillStyle = "lightgrey"
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.font = "20px Arial"
+        ctx.lineWidth = 2
+        ctx.clearRect(0, 0, 1084, 1000)
+        nodes.forEach((v, i) => {
+            if (nodes[2 * i + 1]) {
+                ctx.strokeStyle = "orange"
+                ctx.beginPath()
+                ctx.moveTo(x(i), y(i))
+                ctx.lineTo(x(2 * i + 1), y(2 * i + 1))
+                ctx.stroke()
+            }
+            if (nodes[2 * i + 2]) {
+                ctx.strokeStyle = "blue"
+                ctx.beginPath()
+                ctx.moveTo(x(i), y(i))
+                ctx.lineTo(x(2 * i + 2), y(2 * i + 2))
+                ctx.stroke()
+            }
+        })
+        ctx.strokeStyle = "black"
+        ctx.beginPath()
+        nodes.forEach((v, i) => {
+            ctx.moveTo(x(i) + 25, y(i))
+            ctx.arc(x(i), y(i), 25, 0, Math.PI * 2)
+        })
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = "black"
+        nodes.forEach((v, i) => { ctx.fillText(v, x(i), y(i)) })
+    }
+    function drawCircle(ctx, i, colour = "black") {
+        ctx.strokeStyle = colour
+        ctx.beginPath()
+        ctx.moveTo(x(i) + 25, y(i))
+        ctx.arc(x(i), y(i), 25, 0, 2 * Math.PI)
+        ctx.stroke()
+    }
+    function compare(string1, string2) {
+        for (let i = 0; i < Math.min(string1.length, string2.length); i++) {
+            let d = string1.charCodeAt(i) - string2.charCodeAt(i)
+            if (d < 0) return string2
+            if (d > 0) return string1
+        }
+        if (string1.length > string2.length) return string1
+        if (string2.length > string1.length) return string2
+        return ""
+    }
+    ; (() => {
+        const canvas = document.getElementById("binTree")
+        canvas.width = 1084
+        canvas.height = 400
+        const ctx = canvas.getContext("2d")
+        let nodes = [
+            "H",
+            "C", "J",
+            "A", "F", , "N",
+            , , "D", "G", , , "M"
+        ]
+
+        console.log(compare("abcd", "ac"))
+        function add(v, i = 0) {
+            canvas.height = Math.floor(Math.log2(Math.max(nodes.length, i)) + 1) * 100
+            if (nodes[i]) {
+                let pre = nodes[i]
+                setTimeout(() => { nodes[i] = pre }, 500)
+                let min = compare(v, pre)
+                if (min === v) {
+                    nodes[i] = pre + " > " + v
+                    setTimeout(add, 500, v, 2 * i + 2)
+                }
+                if (min == pre) {
+                    nodes[i] = pre + " < " + v
+                    setTimeout(add, 500, v, 2 * i + 1)
+                }
+                if (min === "") {
+                    document.getElementById("binTextOutput").innerHTML = "Cannot insert, " + v + " is already in the tree!"
+                    setTimeout(drawCircle, 500, ctx, i, "black")
+                }
+
+                drawTree(ctx, nodes)
+                drawCircle(ctx, i, "red")
+            } else {
+                nodes[i] = v
+                drawTree(ctx, nodes)
+                drawCircle(ctx, i, "limegreen")
+                setTimeout(() => { drawCircle(ctx, i, "black") }, 500)
+            }
+        }
+        function query(q, i = 0) {
+            if (i >= nodes.length) {
+                document.getElementById("binTextOutput").innerHTML = `Negative - ${q} is not in the tree!`
+                return false
+            } else {
+                let v = nodes[i]
+                let d = q.charCodeAt(0) - v.charCodeAt(0)
+                if (d === 0) {
+                    document.getElementById("binTextOutput").innerHTML = `Positive - ${q} is in the tree at index ${String(i)}!`
+                    drawCircle(ctx, i, "limegreen")
+                    setTimeout(() => { drawCircle(ctx, i, "black") }, 500)
+                    return true
+                }
+                drawCircle(ctx, i, "red")
+                setTimeout(() => { drawCircle(ctx, i, "black") }, 500)
+                if (d < 0) {
+                    setTimeout(query, 500, q, 2 * i + 1)
+                }
+                if (d > 0) {
+                    setTimeout(query, 500, q, 2 * i + 2)
+                }
+            }
+        }
+        drawTree(ctx, nodes)
+        document.getElementById("binAddForm").addEventListener("submit", e => {
+            e.preventDefault()
+            add(document.getElementById("binAddInput").value.toUpperCase())
+            document.getElementById("binAddForm").reset()
+            document.getElementById("binAddInput").focus()
+        })
+        document.getElementById("searchForm").addEventListener("submit", e => {
+            e.preventDefault()
+            query(document.getElementById("searchQuery").value.toUpperCase())
+            document.getElementById("searchForm").reset()
+            document.getElementById("searchQuery").focus()
+        })
+    })();
+    (() => {
+        const canvas = document.getElementById("heap")
+        canvas.width = 1084
+        canvas.height = 400
+        const ctx = canvas.getContext("2d")
+        let nodes = ["A", "B", "C", "E", "D", "G"]
+        function siftUp(i = nodes.length - 1) {
+            drawTree(ctx, nodes)
+            if (compare(nodes[i], nodes[Math.ceil(i / 2) - 1]) !== nodes[i]) {
+                drawCircle(ctx, i, "red")
+                let temp = nodes[i]
+                nodes[i] = nodes[Math.ceil(i / 2) - 1]
+                nodes[Math.ceil(i / 2) - 1] = temp
+                setTimeout(siftUp, 500, Math.ceil(i / 2) - 1)
+            } else {
+                drawCircle(ctx, i, "limegreen")
+                setTimeout(drawCircle, 500, ctx, i, "black")
+            }
+        }
+        function siftDown(i = 0) {
+            drawTree(ctx, nodes)
+            let minChild
+            if (2 * i >= nodes.length) {
+                drawCircle(ctx, i, "limegreen")
+                setTimeout(drawCircle, 500, ctx, i, "black")
+            } else if (2 * i + 2 === nodes.length) {
+                minChild = 2 * i + 1
+            } else {
+                minChild = compare(nodes[2 * i + 1], nodes[2 * i + 2]) === nodes[2 * i + 2] ? 2 * i + 1 : 2 * i + 2
+            }
+            if (compare(nodes[minChild], nodes[i]) === nodes[i]) {
+                drawCircle(ctx, i, "red")
+                let temp = nodes[i]
+                nodes[i] = nodes[minChild]
+                nodes[minChild] = temp
+                setTimeout(siftDown, 500, minChild)
+            } else {
+                drawCircle(ctx, i, "limegreen")
+                setTimeout(drawCircle, 500, ctx, i, "black")
+            }
+        }
+        drawTree(ctx, nodes)
+        document.getElementById("addForm").addEventListener("submit", e => {
+            e.preventDefault()
+            nodes.push(document.getElementById("addInput").value)
+            siftUp()
+            document.getElementById("addForm").reset()
+            document.getElementById("addInput").focus()
+        })
+        document.getElementById("dequeueButton").addEventListener("click", () => {
+            document.getElementById("heapTextOutput").innerHTML = String(nodes[0])
+            nodes[0] = ""
+            drawTree(ctx, nodes)
+            drawCircle(ctx, 0, "limegreen")
+            setTimeout(() => {
+                nodes[0] = nodes.pop()
+                siftDown()
+            }, 500)
+        })
+    })();
+</script>
+
+</html>

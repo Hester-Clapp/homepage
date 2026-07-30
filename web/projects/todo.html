@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+
+<html>
+<div style="display: flex;">
+    <div id="list">
+        <h1>To do:</h1>
+        <div id="tasks"></div>
+    </div>
+    <div id="submitTaskForm">
+        <h1>Add task:</h1>
+        <form id="addTask">
+            <label for="task">Task:</label>
+            <input type="text" id="task" name="task"><br>
+            <label for="deadline">Deadline:</label>
+            <input type="date" id="deadline" name="deadline"><br>
+            <label for="priority">Priority:</label><br>
+            <input type="radio" id="high" name="priority" value=2>
+            <label for="high">High</label><br>
+            <input type="radio" id="med" name="priority" value=1>
+            <label for="med">Medium</label><br>
+            <input type="radio" id="low" name="priority" value=0>
+            <label for="low">Low</label><br>
+            <input type="submit" id="submitTask" value="Submit Task">
+        </form>
+    </div>
+</div>
+
+</html>
+
+<script>
+
+    const form = document.getElementById("addTask")
+
+    let tasks = JSON.parse(localStorage.getItem("todo-hester")) || []
+
+    updateTasks()
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const data = new FormData(form);
+        let task = {};
+        for (const entry of data) {
+            task[entry[0]] = entry[1]
+        }
+        // data.forEach(entry => {task[entry[0]] = entry[1]})
+        task.priority = Number(task.priority)
+        task.deadline = new Date(task.deadline).getTime()
+        task.time = new Date().getTime()
+        task.complete = false
+        tasks.push(task)
+        document.getElementById("task").value = ""
+        updateTasks()
+    }, false,);
+
+    function updateTasks() {
+        tasks = tasks
+            .sort((a, b) => { return a.time - b.time })
+            .sort((a, b) => { return (a.deadline && b.deadline) ? a.deadline - b.deadline : 0 })
+            .sort((a, b) => { return b.priority - a.priority })
+        localStorage.setItem("todo-hester", JSON.stringify(tasks.filter(v => v.complete === false)))
+        drawTasks()
+    }
+
+    function drawTasks() {
+        let list = document.getElementById("tasks")
+        list.innerHTML = ""
+        tasks.forEach((v, i) => {
+            let task = document.createElement("h2")
+            task.innerHTML = v.task
+            task.className = (v.complete) ? "complete" : "todo"
+            task.onclick = () => { completeTask(v) }
+            list.appendChild(task)
+        })
+    }
+
+    function completeTask(task) {
+        task.complete = !task.complete
+        updateTasks()
+    }
+</script>
+
+<style>
+    .complete {
+        font-weight: normal;
+        text-decoration: line-through;
+    }
+
+    .todo {
+        font-weight: normal;
+    }
+
+    #list {
+        width: 60%;
+        border: 2px black solid;
+        margin: 10px;
+        padding: 10px;
+    }
+
+    #submitTaskForm {
+        width: 200px;
+        border: 2px black solid;
+        margin: 10px;
+        padding: 10px;
+    }
+</style>

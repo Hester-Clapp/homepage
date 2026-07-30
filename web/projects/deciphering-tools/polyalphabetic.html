@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<style>
+
+.across {
+  display: flex;
+  flex-direction: row;
+}
+
+.down {
+  display: flex;
+  flex-direction: column;
+}
+
+#coincidences {
+    border: 4px lightgray outset;
+    padding: 10px;
+    width: 300px;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+#outputDiv {
+    border: 4px lightgray outset;
+    padding: 10px;
+    width: auto;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+table {
+    border: 2px black solid;
+    margin: 10px;
+}
+
+th {
+    width:60px;
+}
+
+h3 {
+    margin: 0px;
+}
+</style>
+
+<html>
+    <label for="ctInput">Input ciphertext:</label>
+
+    <input type="text" id="ctInput" size="20" />
+
+    <div id="coincidences">
+        <h3>Coincidences</h3>
+
+        <button onclick="countCoincidences()">Count Coincidences</button>
+
+        <input type="range" id="maxOffset" min="0" max="100" value="20" step="1" onchange="countCoincidences()"/>
+
+        <div id="peakSettings" style="display: none;">
+            <h5>Minimum peak height:</h5>
+
+            <input type="range" id="minPeak" min="0" max="0.05" value="0.01" step="0.0001" onchange="findPeaks()"/>
+
+            <p id="peakDisplay"></p>
+
+            <h5 id="HCFDisplay"></h5>
+
+            <button onclick="generateCiphers()">Commit guess</button>
+        </div>
+    </div>
+
+    <div id="outputDiv">
+        <h3>Decrypted Message:</h3>
+        
+        <p id="outputText" style="word-wrap: break-word;"></p>
+    </div>
+</html>
+  
+<script>
+    const nonLetters = ["","\n"," ",".",",","!","?","'","-",":","’"]
+    const frequentLetters = ["E","T","A","O","I","N","S","R","H","D","L","U","C","M","F","Y","W","G","P","B","V","K","X","Q","J","Z"]
+    const letterFreqs = [0.0812, 0.0149, 0.0271, 0.0432, 0.1202, 0.023, 0.0203, 0.0592, 0.0731, 0.001, 0.0069, 0.0398, 0.0261, 0.0695, 0.0768, 0.0182, 0.0011, 0.0602, 0.0628, 0.091, 0.0288, 0.0111, 0.0209, 0.0017, 0.0211, 0.0007]
+    let cipherText = ""
+    let letters = []
+    let coincidences = []
+    let keyLength = 0
+    let modCiphers = []
+
+    document.getElementById("ctInput").onchange = () => {
+        cipherText = document.getElementById("ctInput").value.toUpperCase().split("").filter(v => !nonLetters.includes(v)).reduce((a,v) => a+v,"")
+    }
+
+    function countCoincidences () {
+        let maxOffset = Math.min(document.getElementById("maxOffset").value,cipherText.length)
+        let offset = cipherText.split("")
+        for (let i=0;i<maxOffset;i++) {
+            coincidences[i] = 0
+            offset.unshift("A")
+            cipherText.split("").forEach((v,j) => {
+                if (v === offset[j]) {
+                    coincidences[i] += 1
+                }
+            })
+        }
+        document.getElementById("peakSettings").style.display = "block"
+        findPeaks()
+    }
+
+    function findPeaks () {
+        let change = coincidences.map((v,i) => (v-coincidences[i-1])/cipherText.length)
+        let peakIndices = []
+        let peaks = change.map(v => (v > document.getElementById("minPeak").value) ? v : 0).forEach((v,i) => {
+            if (v) {
+                peakIndices.push(i)
+            }
+        })
+        peakIndices = peakIndices.map(v => v+1)
+        document.getElementById("peakDisplay").innerHTML = "Peaks found at: " + String(peakIndices)
+        keyLength = peakIndices.reduce(HCF)
+        document.getElementById("HCFDisplay").innerHTML = "Key Length (HCF): " + String(keyLength)
+    }
+
+    function generateCiphers (length) {
+        for (let i=0;i<keyLength;i++) {
+            let text = cipherText.split("").filter((v,j) => j%keyLength === i).reduce((acc,v) => acc+v,"")
+            modCiphers[i] = text.split("").map(v => String.fromCharCode((v.charCodeAt(0)-65+solveCaesar(text))%26+65))
+        }
+        decipher()
+    }
+
+    function solveCaesar(cipherTextInput) {
+        let scores = []
+        let cipherArray = cipherTextInput.split("").map(v => v.charCodeAt(0)-65)
+        // let cipherFreqs = cipherArray.reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), [])
+        for (let i=0;i<26;i++) {
+            let shift = cipherArray.map(v => (v+i)%26)
+            let shiftFreqs = shift.reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), []).map(v => +((v/cipherTextInput.length).toFixed(4)))
+            scores[i] = 0
+            for (let j=0;j<26;j++) {
+                scores[i] += letterFreqs[j] * (shiftFreqs [j] || 0)
+            }
+        }
+        return(scores.indexOf(Math.max(...scores)))
+    }
+
+    function decipher () {
+        let output = []
+        modCiphers.forEach((a,i) => {
+            a.forEach((v,j) => {
+                output[j*keyLength + i] = v
+            })
+        })
+        let plaintext = output.reduce((acc, v) => acc + v, "")
+        document.getElementById("outputText").innerHTML = plaintext
+    }
+
+    function HCF(a,b) {
+        if (b === 0) return a;
+        else return HCF(b, a % b);
+    }
+</script>

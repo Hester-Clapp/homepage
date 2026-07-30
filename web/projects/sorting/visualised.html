@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./favicon.png">
+    <title>Sorting Algorithms</title>
+    <style>
+        * {
+            margin: 0;
+            overflow-x: hidden;
+            background-color: gray;
+        }
+
+        canvas {
+            background-color: black;
+        }
+
+        button {
+            padding: 1ch 1rem;
+            margin: 1ch;
+            background-color: lightgray;
+            border: 0.5ch outset;
+        }
+
+        button.down,
+        button:active {
+            border: 0.5ch inset;
+        }
+
+        select {
+            padding: 1ch 1rem;
+            margin: 1ch;
+            background-color: lightgray;
+        }
+
+        ul {
+            height: fit-content;
+            display: flex;
+            align-self: center;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0 1ch;
+        }
+
+        li {
+            /* margin: 0 1ch; */
+            padding: 0 1ch;
+        }
+
+        li * {
+            margin: 1ch;
+            display: inline;
+        }
+
+        optgroup,
+        option {
+            background-color: white;
+            padding: 1ch;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas></canvas>
+    <ul id="controls">
+        <li>
+            <label for="speed">Speed:</label>
+            <input type="range" id="speed" oninput="this.nextElementSibling.value = this.value; speed = this.value"
+                max="10" min="1" value="4">
+            <output>4</output>
+        </li>
+        <li>
+            <p id="comparisons">Comparisons: 0</p>
+        </li>
+        <!-- <li><input type="checkbox" id="auto"><label for="auto">Run Automatically</label></li> -->
+        <li><button onclick="if(!running) {sorts[sort]()}" id="run">Run</button></li>
+        <li><button onclick="if(!running) shuffle()">Shuffle</button></li>
+        <li><button onclick="terminate=true">Terminate</button></li>
+        <li><button onclick="toggleConcurrence()" id="concurrent">Concurrent Processing</button> </li>
+    </ul>
+    <ul id="setup">
+        <li>
+            <label for="n">Items:</label>
+            <input type="range" id="n" oninput="this.nextElementSibling.value = this.value; init(Number(this.value))"
+                max="256" min="2" value="32">
+            <output>32</output>
+        </li>
+        <li>
+            <label for="sorts">Distribution:</label>
+            <select id="distribution" oninput="init(n)">
+                <option value="uniform">Uniform</option>
+                <option value="quantized">Quantized</option>
+                <option value="random">Random</option>
+                <option value="normal">Normal</option>
+                <option value="cubic">Cubic</option>
+            </select>
+        </li>
+        <li>
+            <label for="sorts">Algorithm:</label>
+            <select id="sorts" oninput="sort=this.value">
+                <option value="None">None</option>
+                <optgroup label="Selection">
+                    <option value="Selection">Selection</option>
+                    <option value="Heap">Heap</option>
+                    <option value="Cycle">Cycle</option>
+                </optgroup>
+                <optgroup label="Insertion">
+                    <option value="Insertion">Insertion</option>
+                    <!-- <option value="Library">Library</option> -->
+                    <option value="Shell">Shell</option>
+                </optgroup>
+                <optgroup label="Exchange">
+                    <option value="Bubble">Bubble</option>
+                    <option value="OddEven">Odd-Even</option>
+                    <option value="Quick">Quick</option>
+                    <option value="Pivotless">Pivotless Quick</option>
+                    <option value="AuxQuick">Auxiliary Quick</option>
+                </optgroup>
+                <optgroup label="Merge">
+                    <option value="Merge">Merge (recursive)</option>
+                    <option value="IterativeMerge">Merge (iterative)</option>
+                    <option value="CrossoverBitonic">Bitonic (crossovers)</option>
+                    <option value="Bitonic" class="powertwo">Bitonic (iterative)</option>
+                </optgroup>
+                <optgroup label="Distribution">
+                    <option value="Counting" class="int">Counting</option>
+                    <option value="Radix" class="int">Radix LSD</option>
+                    <option value="CheatCycle" class="iv int">Cycle (cheat)</option>
+                </optgroup>
+            </select>
+        </li>
+    </ul>
+</body>
+<script>
+    let n, r, items, speed = 4, tick = function () { }, toDraw = {}, urlParams = new URLSearchParams(window.location.search), sort = urlParams.get("sort") || "None", locked = urlParams.get("locked"), concurrent = urlParams.get("concurrent") ? true : false, running = false, terminate = false, comparisons = 0, aux = []
+    const canvas = document.querySelector("canvas"), ctx = canvas.getContext("2d")
+    function resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight - 10 - document.getElementById("controls").offsetHeight - (locked ? 0 : document.getElementById("setup").offsetHeight)
+        // document.getElementById("controls").style["grid-template-columns"] = `repeat(auto-fit, minmax(16ch, ${window.innerWidth}px));`
+        drawItems()
+    }
+    window.addEventListener("resize", resize)
+    // if (urlParams.get("sort")) {
+    //     document.getElementById("sorts").value = sort
+    // }
+
+    function init(number) { // Initialise an array of number items
+        n = number
+        items = Array(n)
+        let dist = document.getElementById("distribution").value
+        document.querySelectorAll("option").forEach(v => { v.disabled = false }) // Enable all algorithms
+        document.querySelectorAll("option.powertwo").forEach(v => { v.disabled = Math.log2(number) % 1 > 0 }) // Disable algorithms that require a power of two (e.g. Bitonic)
+        if (dist !== "uniform") {
+            document.querySelectorAll("option.iv").forEach(v => { v.disabled = true }) // Disable sorting algorithms that rely on index=value
+        }
+        // document.querySelectorAll("option.int").forEach(v => { v.disabled = true })
+        for (let i = 0; i < n; i++) {
+            items[i] = (
+                dist === "random" ? Math.random() :
+                    dist === "quantized" ? Math.floor(i / Math.PI) : // Quantize the data to the nearest pi
+                        dist === "normal" ? (Math.sqrt(Math.abs(2 * Math.log(1 - Math.random()) * Math.cos(2 * Math.PI * Math.random()))) * n / 2 + n / 2) : // Some weird AI generated normal distributed number formula
+                            dist === "cubic" ? (4 * i * i * i - 6 * i * i * n + 3 * i * n * n) / n / n :
+                                i // A cubic polynomial
+            )
+        }
+        r = ( // Maximum value
+            dist === "random" ? 1 :
+                dist === "quantized" ? n / Math.PI :
+                    dist === "normal" ? Math.max(...items) :
+                        n
+        )
+        resize()
+    }
+    function toggleConcurrence() {
+        concurrent = !concurrent
+        document.getElementById("concurrent").className = concurrent ? "down" : ""
+    }
+    function sleep() { return new Promise(resolve => { tick = resolve }) }
+    async function concurrentSleep() { if (concurrent) { return } else { await sleep() } }
+    function range(from = 0, to = n) {
+        return Array.from(Array(to - from).keys()).map(v => v + from)
+    }
+    function swap(a, b, array = items) {
+        const tmp = array[b]
+        array[b] = array[a]
+        array[a] = tmp
+    }
+    async function lessThan(a, b, array = items) {
+        comparisons++
+        await sleep()
+        return array[a] < array[b]
+    }
+    async function greaterThan(a, b, array = items) {
+        comparisons++
+        await sleep()
+        return array[a] > array[b]
+    }
+    function start() { // To run when an algorithm starts
+        running = true
+        timeSpent = performance.now()
+        comparisons = 0 // Reset the comparison counter
+        drawLoop()
+        operationLoop()
+    }
+    function stop() { // To run when an algorithm stops
+        aux = [] // Delete auxiliary memory
+        toDraw = {
+            Items: [[], range()], // Draw the array in green
+            Aux: []
+        }
+        running = false
+    }
+    function halt() {
+        terminate = false
+        running = false
+        sort = "None"
+        document.getElementById("sorts").value = "None"
+    }
+    async function shuffle(animate = true) {
+        start()
+        for (let i = 0; i < n; i++) {
+            const partner = Math.floor(Math.random() * n)
+            swap(i, partner)
+            toDraw = {
+                Items: [[i, partner]]
+            }
+            if (animate) await concurrentSleep()
+            if (terminate) { halt(); return }
+        }
+        drawItems()
+        running = false
+    }
+    const sorts = {
+        None() {
+            window.alert("Please select a sorting algorithm!")
+        },
+        async IterativeMerge() {
+            start()
+            for (let size = 2; size < n * 2; size *= 2) { // size is the number of items in each chunk, which doubles with each iteration
+                aux = [...items] // Create a deep copy of items
+                toDraw = {
+                    Items: [[], range()], // Show the whole array has been read
+                    Aux: [range(), []] // Show the whole aux array has been written to
+                }
+                await sleep()
+                let lPointers = [], rPointers = [], skip = []
+                for (let x = 0; x < n; x += size) {
+                    lPointers[x] = x // Make a left pointer at the beginning of each chunk
+                    rPointers[x] = x + size / 2 // Make a right pointer in the middle
+                }
+                toDraw = {
+                    Items: [],
+                    Aux: [[], [], lPointers.concat(rPointers)] // Show the pointers
+                }
+                await sleep()
+                for (let i = 0; i < size; i++) {
+                    let written = []
+                    for (let x = 0; x < n; x += size) { // Do all these in parallel
+                        written.push(x + i)
+                        if (skip.includes(x)) { // If the chunk has finished, move on
+                            x += size
+                        } else {
+                            let state = 0
+                                + (lPointers[x] < Math.min(x + size / 2, n) ? 2 : 0)
+                                + (rPointers[x] < Math.min(x + size, n) ? 1 : 0)
+                            switch (state) {
+                                case 0:
+                                    // Both pointers are stuck, the chunk has finished merging
+                                    skip.push(x) // Don't bother processing it anymore
+                                    break
+                                case 1:
+                                    // The left pointer is stuck so increment the right
+                                    toDraw = { Items: [[x + i]], Aux: [[], [], [lPointers[x], rPointers[x]]] }
+                                    items[x + i] = aux[rPointers[x]]
+                                    rPointers[x]++
+                                    break
+                                case 2:
+                                    // The right pointer is stuck so increment the left
+                                    toDraw = { Items: [[x + i]], Aux: [[], [], [lPointers[x], rPointers[x]]] }
+                                    items[x + i] = aux[lPointers[x]]
+                                    lPointers[x]++
+                                    break
+                                case 3:
+                                    // Normal case, choose the smallest and increment that pointer
+                                    comparisons++
+                                    if (aux[rPointers[x]] < aux[lPointers[x]]) {
+                                        // The right is smaller, increment it
+                                        toDraw = { Items: [[x + i]], Aux: [[], [], [lPointers[x], rPointers[x]]] }
+                                        items[x + i] = aux[rPointers[x]]
+                                        rPointers[x]++
+                                    } else {
+                                        // The left is smaller, increment it
+                                        toDraw = { Items: [[x + i]], Aux: [[], [], [lPointers[x], rPointers[x]]] }
+                                        items[x + i] = aux[lPointers[x]]
+                                        lPointers[x]++
+                                    }
+                            }
+                            await concurrentSleep()
+                            if (terminate) { halt(); return }
+                        }
+                    }
+                    if (skip.length < n / size) { // If all chunks are skipped, don't bother drawing or waiting
+                        toDraw = {
+                            Items: [written],
+                            Aux: [[], [], lPointers.concat(rPointers)]
+                        }
+                        await sleep()
+                    }
+
+                }
+            }
+            stop()
+        },
+        async Merge() {
+            async function mergeSort(from, to) {
+                if (from >= to - 1) return
+                aux = []
+                let midPoint = Math.floor((from + to) / 2)
+                await mergeSort(from, midPoint)
+                await mergeSort(midPoint, to)
+                for (let i = from; i < to; i++) aux[i] = items[i]
+                toDraw = {
+                    Items: [[], range(from, to)],
+                    Aux: [range(from, to)]
+                }
+                await sleep()
+                let lPointer = from
+                let rPointer = midPoint
+                for (let i = from; i < to; i++) {
+                    switch ((lPointer < midPoint ? 2 : 0) + (rPointer < to ? 1 : 0)) {
+                        case 1:
+                            // The left pointer is stuck so take from the right
+                            items[i] = aux[rPointer]
+                            rPointer++
+                            break
+                        case 2:
+                            // The right pointer is stuck so take from the left
+                            items[i] = aux[lPointer]
+                            lPointer++
+                            break
+                        case 3:
+                            // Normal case, choose the smallest and increment that pointer
+                            if (await lessThan(rPointer, lPointer, aux)) {
+                                // The right is smaller, increment it
+                                items[i] = aux[rPointer]
+                                rPointer++
+                            } else {
+                                // The left is smaller, increment it
+                                items[i] = aux[lPointer]
+                                lPointer++
+                            }
+                    }
+                    toDraw = {
+                        Items: [[i]],
+                        Aux: [[], [], [lPointer, rPointer]]
+                    }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                }
+
+            }
+            start()
+            await mergeSort(0, n)
+            stop()
+        },
+        async Bubble() {
+            start()
+            let done = false
+            for (let x = n; !done && x > 0; x--) {
+                done = true
+                for (let i = 1; i < x; i++) {
+                    toDraw = {
+                        Items: [[], [i - 1, i]]
+                    }
+                    await sleep()
+                    comparisons++
+                    if (items[i - 1] > items[i]) {
+                        swap(i - 1, i)
+                        toDraw = {
+                            Items: [[i - 1, i]]
+                        }
+                        await sleep()
+                        done = false
+                    }
+                    if (terminate) { halt(); return }
+                }
+            }
+            stop()
+        },
+        async Insertion() {
+            start()
+            for (let x = 1; x < n; x++) {
+                for (let i = x; i > 0; i--) {
+                    toDraw = {
+                        Items: [[], [i - 1, i]]
+                    }
+                    await sleep()
+                    comparisons++
+                    if (items[i - 1] > items[i]) {
+                        swap(i - 1, i)
+                        toDraw = {
+                            Items: [[i - 1, i]]
+                        }
+                        await sleep()
+                    } else i = 0
+                    if (terminate) { halt(); return }
+                }
+            }
+            stop()
+        },
+        async Radix() {
+            start()
+            comparisons = "N/A"
+            const maxLength = Math.ceil(0.5 * Math.log2(r)) // log base 4 
+            for (let d = 0; d < maxLength; d++) {
+                let values = items.map(v => (v >> (2 * d)) % 4)
+                let counts = [[], [], [], []]
+                for (let i = 0; i < n; i++) {
+                    aux[i] = items[i]
+                    counts[values[i]].push(i)
+                    toDraw = {
+                        Buckets: [[counts[0].length, counts[0].length + counts[1].length, counts[0].length + counts[1].length + counts[2].length, i].map(v => v * canvas.width / n)],
+                        Items: [[], [i]],
+                        Aux: [[i]],
+                        Digits: [counts, aux, true]
+                    }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                }
+                let pointers = [0, counts[0].length, counts[0].length + counts[1].length, counts[0].length + counts[1].length + counts[2].length]
+                let buckets = pointers.slice(1).map(v => v * canvas.width / n)
+                toDraw = {
+                    Buckets: [buckets],
+                    Items: [],
+                    ItemsMask: [pointers, items, "DodgerBlue"],
+                }
+                await sleep()
+                for (let i = 0; i < n; i++) {
+                    // let digit = Number(digits[i])
+                    let digit = values[i]
+                    items[pointers[digit]] = aux[i]
+                    pointers[digit]++
+                    toDraw = {
+                        Buckets: [buckets],
+                        Items: [[pointers[digit] - 1], [], []],
+                        Digits: [counts, aux, true],
+                        ItemsMask: [pointers, items, "DodgerBlue"],
+                        Aux: []
+                    }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                    counts[digit].shift()
+                    aux[i] = undefined
+                }
+            }
+            stop()
+        },
+        async Quick() {
+            async function sort(start = 0, end = n) {
+                if (start < end - 1) {
+                    let pivot = items[start]
+                    let lPointer = start + 1
+                    let rPointer = end - 1
+                    let partitioning = true
+                    while (partitioning) {
+                        while (lPointer <= rPointer && items[lPointer] < pivot) {
+                            // Move the left pointer right until it is greater than the pivot
+                            comparisons++
+                            toDraw = {
+                                Items: [[], [start, lPointer], [rPointer]]
+                            }
+                            lPointer++
+                            await sleep()
+                            if (terminate) { halt(); return }
+                        }
+                        while (rPointer >= lPointer && items[rPointer] > pivot) {
+                            // Move the right pointer left until it is smaller than the pivot
+                            comparisons++
+                            toDraw = {
+                                Items: [[], [start, rPointer], [lPointer]]
+                            }
+                            rPointer--
+                            await sleep()
+                            if (terminate) { halt(); return }
+                        }
+                        toDraw = {
+                            Items: [[], [], [start, lPointer, rPointer]]
+                        }
+                        await sleep()
+                        if (rPointer <= lPointer) {
+                            partitioning = false // Finished
+                        } else {
+                            // Swap left and right
+                            swap(lPointer, rPointer)
+                            toDraw = {
+                                Items: [[lPointer, rPointer], [], [start]]
+                            }
+                            await sleep()
+                        }
+                    }
+                    if (start !== rPointer) swap(start, rPointer)
+                    toDraw = {
+                        Items: [[start, rPointer], [], [lPointer]]
+                    }
+                    await sleep()
+                    await sort(start, rPointer)
+                    await sort(rPointer + 1, end)
+                }
+            }
+            start()
+            await sort()
+            stop()
+        },
+        async Pivotless() {
+            async function sort(start = 0, end = n) {
+                // if (end - start < 8) {
+                if (start < end - 1) {
+                    let nx = 2
+                    let lPointer = start
+                    let rPointer = end - 1
+                    let sumx = items[lPointer] + items[rPointer]
+                    let partitioning = true
+                    while (partitioning) {
+                        while (lPointer <= rPointer && items[lPointer] <= sumx / nx) {
+                            // Move the left pointer right until it is greater than the current explored mean
+                            comparisons++
+                            toDraw = {
+                                Items: [[], [lPointer], [rPointer]]
+                            }
+                            lPointer++
+                            sumx += items[lPointer]
+                            nx++
+                            await sleep()
+                            if (terminate) { halt(); return }
+                        }
+                        while (rPointer >= lPointer && items[rPointer] >= sumx / nx) {
+                            // Move the right pointer left until it is smaller than the mean
+                            comparisons++
+                            toDraw = {
+                                Items: [[], [rPointer], [lPointer]]
+                            }
+                            rPointer--
+                            sumx += items[rPointer]
+                            nx++
+                            await sleep()
+                            if (terminate) { halt(); return }
+                        }
+                        toDraw = {
+                            Items: [[], [], [lPointer, rPointer]]
+                        }
+                        await sleep()
+                        if (rPointer <= lPointer) {
+                            partitioning = false // Finished
+                        } else if (items[lPointer] > sumx / nx && items[rPointer] < sumx / nx) {
+                            // Swap left and right
+                            swap(lPointer, rPointer)
+                            toDraw = {
+                                Items: [[lPointer, rPointer]]
+                            }
+                            await sleep()
+                        }
+                    }
+                    await sort(start, rPointer)
+                    await sort(rPointer + 1, end)
+                }
+            }
+            start()
+            await sort()
+            for (let i = 0; i < n; i++) {
+                for (let j = i; j > 0; j--) {
+                    toDraw = {
+                        Items: [[], [j - 1, j]]
+                    }
+                    await sleep()
+                    comparisons++
+                    if (items[j - 1] > items[j]) {
+                        swap(j - 1, j)
+                        toDraw = {
+                            Items: [[j - 1, j]]
+                        }
+                        await sleep()
+                    } else j = 0
+                    if (terminate) { halt(); return }
+                }
+            }
+            stop()
+        },
+        async Heap() {
+            let heapLength = n
+            async function siftDown(i) {
+                if (terminate) return // Stop if the program is being terminated, but don't halt yet
+                if (2 * i + 2 >= heapLength) return // Exit if the item has no children
+                else if (2 * i + 1 >= heapLength) {
+                    // If the item has only one child, we don't need to find the smallest
+                    comparisons++
+                    toDraw = {
+                        Items: [[], [i, 2 * i + 1]]
+                    }
+                    await sleep()
+                    // Check if we need to swap
+                    if (items[i] < items[2 * i + 1]) {
+                        swap(i, 2 * i + 1)
+                        toDraw = {
+                            Items: [[i, 2 * i + 1]]
+                        }
+                        await sleep()
+                    } else return
+                }
+                comparisons++
+                toDraw = {
+                    Items: [[], [2 * i + 1, 2 * i + 2]]
+                }
+                await sleep()
+                let maxChildIndex = items[2 * i + 1] > items[2 * i + 2] ? 2 * i + 1 : 2 * i + 2 // Compare the item's children and find the index of the smallest
+                comparisons++
+                toDraw = {
+                    Items: [[], [i, maxChildIndex]]
+                }
+                await sleep()
+                // Check if we need to swap
+                if (items[i] < items[maxChildIndex]) {
+                    swap(i, maxChildIndex)
+                    toDraw = {
+                        Items: [[i, maxChildIndex]]
+                    }
+                    await sleep()
+                    await siftDown(maxChildIndex)
+                } else return
+            }
+            start()
+            for (let i = Math.ceil(n / 2); i >= 0; i--) await siftDown(i)
+            for (heapLength = n - 1; heapLength >= 0; heapLength--) {
+                if (terminate) { halt(); return }
+                swap(0, heapLength)
+                toDraw = {
+                    Items: [[0, heapLength]]
+                }
+                await sleep()
+                await siftDown(0)
+            }
+            toDraw = { Items: [[], [0, 1]] }
+            if (await greaterThan(0, 1)) {
+                swap(0, 1)
+                toDraw = { Items: [[0, 1]] }
+                await sleep()
+            }
+            stop()
+        },
+        async Counting() {
+            start()
+            comparisons = "N/A"
+            aux = Array(n).fill(0)
+            for (let i = 0; i < n; i++) {
+                aux[Math.floor(items[i])]++
+                toDraw = {
+                    Items: [[], [i]],
+                    Aux: [[items[i]]]
+                }
+                await sleep()
+                if (terminate) { halt(); return }
+            }
+            let i = 0
+            for (let j = 0; j < n; j++) {
+                while (aux[i] === 0) i++
+                aux[i]--
+                items[j] = i
+                toDraw = {
+                    Items: [[j]],
+                    Aux: [[], [i]]
+                }
+                await sleep()
+                if (terminate) { halt(); return }
+            }
+            stop()
+        },
+        async Shell() {
+            const shrinkFactor = 0.45
+            // const shrinkFactor = 0.5
+            start()
+            let gap = n
+            while (gap > 1) {
+                gap *= shrinkFactor
+                for (let i = 0; i < n - gap; i++) {
+                    let qGap = Math.ceil(gap)
+                    let back = 0
+                    toDraw = { Items: [[], [i + back * qGap, i + (back + 1) * qGap]] }
+                    while (await greaterThan(i + back * qGap, i + (back + 1) * qGap)) {
+                        swap(i + back * qGap, i + (back + 1) * qGap)
+                        toDraw = { Items: [[i + back * qGap, i + (back + 1) * qGap]] }
+                        back--
+                        await sleep()
+                        if (terminate) { halt(); return }
+                    }
+                }
+            }
+            stop()
+        },
+        async Library() {
+            start()
+            async function rebalance() {
+                let end = n - 1
+                for (let i = n; i > 0; i--) {
+                    if (aux[i] !== undefined) {
+                        let newI = 2 * i
+                        if (newI > end) {
+                            newI = end
+                            end--
+                        }
+                        swap(i, newI, aux)
+                        toDraw = { Aux: [[i, newI]] }
+                        await sleep()
+                        if (terminate) { halt(); return }
+                    }
+                }
+            }
+            function midPoint(low, high) {
+                let mid = (low + high) >> 1
+                let probe = 0
+                while (aux[mid + probe] === undefined || aux[mid - probe] === undefined) {
+                    probe++
+                    if (low >= mid - probe || high <= mid + probe) return -1
+                }
+                return aux[mid + probe] ? mid + probe : mid - probe
+            }
+            for (let i = 0; i < n; i++) {
+                let low = 0
+                let high = aux.length - 1
+                toDraw = {
+                    Items: [[], [i]],
+                    ItemsMask: [[low, high], items, "DodgerBlue"]
+                }
+                let mid = midPoint(low, high)
+                while (high - low > 2) {
+                    if (high - low === 2) {
+                        toDraw.Aux = [[mid]]
+                        aux[mid] = items[i]
+                        await sleep()
+                        if (terminate) { halt(); return }
+                    } else {
+                        toDraw.Aux = [[], [mid]]
+                        comparisons++
+                        await sleep()
+                        if (items[i] < aux[mid]) {
+                            high = mid
+                        } else {
+                            low = mid
+                        }
+                        await sleep()
+                    }
+                }
+                toDraw = {
+                    Items: [[], [i]],
+                    Aux: [[i]]
+                }
+                aux[i] = items[i]
+                await sleep()
+                if (Math.log2(i) % 1 === 0) await rebalance()
+            }
+            // await rebalance()
+            stop()
+        },
+        async CheatCycle() {
+            start()
+            comparisons = "N/A"
+            for (let i = 0; i < n; i++) {
+                while (items[i] !== i) {
+                    swap(i, items[i])
+                    toDraw = { Items: [[i, items[i]]] }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                }
+                toDraw = { Items: [[], [i]] }
+                await sleep()
+            }
+            stop()
+        },
+        async Cycle() {
+            start()
+            let i = 0
+            while (i < n) {
+                let index = i
+                for (let j = i; j < n; j++) {
+                    toDraw = { Items: [[], [i, j], [index]] }
+                    if (await greaterThan(i, j)) {
+                        index++
+                    }
+                    if (terminate) { halt(); return }
+                }
+                toDraw = { Items: [[i, index]] }
+                swap(i, index)
+                await sleep()
+                if (terminate) { halt(); return }
+                if (index === i) i++
+                toDraw = { Items: [[], [i]] }
+                await sleep()
+            }
+            stop()
+        },
+        async CrossoverBitonic() {
+            start()
+            async function compareAndSwap(i, j) {
+                comparisons++
+                if (items[i] > items[j]) {
+                    swap(i, j)
+                }
+                await sleep()
+                if (terminate) return
+            }
+            for (let sortLevel = 1; sortLevel < Math.log2(n) + 1; sortLevel++) {
+                for (let i = 0; i < n; i += 2 ** sortLevel) {
+                    for (let j = 0; j < 2 ** (sortLevel - 1); j++) {
+                        compareAndSwap(i + j, i + 2 ** sortLevel - j - 1)
+                        toDraw = { Items: [[], [i + j, i + 2 ** sortLevel - j - 1]] }
+                        await concurrentSleep()
+                    }
+                }
+                for (let mergeLevel = sortLevel - 1; mergeLevel > 0; mergeLevel--) {
+                    let width = 2 ** (mergeLevel - 1)
+                    for (let i = 0; i < n; i += 2 * width) {
+                        for (let j = 0; j < width; j++) {
+                            compareAndSwap(i + j, i + j + width)
+                            toDraw = { Items: [[], [i + j, i + j + width]] }
+                            await concurrentSleep()
+                        }
+                    }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                }
+            }
+            stop()
+        },
+        async Bitonic() {
+            start()
+            async function compareAndSwap(i, j, desc) {
+                comparisons++
+                if ((items[i] > items[j] && desc == 0) || (items[i] < items[j] && desc == 1)) {
+                    swap(i, j)
+                }
+                await sleep()
+                if (terminate) return
+            }
+            for (let sortLevel = 1; sortLevel < Math.log2(n) + 1; sortLevel++) {
+                for (let mergeLevel = sortLevel; mergeLevel > 0; mergeLevel--) {
+                    let width = 2 ** (mergeLevel - 1)
+                    for (let i = 0; i < n; i += 2 ** mergeLevel) {
+                        for (let j = 0; j < width; j++) {
+                            compareAndSwap(i + j, i + j + width, (i >> sortLevel) % 2)
+                            toDraw = { Items: [[], [i + j, i + j + width]] }
+                            await concurrentSleep()
+                            // if (terminate) { halt(); return }
+
+                        }
+                    }
+                    await sleep()
+                    if (terminate) { halt(); return }
+                }
+            }
+            stop()
+        },
+        async AuxQuick() {
+            async function sort(start = 0, end = n) {
+                aux = []
+                if (start < end - 1) {
+                    let lPointer = start
+                    let rPointer = end - 1
+                    for (let i = start + 1; i < end; i++) {
+                        toDraw = { Items: [[], [start, i]] }
+                        if (await greaterThan(i, start)) {
+                            aux[rPointer] = items[i]
+                            rPointer--
+                            toDraw.Aux = [[rPointer], [], [lPointer - 1, rPointer + 1]]
+                        } else {
+                            aux[lPointer] = items[i]
+                            lPointer++
+                            toDraw.Aux = [[lPointer], [], [lPointer - 1, rPointer + 1]]
+                        }
+                        await sleep()
+                        if (terminate) { halt(); return }
+                    }
+                    aux[lPointer] = items[start]
+                    toDraw.Aux = [[lPointer]]
+                    await sleep()
+                    items = items.map((item, i) => typeof aux[i] === "undefined" ? item : aux[i])
+                    toDraw = {
+                        Items: [range(start, end)],
+                        Aux: [[], range(start, end)]
+                    }
+                    await sleep()
+                    await sort(start, rPointer)
+                    await sort(rPointer + 1, end)
+                }
+            }
+            start()
+            await sort()
+            stop()
+        },
+        async Selection() {
+            start()
+            for (let i = 0; i < n; i++) {
+                let mindex = i
+                for (let j = i; j < n; j++) {
+                    toDraw = { Items: [[], [i, j], [mindex]] }
+                    if (await lessThan(j, mindex)) mindex = j
+                    if (terminate) { halt(); return }
+                }
+                swap(i, mindex)
+                toDraw = { Items: [[i, mindex]] }
+                await sleep()
+            }
+            stop()
+        },
+        async OddEven() {
+            start()
+            for (let i = 0; i < n - 1; i++) {
+                let swaps = []
+                for (let j = i % 2; j < n - 1; j += 2) {
+                    comparisons++
+                    toDraw = { Items: [[], [j, j + 1]] }
+                    await concurrentSleep()
+                    if (items[j] > items[j + 1]) {
+                        swap(j, j + 1)
+                        swaps.push(j, j + 1)
+                        toDraw = { Items: [[j, j + 1]] }
+                        await concurrentSleep()
+                    }
+                    if (terminate) { halt(); return }
+                }
+                if (concurrent) {
+                    toDraw = { Items: [swaps] }
+                    await sleep()
+                }
+                if (swaps.length === 0) break
+            }
+            stop()
+        }
+    }
+    function drawItem(x, y, width, height) { // Generated by AI
+        // let borderRadius = Math.min(10, width / 5, height / 5)
+
+        // if (height > 0) {
+
+        //     ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        //     ctx.shadowBlur = 8;
+        //     ctx.shadowOffsetX = 0;
+        //     ctx.shadowOffsetY = 0;
+
+        //     // Draw the background gradient (mimicking the linear-gradient)
+        //     const gradient = ctx.createLinearGradient(x, y, x, y + height);
+        //     gradient.addColorStop(0, '#A1C8E6');
+        //     gradient.addColorStop(0.4, '#4B9ED6');
+        //     gradient.addColorStop(0.75, '#2A5B9B');
+        //     gradient.addColorStop(1, '#4B9ED6');
+
+        //     // Fill the rectangle with the gradient
+        //     ctx.fillStyle = gradient;
+        //     ctx.roundRect(x, y, width, height, borderRadius)
+        //     ctx.fill();
+
+        //     // Draw the border (1pt outset)
+        //     ctx.lineWidth = 1;
+        //     ctx.strokeStyle = 'rgba(0, 0, 0, 0.25)'; // #0000003F
+        //     ctx.stroke();
+
+        //     // Draw the inner rectangle (to simulate padding)
+        //     ctx.beginPath();
+        //     ctx.roundRect(x + 5, y + 5, width - 10, height - 10, borderRadius / 2);
+        //     ctx.fillStyle = gradient;
+        //     ctx.fill();
+        // }
+        // ctx.fillStyle = "white"
+        ctx.rect(x, y, width, height)
+        // ctx.fill()
+    }
+    function drawArray(array, colour = "#fff", aux = false, offset = 0) {
+        ctx.fillStyle = colour
+        ctx.beginPath()
+        for (let i = 0; i < array.length; i++) {
+            drawItem(
+                (i + offset) * canvas.width / n,
+                ((aux ? 1 : 0.5) - 0.5 * array[i] / r) * canvas.height,
+                canvas.width / n,
+                0.5 * array[i] * canvas.height / r,
+                colour
+            )
+        }
+        ctx.closePath()
+        ctx.fill()
+    }
+    function drawMask(mask, array, colour = "#fff", aux = false, offset = 0) {
+        ctx.fillStyle = colour
+        ctx.beginPath()
+        for (let i of mask) {
+            ctx.rect(
+                (i + offset) * canvas.width / n,
+                ((aux ? 1 : 0.5) - 0.5 * array[i] / r) * canvas.height,
+                canvas.width / n,
+                0.5 * array[i] * canvas.height / r
+            )
+        }
+        ctx.closePath()
+        ctx.fill()
+    }
+    function drawDigits(counts, array, aux) {
+        if (counts[0].length > 0) drawMask(counts[0], array, "Tomato", aux)
+        if (counts[1].length > 0) drawMask(counts[1], array, "Orange", aux)
+        if (counts[2].length > 0) drawMask(counts[2], array, "MediumSeaGreen", aux)
+        if (counts[3].length > 0) drawMask(counts[3], array, "#4f3f84", aux)
+    }
+    function drawBuckets(positions) {
+        ctx.fillStyle = "#4f3f84"
+        ctx.fillRect(0, 0, positions[3] || canvas.width, canvas.height / 2)
+        ctx.fillStyle = "MediumSeaGreen"
+        ctx.fillRect(0, 0, positions[2], canvas.height / 2)
+        ctx.fillStyle = "Orange"
+        ctx.fillRect(0, 0, positions[1], canvas.height / 2)
+        ctx.fillStyle = "Tomato"
+        ctx.fillRect(0, 0, positions[0], canvas.height / 2)
+    }
+    function drawItems(red = [], green = [], cyan = []) {
+        drawArray(items)
+        drawMask(red, items, "Tomato")
+        drawMask(green, items, "MediumSeaGreen")
+        drawMask(cyan, items, "DodgerBlue")
+        document.getElementById("comparisons").innerHTML = `Comparisons: ${comparisons}`
+    }
+    function drawAux(red = [], green = [], cyan = []) {
+        ctx.clearRect(0, canvas.height / 2, canvas.width, canvas.height / 2)
+        drawArray(aux, "#fff", true)
+        drawMask(red, aux, "Tomato", true)
+        drawMask(green, aux, "MediumSeaGreen", true)
+        drawMask(cyan, aux, "DodgerBlue", true)
+    }
+
+    let timeSpent = 0
+    function drawLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height / 2)
+        if ("Buckets" in toDraw) drawBuckets(...toDraw.Buckets)
+        if ("Items" in toDraw) drawItems(...toDraw.Items)
+        if ("Queues" in toDraw) drawQueues()
+        if ("Aux" in toDraw) drawAux(...toDraw.Aux)
+        if ("Digits" in toDraw) drawDigits(...toDraw.Digits)
+        if ("ItemsMask" in toDraw) drawMask(...toDraw.ItemsMask)
+        if ("AuxMask" in toDraw) drawMask(...toDraw.AuxMask)
+        if (running) window.requestAnimationFrame(drawLoop)
+    }
+    function operationLoop() {
+        if (performance.now() - timeSpent > 1000 / 2 ** speed) {
+            timeSpent += 1000 / 2 ** speed
+            tick()
+        }
+        if (running) window.postMessage({ type: 'operationLoop' })
+    }
+    window.addEventListener('message', e => { if (e.data.type === 'operationLoop') operationLoop() })
+
+    if (urlParams.get("n")) {
+        let number = Number(urlParams.get("n"))
+        document.getElementById("n").value = Math.min(number, 256)
+        document.getElementById("n").nextElementSibling.innerHTML = number
+        init(number)
+    } else init(32)
+    if (urlParams.get("shuffled")) shuffle(false)
+    if (urlParams.get("locked")) document.getElementById("setup").remove()
+</script>
+
+</html>

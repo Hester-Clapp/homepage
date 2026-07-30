@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<canvas></canvas>
+<button onclick="tick()">Tick</button>
+<h3>My saves:</h3>
+<div id="saves"></div>
+<form id="newSlot" autocomplete="off">
+    <input type="submit" value="Add a new slot">
+    <input type="text" name="name" id="name" placeholder="Name" value="test2">
+</form>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    canvas.width = document.documentElement.clientWidth - 30
+    canvas.height = document.documentElement.clientHeight - 130
+
+    const blockWidth = 32
+    const pushLimit = 12
+
+    // dir 0 = left, 1 = up, 2 = right, 3 = down
+    class Block {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+            this.hardPowered = false
+            this.softPowered = false
+            this.texture = "block.png"
+
+            this.checked = false
+            this.newX = x
+            this.newY = y
+            this.hardPower = false
+            this.softPower = false
+            this.wandPower = false
+            this.redraw = true
+
+            this.tags = []
+        }
+
+        is(tag) { return tag[0] === "!" ? !this.tags.includes(tag) : this.tags.includes(tag) }
+        isAny(...tags) { return tags.reduce((a, tag) => a || this.is(tag), false) }
+        isAll(...tags) { return tags.reduce((a, tag) => a && this.is(tag), true) }
+
+        get getAdjacentBlocks() { return blocks.filter(v => Math.abs(v.x - this.x) + Math.abs(v.y - this.y) === 1) }
+        get getConnectedBlocks() { return this }
+
+        updateHardPower() {
+            this.hardPowered = this.hardPower
+            if (this.hardPowered) blocks.filter(v => Math.abs(v.x - this.x) + Math.abs(v.y - this.y) === 1 && !v.is("transparent")).forEach(v => { v.softPower = true })
+        }
+
+        updateSoftPower() {
+            this.softPowered = this.softPower || this.hardPower
+            this.wandPower = false
+        }
+
+        move(x, y) {
+            this.newX = this.x + x
+            this.newY = this.y + y
+            this.redraw = true
+
+            blocks.filter(v => v.newX === this.newX && v.newY === this.newY && v !== this).forEach(v => { v.move(x, y) })
+        }
+
+        updatePosition() { this.x = this.newX; this.y = this.newY }
+
+        toJSON() {
+            return {
+                block: this.constructor.name,
+                x: this.x,
+                y: this.y,
+                dir: 0
+            }
+        }
+
+        clear() { ctx.clearRect(this.x * blockWidth, this.y * blockWidth, blockWidth, blockWidth) }
+        async draw() {
+            loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                ctx.drawImage(texture, this.x * blockWidth, this.y * blockWidth, blockWidth, blockWidth)
+            })
+            this.redraw = false
+        }
+    }
+
+    class Slime_Block extends Block {
+        constructor(x, y) {
+            super(x, y)
+            this.texture = "slime.png"
+            this.tags = ["sticky"]
+        }
+
+        get findConnectedBlocks() {
+            this.checked = true
+            let assembly = blocks.filter(v => Math.abs(v.x - this.x) + Math.abs(v.y - this.y) === 1 && !v.isAny("immovable", "nonstick") && !v.checked)
+            assembly.forEach(v => {
+                if (v.is("sticky") && v.constructor.name === this.constructor.name) assembly = assembly.concat(v.findConnectedBlocks)//.filter(v => !v.checked))
+            })
+            if (assembly.length > pushLimit) this.tags.push("immovable")
+            return assembly
+        }
+
+        get getConnectedBlocks() {
+            let assembly = this.findConnectedBlocks
+            assembly.forEach(v => { v.checked = false })
+            return assembly
+        }
+
+        move(x, y, calcAssembly = true) {
+            if (calcAssembly) this.getConnectedBlocks.forEach(v => { v.move(x, y, false) })
+            if (!this.redraw) super.move(x, y)
+        }
+    }
+
+    class Honey_Block extends Slime_Block {
+        constructor(x, y) {
+            super(x, y)
+            this.texture = "honey.png"
+        }
+    }
+
+    class Piston extends Block {
+        constructor(x, y, dir) {
+            super(x, y)
+            this.texture = "piston.png"
+            this.extended = false
+            this.dir = dir
+            this.targetX = Math.round(Math.cos(dir * Math.PI / 2))
+            this.targetY = Math.round(Math.sin(dir * Math.PI / 2))
+        }
+
+        get getTargetBlock() {
+            return blocks.filter(v => v.x === (this.extended ? this.targetX * 2 : this.targetX) + this.x && v.y === (this.extended ? this.targetY * 2 : this.targetY) + this.y)[0]
+        }
+
+        updateSoftPower() {
+            super.updateSoftPower()
+            console.log([getBlockAt(this.x - 1, this.y - 1), getBlockAt(this.x, this.y - 2), getBlockAt(this.x + 1, this.y - 1)].filter(v => v))
+            this.softPowered = this.softPower || this.hardPower || [getBlockAt(this.x - 1, this.y - 1), getBlockAt(this.x, this.y - 2), getBlockAt(this.x + 1, this.y - 1)].filter(v => v).reduce((a, v) => a || v.softPower, false)
+            if (this.softPowered && !this.extended) {
+                // console.log("extending")
+                if (!this.is("immovable")) this.tags.push("immovable")
+                this.getTargetBlock.move(this.targetX, this.targetY)
+            }
+            if (!this.softPowered && this.extended) {
+                // console.log("retracting")
+                if (this.is("immovable")) this.tags.splice(this.tags.indexOf("immovable"), 1)
+                if (this.constructor.name === "Sticky_Piston") this.getTargetBlock.move(-this.targetX, -this.targetY)
+            }
+            this.extended = this.softPowered
+        }
+
+        toJSON() {
+            return {
+                block: this.constructor.name,
+                x: this.x,
+                y: this.y,
+                dir: this.dir
+            }
+        }
+
+        async draw() {
+            switch (this.dir) {
+                case 1:
+                    loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                        ctx.translate(128, 128)
+                        ctx.rotate(-Math.PI / 2)
+                        ctx.drawImage(texture, 0, -blockWidth, blockWidth, blockWidth)
+                        ctx.rotate(Math.PI / 2)
+                        ctx.translate(-128, -128)
+                    })
+                    break
+                case 2:
+                    loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                        ctx.translate(128, 128)
+                        ctx.rotate(-Math.PI)
+                        ctx.drawImage(texture, -blockWidth, -blockWidth, blockWidth, blockWidth)
+                        ctx.rotate(Math.PI)
+                        ctx.translate(-128, -128)
+                    })
+                    break
+                case 3:
+                    loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                        ctx.translate(128, 128)
+                        ctx.rotate(-3 * Math.PI / 2)
+                        ctx.drawImage(texture, -blockWidth, 0, blockWidth, blockWidth)
+                        ctx.rotate(3 * Math.PI / 2)
+                        ctx.translate(-128, -128)
+                    })
+                    break
+                default:
+                    loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                        ctx.drawImage(texture, 128, 128, blockWidth, blockWidth)
+                    })
+            }
+            if (this.dir === 0) {
+
+            } else {
+
+            }
+
+
+            ctx.save()
+            loadImage(`./assets/textures/${this.texture}`).then(texture => {
+                ctx.translate((this.x + 1) * blockWidth, this.y * blockWidth)
+                ctx.rotate(-this.dir * Math.PI / 2)
+                ctx.drawImage(texture, 0, 0, blockWidth, blockWidth)
+            })
+            ctx.restore()
+            this.redraw = false
+        }
+    }
+
+    class Sticky_Piston extends Piston {
+        constructor(x, y, dir) {
+            super(x, y, dir)
+            this.texture = "sticky_piston.png"
+        }
+    }
+
+    class Redstone_Block extends Block {
+        constructor(x, y) {
+            super(x, y)
+            this.texture = "redstone.png"
+        }
+
+        updateHardPower() {
+            this.hardPower = true
+            this.softPower = true
+            super.updateHardPower()
+        }
+    }
+
+    const BlockIDs = ["Block", "Slime_Block", "Honey_Block", "Piston", "Sticky_Piston", "Redstone_Block"]
+
+    function newBlock(name, x = 0, y = 0, dir = 0) {
+        switch (name) {
+            case "Block": default: return new Block(x, y);
+            case "Slime_Block": return new Slime_Block(x, y);
+            case "Honey_Block": return new Honey_Block(x, y);
+            case "Piston": return new Piston(x, y, dir);
+            case "Sticky_Piston": return new Sticky_Piston(x, y, dir);
+            case "Redstone_Block": return new Redstone_Block(x, y);
+        }
+    }
+
+    let blocks = []
+
+    // Tools
+
+    let tool = 0
+    let selectedBlock = 0
+    let selectedDir = 0
+    let mouseX
+    let mouseY
+
+    window.addEventListener("keydown", e => {
+        // canvas.style.cursor = `url('./assets/textures/${newBlock(BlockIDs[selectedBlock]).texture}'), auto`
+        cursors = [, , "pick.png", "torch.png", "obsidian.png"]
+        if (e.key === "ArrowRight") {
+            tool = Math.min(tool + 1, 4)
+        } else if (e.key === "ArrowLeft") {
+            tool = Math.max(tool - 1, 0)
+        } else if (e.key === "r") {
+            selectedDir = (selectedDir + 1) % 4
+        } else {
+            selectedBlock = [...BlockIDs.keys()].map(v => String((v + 1) % 10)).includes(e.key) ? parseInt(e.key) - 1 : BlockIDs.length
+        }
+        canvas.style.cursor = (tool > 1) ? `url('./assets/tools/${cursors[tool]}'), auto` : (tool === 1 && selectedBlock < BlockIDs.length) ? `url('./assets/textures/${newBlock(BlockIDs[selectedBlock]).texture}'), auto` : "auto"
+    })
+
+    window.addEventListener("mousemove", e => {
+        let b = canvas.getBoundingClientRect()
+        mouseX = Math.floor((e.clientX - b.left) / blockWidth)
+        mouseY = Math.floor((e.clientY - b.top) / blockWidth)
+    })
+
+    window.addEventListener("click", e => {
+        if (mouseX > 0 && mouseX * blockWidth < canvas.width && mouseY > 0 && mouseY * blockWidth < canvas.height) {
+            switch (tool) {
+                case 1: place(BlockIDs[selectedBlock], mouseX, mouseY); break
+                case 2: remove(mouseX, mouseY); break
+                case 3: power(mouseX, mouseY); break
+            }
+        }
+    })
+
+    // Saving and loading
+
+    function save(name) { localStorage.setItem(name, JSON.stringify(blocks.map(v => v.toJSON()))) }
+    function load(name, autosave = true) {
+        if (blocks.length > 0 && autosave) { save("autosave") }
+        blocks = []; ctx.clearRect(0, 0, canvas.width, canvas.height)
+        JSON.parse(localStorage.getItem(name)).forEach(v => place(v.block, v.x, v.y, v.dir))
+    }
+    window.addEventListener("beforeunload", () => { if (blocks.length > 0) { save("autosave") }; return null })
+    window.addEventListener("load", load("autosave"))
+
+    function fetchSaves() {
+        let saves = Object.keys(localStorage)
+        let div = document.getElementById("saves")
+        div.innerHTML = ""
+        saves.forEach(name => {
+            let slot = document.createElement("div")
+            slot.className = "slot"
+            let h = document.createElement("h4")
+            h.innerHTML = name
+            h.style.margin = "5px"
+            slot.appendChild(h)
+            let saveButton = document.createElement("button")
+            saveButton.innerHTML = "Save"
+            saveButton.addEventListener("click", () => { save(name); alert(`Saved to slot ${name}!`) })
+            slot.appendChild(saveButton)
+            let loadButton = document.createElement("button")
+            loadButton.innerHTML = "Load"
+            loadButton.addEventListener("click", () => { save("autosave"); if (confirm(`Are you sure you want to load slot ${name}?\n(your current build will be deleted)`)) { load(name, false) } })
+            slot.appendChild(loadButton)
+            if (name !== "autosave") {
+                let deleteButton = document.createElement("button")
+                deleteButton.innerHTML = "Delete"
+                deleteButton.addEventListener("click", () => { delete localStorage[name]; fetchSaves() })
+                slot.appendChild(deleteButton)
+            }
+            div.appendChild(slot)
+        })
+    }
+
+    document.getElementById("newSlot").onsubmit = (e) => { e.preventDefault(); save(document.getElementById("name").value); fetchSaves() }
+
+    fetchSaves()
+
+    // Gameplay
+
+    function getBlockAt(x, y) { return blocks.filter(v => v.x === x && v.y === y)[0] }
+    function place(name, x, y, dir = 0) { if (!getBlockAt(x, y)) { blocks.push(newBlock(name, x, y, dir)); blocks.at(-1).draw() } }
+    function remove(x, y) { let block = getBlockAt(x, y); if (block) { block.clear(); blocks = blocks.filter(v => v.x != x || v.y != y) } }
+    function power(x, y) { getBlockAt(x, y).wandPower = true; tick() }
+
+    async function tick() {
+        // Power blocks that should be powered
+        blocks.forEach(v => { v.hardPower = false || v.wandPower; v.softPower = false || v.wandPower })
+        blocks.forEach(v => v.updateHardPower())
+        blocks.forEach(v => v.updateSoftPower())
+
+        // If anything has moved, store its new position and queue it for redrawing
+        let redraw = blocks.filter(v => v.redraw)
+        redraw.forEach(v => v.clear())
+        blocks.forEach(v => v.updatePosition())
+
+        // Draw all blocks that have moved
+        redraw.forEach(async v => await v.draw())
+
+    }
+
+    // setInterval(tick, 100)
+
+    function loadImage(src) { // Copied from stackoverflow
+        return new Promise(resolve => {
+            const image = new Image();
+            image.addEventListener('load', () => { resolve(image) })
+            image.src = src;
+        })
+    }
+
+
+</script>
+
+<style>
+    .up {
+        /* -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        -o-transform: rotate(90deg);
+        -ms-transform: rotate(90deg); */
+        transform: rotate(90deg);
+    }
+
+    .left {
+        /* -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        -ms-transform: rotate(180deg); */
+        transform: rotate(180deg);
+    }
+
+    .down {
+        /* -webkit-transform: rotate(270deg);
+        -moz-transform: rotate(270deg);
+        -o-transform: rotate(270deg);
+        -ms-transform: rotate(270deg); */
+        transform: rotate(270deg);
+    }
+
+    .slot {
+        border: 1px solid black;
+        padding: 5px;
+        margin: 5px;
+    }
+</style>

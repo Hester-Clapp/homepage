@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+
+<style>
+
+.across {
+  display: flex;
+  flex-direction: row;
+}
+
+.down {
+  display: flex;
+  flex-direction: column;
+}
+
+#coincidences {
+    border: 4px lightgray outset;
+    padding: 10px;
+    width: 300px;
+    margin-top: 20px;
+    margin-left: 10px;
+}
+
+#outputDiv {
+    border: 4px lightgray outset;
+    padding: 10px;
+    width: auto;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+table {
+    border: 2px black solid;
+    margin: 10px;
+}
+
+th {
+    width:60px;
+}
+
+h3 {
+    margin: 0px;
+}
+</style>
+
+<html>
+    <label for="ctInput">Input ciphertext:</label>
+
+    <input type="text" id="ctInput" size="20" />
+
+    <div id="outputDiv">
+        <h3>Decrypted Message:</h3>
+        
+        <p id="outputText" style="word-wrap: break-word;"></p>
+    </div>
+</html>
+  
+<script>
+    const nonLetters = ["","\n"," ",".",",","!","?","'","-",":","’"]
+    const letterFreqs = [0.0812, 0.0149, 0.0271, 0.0432, 0.1202, 0.023, 0.0203, 0.0592, 0.0731, 0.001, 0.0069, 0.0398, 0.0261, 0.0695, 0.0768, 0.0182, 0.0011, 0.0602, 0.0628, 0.091, 0.0288, 0.0111, 0.0209, 0.0017, 0.0211, 0.0007]
+    let cipherText = ""
+
+    document.getElementById("ctInput").onchange = () => {
+        cipherText = document.getElementById("ctInput").value.toUpperCase().split("").filter(v => !nonLetters.includes(v)).map(v => String.fromCharCode((v.charCodeAt(0)-65+solveCaesar(cipherText))%26+65)).reduce((acc,v) => acc + v,"")
+    }
+
+    // function generateCiphers (length) {
+    //     for (let i=0;i<keyLength;i++) {
+    //         let text = cipherText.split("").filter((v,j) => j%keyLength === i).reduce((acc,v) => acc+v,"")
+    //         modCiphers[i] = text.split("").map(v => String.fromCharCode((v.charCodeAt(0)-65+solveCaesar(text))%26+65))
+    //     }
+    //     decipher()
+    // }
+
+    function solveCaesar(cipherTextInput) {
+        let scores = []
+        let cipherArray = cipherTextInput.split("").map(v => v.charCodeAt(0)-65)
+        for (let i=0;i<26;i++) {
+            let shift = cipherArray.map(v => (v+i)%26)
+            let shiftFreqs = shift.reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), []).map(v => +((v/cipherTextInput.length).toFixed(4)))
+            scores[i] = 0
+            for (let j=0;j<26;j++) {
+                scores[i] += letterFreqs[j] * (shiftFreqs [j] || 0)
+            }
+        }
+        return(scores.indexOf(Math.max(...scores)))
+    }
+
+    // function decipher () {
+    //     let output = []
+    //     modCiphers.forEach((a,i) => {
+    //         a.forEach((v,j) => {
+    //             output[j*keyLength + i] = v
+    //         })
+    //     })
+    //     let plaintext = output.reduce((acc, v) => acc + v, "")
+    //     document.getElementById("outputText").innerHTML = plaintext
+    // }
+</script>

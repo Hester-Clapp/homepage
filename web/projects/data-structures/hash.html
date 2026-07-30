@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Table | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Hash Tables</h2>
+    <p>
+        A hash table is an abstract data structure based on a circular array which is designed to be queried in
+        constant time.
+        This means the amount of time it takes to check if an item is in the table is independent from the number of
+        items in the table.
+    </p>
+    <p>
+        When items are added, the item itself is passed through a hash function, which returns a numerical value. This
+        is then used as the index of the item. Similarly, when querying the table, the query itself is hashed, and the
+        table checks if there is an item at that index.
+    </p>
+    <p>
+        This means the first index checked is usually the correct target, but sometimes different items will hash to the
+        same value. To prevent this, a technique called linear probing is used.
+    </p>
+    <p>
+        If an item is added to an index which is already full, the table simply looks for the next empty slot in the
+        table. Querying is slightly more complex - if there is an item at the index but it is not the same as the query,
+        the table will perform a linear search, starting at the index and stopping when the target is found (and returns
+        true) or until an empty space is found (and returns false).
+    </p>
+    <p id="bigHash">Note: The true power of the hash table comes with scale. Click <a href="./bighash.html">here</a> for
+        a much larger demonstration!</p>
+    <hr>
+    <form id="addForm" autocomplete="off">
+        <input id="addInput" placeholder="Add an item" required>
+        <input id="addButton" type="submit" value="Add">
+    </form>
+    <form id="queryForm" autocomplete="off">
+        <input id="queryInput" placeholder="Query an item" required>
+        <input id="queryButton" type="submit" value="Query">
+    </form>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="hashTable">
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+    </ol>
+</body>
+
+<script>
+    let hashTable = document.getElementById("hashTable").children
+    let probe
+
+    function hash(input) {
+        return String(input).split("").reduce((a, chr) => a + chr.charCodeAt() ** 2, 0) % 8
+    }
+
+    function add(v, i) {
+        hashTable[i].innerHTML = v
+        hashTable[i].className = "success"
+        setTimeout(() => { hashTable[i].className = "" }, 500)
+        clearInterval(probe)
+        document.getElementById("addButton").disabled = false
+    }
+
+    function query(v, i, result) {
+        hashTable[i].className = "success"
+        setTimeout(() => { hashTable[i].className = hashTable[i].innerHTML ? "" : "empty" }, 500)
+        document.getElementById("textOutput").innerHTML = result ? "Positive - " + String(v) + " is in the hash table!" : "Negative - " + String(v) + " is not in the hash table!"
+        clearInterval(probe)
+        document.getElementById("queryButton").disabled = false
+    }
+
+    document.getElementById("addForm").addEventListener("submit", e => {
+        e.preventDefault()
+        document.getElementById("addButton").disabled = true
+        let v = document.getElementById("addInput").value
+        let index = hash(v)
+        let i = index
+        document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+        if (hashTable[i].innerHTML) {
+            hashTable[i].className = "failure"
+            i = (i + 1) % 8
+            probe = setInterval(() => {
+                hashTable[(i + 7) % 8].className = hashTable[(i + 7) % 8].innerHTML ? "" : "empty"
+                if (hashTable[i].innerHTML) {
+                    if (i === index) {
+                        console.log(i)
+                        hashTable[i].className = ""
+                        document.getElementById("textOutput").innerHTML = "Cannot add " + String(v) + ", hash table is full!"
+                        clearInterval(probe)
+                    } else {
+                        hashTable[i].className = "failure"
+                        i = (i + 1) % 8
+                    }
+                } else {
+                    add(v, i)
+                }
+            }, 500)
+        } else {
+            add(v, i)
+        }
+
+        document.getElementById("addForm").reset()
+        document.getElementById("addInput").focus()
+    })
+    document.getElementById("queryForm").addEventListener("submit", e => {
+        e.preventDefault()
+        document.getElementById("queryButton").disabled = true
+        let v = document.getElementById("queryInput").value
+        let index = hash(v)
+        let i = index
+        document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+        if (hashTable[i].innerHTML) {
+            if (hashTable[i].innerHTML === v) {
+                query(v, i, true)
+            } else {
+                hashTable[i].className = "failure"
+                i = (i + 1) % 8
+                probe = setInterval(() => {
+                    hashTable[(i + 7) % 8].className = hashTable[(i + 7) % 8].innerHTML ? "" : "empty"
+                    if (hashTable[i].innerHTML) {
+                        if (hashTable[i].innerHTML === v) {
+                            query(v, i, true)
+                        } else {
+                            if (i === index) {
+                                query(v, i, false)
+                                hashTable[i].className = ""
+                            } else {
+                                hashTable[i].className = "failure"
+                                i = (i + 1) % 8
+                            }
+                        }
+                    } else {
+                        query(v, i, false)
+                    }
+                }, 500)
+            }
+        } else {
+            query(v, i, false)
+        }
+        document.getElementById("queryForm").reset()
+        document.getElementById("queryInput").focus()
+    })
+    setTimeout(() => { document.getElementById("bigHash").remove() }, 4000)
+</script>
+
+</html>

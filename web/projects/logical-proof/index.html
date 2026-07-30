@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logical Proof</title>
+    <style>
+        /* * {
+            font-family: monospace;
+            } */
+        th,
+        td {
+            padding: 2px 1ch;
+            text-align: left;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            font-family: monospace;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            font-style: italic;
+        }
+
+        div.logicInput {
+            font-family: Arial, sans-serif;
+            max-width: 300px;
+            margin: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            background: #f9f9f9;
+            box-sizing: border-box;
+        }
+
+        div.logicInput label {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            display: block;
+            margin-bottom: 5px;
+            box-sizing: border-box;
+        }
+
+        div.logicInput input {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            transition: border 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        div.logicInput input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        div.logicInput output {
+            font-family: monospace;
+            margin-top: 10px;
+            padding: 5px;
+            font-size: 14px;
+            color: #333;
+            background: #eef;
+            border-radius: 5px;
+            min-height: 20px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="argumentInput" style="display: flex;"></div>
+    <button onclick="argument.prove()">Prove</button>
+    <table>
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+</body>
+<script>
+    class Token {
+        constructor(token, type = Token.typeOf(token)) {
+            this.value = token
+            this.precedence = Token.precedence(token)
+            this.numOperands = Token.numOperands(token)
+            this.type = type
+
+            memos.tokens[this.value] = this
+        }
+
+        static new(token, type) {
+            if (token instanceof Token) token = token.value
+            if (token in memos.tokens) {
+                if (type && memos.tokens[token].type !== type) memos.tokens[token].type = type
+                return memos.tokens[token]
+            }
+            else return new Token(token, type)
+        }
+
+        static precedence(token) {
+            let precedence = 0
+            switch (token) {
+                case "↔":
+                    precedence++
+                case "→":
+                case "←":
+                    precedence++
+                case "∨":
+                    precedence++
+                case "∧":
+                    precedence++
+                case "∀":
+                case "∃":
+                    precedence++
+                case "¬":
+                    precedence++
+            }
+            return precedence
+        }
+
+        static numOperands(token) {
+            if (token instanceof Token) return token.numOperands
+            if (token.match(/[↔→←∨∧∀∃]/)) return 2
+            if (token.match(/[¬]/) || Token.typeOf(token) === "predicate") return 1
+            return 0
+        }
+
+        static typeOf(token) {
+            if (token.match(/[↔→←∨∧¬]/)) return "operator"
+            if (token.match(/[⊤⊥]/)) return "determinate"
+            if (token.match(/[∀∃]/)) return "quantifier"
+            if (token.match(/[\(]/)) return "leftBracket"
+            if (token.match(/[\)]/)) return "rightBracket"
+            if (token.match(/[a-zA-Z_'\-]+/)) return "primitive"
+            return "unknown"
+        }
+
+        is(token) { return this.value === token }
+
+        // set type(type) {
+        //     if (this.value in memos.tokens) memos.tokens[this.value].type = type
+        // }
+    }
+
+    class Expression {
+        prefix
+        infix
+        postfix
+        constructor(infix) {
+            this.infix = Expression.tokenise(infix)
+            this.prefix = Expression.infixToPrefix(infix)
+            this.postfix = Expression.infixToPostfix(infix)
+        }
+
+        static standardise(proposition) {
+            return proposition
+                .replaceAll(/<->|<=>|===|==|\\leftrightarrow|\\iff|\biff\b|\bif and only if\b/g, "↔") // Biconditional
+                .replaceAll(/->|=>|\\to|\\implies|\\rightarrow|\bimplies\b|\bthen\b|\bonly if\b|\bsufficient for\b/g, "→") // Implies (sufficient)
+                .replaceAll(/<-|<=|=<|\\leftarrow|\bif\b|\bnecessary for\b/g, "←") // Implies (necessary)
+                .replaceAll(/\||\bV\b|\bv\b|\+|\\lor|\bor\b/g, "∨") // Or
+                .replaceAll(/&|\^|\.|\*|\\land|\band\b/g, "∧") // And
+                .replaceAll(/!|\~|\\neg|\\sim|\bnot\b/g, "¬") // Prefix Not
+                .replaceAll(/\b(True|true|T|1)\b/g, "⊤") // Tautology (true)
+                .replaceAll(/\b(False|false|F|0|#)\b/g, "⊥") // Contradiction (false)
+                .replaceAll(/\b(\\forall|all|forall)\b/g, "∀") // Universal Quantifier
+                .replaceAll(/\b(\\exists|some|exists)\b/g, "∃") // Existential Quantifier
+                .replaceAll(/[\[\{]/g, "(") // Brackets
+                .replaceAll(/[\]\}]/g, ")") // Brackets
+        }
+
+        static tokenise(proposition) {
+            let chars = Expression.standardise(proposition).split("")
+            let removed = 0
+            let bracketNumber = 0
+            let inQuotes = false
+
+            let tokens = chars.reduce((tokens, char, j) => {
+                if (char instanceof Token) return tokens.concat(char)
+                let i = j - removed
+
+                let prevToken = tokens?.[i - 1]
+
+                if (char === "(") {
+                    if (prevToken?.type === "primitive") prevToken.type = "predicate"
+                    bracketNumber++
+                }
+                if (char === ")") bracketNumber--
+
+                if (char === `"`) {
+                    inQuotes = !inQuotes
+                    removed++
+                    return tokens
+                }
+
+                if (prevToken?.type === "primitive"
+                    && (Token.typeOf(char) === "primitive"
+                        || (inQuotes && char === " "))
+                ) {
+                    removed++
+                    return tokens.slice(0, -1).concat(Token.new(prevToken.value + char, prevToken.type))
+                } else {
+                    if (Token.typeOf(char) === "unknown") {
+                        removed++
+                        return tokens
+                    }
+                    if (Token.typeOf(char) === "primitive"
+                        && (prevToken?.type === "quantifier"
+                            || tokens?.[i - 2]?.type === "predicate")
+                    ) return tokens.concat(Token.new(char, "entity"))
+                    else return tokens.concat(Token.new(char))
+                }
+            }, [])
+
+            tokens = tokens.filter(token => token instanceof Token)
+            for (let i = bracketNumber; i > 0; i--) {
+                tokens.push(Token.new(")"))
+            }
+
+            return tokens
+        }
+
+        static reverse(expression, string = false) {
+            if (typeof expression === "string") expression = Expression.tokenise(expression)
+            let reversed = expression.map(token => {
+                if (token.is("(")) return ")"
+                if (token.is(")")) return "("
+                return token
+            }).reverse()
+            return string ? reversed.join("") : reversed
+        }
+
+        static infixToPostfix(infix, string = false) {
+            if (typeof infix === "string") infix = Expression.tokenise(infix)
+            let postfix = []
+            let siding = []
+
+            function emptyWhile(conditionFunc) {
+                while (siding.length > 0 && conditionFunc(siding.at(-1))) {
+                    postfix.push(siding.pop())
+                }
+            }
+
+            infix.forEach(token => {
+                let operands = token.numOperands
+                let precedence = token.precedence
+
+                switch (token.type) {
+                    case "primitive":
+                    case "determinate":
+                    case "entity":
+                        postfix.push(token)
+                        break
+                    case "operator":
+                    case "quantifier":
+                    case "predicate":
+                        emptyWhile(token => token.numOperands > 0 && token.precedence <= precedence)
+                    case "leftBracket":
+                        siding.push(token)
+                        break
+                    case "rightBracket":
+                        emptyWhile(token => token.type !== "leftBracket")
+                        siding.pop()
+                        break
+                }
+            })
+
+            emptyWhile(token => true) // siding is not empty
+
+            return string ? postfix.join("") : postfix
+        }
+
+        static infixToPrefix(infix, string = false) {
+            if (typeof infix === "string") infix = Expression.tokenise(infix)
+            let reverseInfix = Expression.reverse(infix)
+            let postfix = Expression.infixToPostfix(reverseInfix)
+            return Expression.reverse(postfix, string)
+        }
+    }
+
+    class Template extends Expression {
+        constructor(infix) {
+            super(infix)
+        }
+
+        match(proposition) {
+            let array = [proposition]
+            let subtrees = {
+                "⊤": tautology,
+                "⊥": contradiction
+            }
+
+            let match = true
+
+            for (let i = 0; i < this.prefix.length; i++) {
+                let templateToken = this.prefix[i]
+
+                if (templateToken.type === "operator") {
+                    if (array[i].token === templateToken) {
+                        array.splice(i + 1, 0, ...array[i].operands)
+                    } else {
+                        match = false
+                        break
+                    }
+                }
+
+                if (templateToken.type === "primitive" || templateToken.type === "determinate") {
+                    if (templateToken.value in subtrees) {
+                        if (!subtrees[templateToken.value].sameAs(array[i])) {
+                            match = false
+                            break
+                        }
+                    } else {
+                        subtrees[templateToken.value] = array[i]
+                    }
+                }
+            }
+
+            return match ? subtrees : null
+        }
+
+        apply(subtrees) {
+            if (subtrees === null) throw new Error(`Template application error: invalid subtrees ${JSON.stringify(subtrees)}`)
+
+            let stack = []
+            for (let i = 0; i < this.postfix.length; i++) {
+                let templateToken = this.postfix[i]
+
+                if (templateToken.type === "primitive" || templateToken.type === "determinate") stack.push(subtrees[templateToken.value])
+
+                if (templateToken.type === "operator") {
+                    let n = templateToken.numOperands
+                    stack.push(Proposition.new(templateToken, ...stack.splice(-n, n)))
+                }
+            }
+
+            if (stack.length === 1) return stack[0]
+            throw new Error(`Template application error - ended with ${stack.length} items in stack, expected 1: ${stack.map(v => v.infix).join()}`)
+        }
+    }
+
+    class Simplification {
+        constructor(description, complex, simple) {
+            this.description = description
+            // this.complex = Expression.infixToPrefix(complex)
+            // this.simple = Expression.infixToPostfix(simple)
+            this.complex = new Template(complex)
+            this.simple = new Template(simple)
+        }
+
+        apply(proposition) {
+            if (!proposition instanceof Proposition) throw new Error("Cannot simplify proposition - invalid type")
+
+            // Check if proposition matches structure of "complex"
+            let subtrees = this.complex.match(proposition)
+
+            if (!subtrees) return proposition
+
+            // Rearrange the proposition according to the structure of "simple"
+            return this.simple.apply(subtrees)
+        }
+    }
+
+    class Proposition {
+        constructor(token, ...operands) {
+            this.token = token
+            this.operands = [...operands].flat()
+
+            if (this.operands.length !== this.token.numOperands) throw new Error(`Invalid arguments for operator ${this.token.value} - expected ${this.token.numOperands}, got ${this.operands.length}`)
+
+            // Precalculate infix representation
+            if (this.token.numOperands === 0) {
+                this.infix = this.token.value
+            } else {
+                let leftOperand = (this.operands[0].precedence >= this.precedence)
+                    ? `(${this.operands[0].infix})`
+                    : this.operands[0].infix
+                let rightOperand
+
+                if (this.token.numOperands === 1) {
+                    this.infix = `${this.token.value}${leftOperand}`
+                } else if (this.token.numOperands === 2) {
+                    rightOperand = (this.operands[1].precedence >= this.precedence)
+                        ? `(${this.operands[1].infix})`
+                        : this.operands[1].infix
+                    this.infix = `${leftOperand} ${this.token.value} ${rightOperand}`
+                }
+            }
+
+            // Precalculate postfix representation
+            if (this.token.numOperands === 0) {
+                this.postfix = this.token.value
+            } else {
+                this.postfix = this.operands
+                    .map(proposition => proposition.postfix)
+                    .concat(this.token.value)
+                    .join("")
+            }
+
+            memos.propositions[this.postfix] = this
+        }
+
+        static new(token, ...operands) {
+            if (typeof token === "string") token = new Token(token)
+
+            let postfix = [...operands]
+                .map(proposition => proposition.postfix)
+                .concat(token.value)
+                .join("")
+
+            let memoised = memos.propositions[postfix]
+            if (memoised) return memoised
+            else return new Proposition(token, ...operands)
+        }
+
+        get prefix() {
+            return [this.token].concat(
+                this.operands.map(proposition => proposition.postfix)
+                    .join("")
+            )
+        }
+
+        get depth() {
+            if (this.token.type === "determinate") return 0
+            if (this.token.numOperands > 0) return Math.max(...this.operands.map(subtree => subtree.depth + 1))
+            else return 1
+        }
+
+        get postfixExpression() {
+            return this.operands.map(proposition => proposition.postfixExpression)
+                .concat(this.token)
+        }
+
+        simplify() {
+            if (!(this.postfix in memos.simplifications)) {
+                memos.simplifications[this.postfix] = simplificationLaws.reduce((proposition, simplification) => simplification.apply(proposition), this)
+            }
+            return memos.simplifications[this.postfix]
+        }
+
+        simplifyRecursively() {
+            if (this.token.numOperands === 0) return this
+            else return Proposition.new(this.token, ...this.operands.map(subtree => subtree.simplifyRecursively())).simplify()
+        }
+
+        #fullySimplified
+        simplifyFully() {
+            if (!this.#fullySimplified) {
+                let simple = this
+                while (!simple.simplifyRecursively().sameAs(simple)) simple = simple.simplifyRecursively()
+                this.#fullySimplified = simple
+            }
+            return this.#fullySimplified
+        }
+
+        sameAs(proposition) {
+            return this.postfix === proposition.postfix // lazy
+        }
+
+        equivalentTo(proposition) {
+            return this.simplifyFully().postfix === proposition.simplifyFully().postfix
+        }
+
+        evaluate(truthValues) {
+            if (this.token.is("⊤")) return true
+            if (this.token.is("⊥")) return false
+            if (this.token.is("¬")) return !this.operands[0].evaluate(truthValues)
+            if (this.token.is("∧")) return this.operands[0].evaluate(truthValues) && this.operands[1].evaluate(truthValues)
+            if (this.token.is("∨")) return this.operands[0].evaluate(truthValues) || this.operands[1].evaluate(truthValues)
+            if (this.token.is("→")) return !this.operands[0].evaluate(truthValues) || this.operands[1].evaluate(truthValues)
+            if (this.token.is("←")) return this.operands[0].evaluate(truthValues) || !this.operands[1].evaluate(truthValues)
+            if (this.token.is("↔")) return this.operands[0].evaluate(truthValues) == this.operands[1].evaluate(truthValues)
+
+            // If the proposition contains a primitive proposition variable, check if we have assigned it a value and return that
+            if (this.token.value in truthValues) return truthValues[this.token.value]
+
+            // If code reaches this far, the tree contains invalid or unknown propositions and cannot be evaluated
+            document.querySelector("tbody").innerHTML += `<tr><td></td><td>Cannot evaluate proposition ${this.infix} - ${this.token.type === "primitive" ? "unknown variable" : "invalid operator"} ${this.token.value}</td></tr>`
+            throw new Error(`Cannot evaluate proposition ${this.infix} - ${this.token.type === "primitive" ? "unknown variable" : "invalid operator"} ${this.token.value}`)
+        }
+
+        dfs(func) {
+            this.operands.forEach(subtree => func(subtree))
+            func(this)
+        }
+
+        static isValid(proposition) {
+            let postfix = (typeof proposition === "string") ? Expression.infixToPostfix(proposition) : proposition
+            return Boolean(postfix.length > 0 && postfix.reduce((stackNum, token) => {
+                if (token.type === "primitive") return stackNum + 1
+                if (Token.numOperands(token) === 2) return stackNum - 1
+                return stackNum
+            }, 0) === 1)
+        }
+
+        static toTree(proposition) {
+            let postfix = (typeof proposition === "string") ? Expression.infixToPostfix(proposition) : proposition // polymorphism (woohoo!)
+            let stack = []
+
+            let memoised = memos.propositions[postfix.join("")]
+            if (memoised) return memoised
+
+            while (postfix.length > 0) {
+                let token = postfix.shift()
+                let numOperands = Token.numOperands(token)
+                let node = Proposition.new(token, stack.splice(-numOperands, numOperands))
+                stack.push(node)
+            }
+
+            if (stack.length === 1) return stack[0]
+            else throw new Error(`Error parsing proposition tree: ${stack}`)
+        }
+
+        static toArray(proposition, joinFunc, brackets = true) {
+            // let tree = (proposition?.isArray()) ? this.toTree(proposition) : proposition
+            let infix = [proposition]
+
+            for (let finished = false; !finished;) {
+                finished = true
+
+                infix.forEach((node, i) => {
+                    if (node instanceof Proposition) { // node is a subtree, and must be split up
+                        finished = false
+                        if (node.token.type === "primitive") {
+                            infix.splice(i, 1, node.token)
+                        } else {
+                            let leftOperand = node.numOperands === 1 ? undefined : node.operands[0]
+                            leftOperand = (brackets && leftOperand?.precedence >= node.precedence) ? ["(", leftOperand, ")"] : [leftOperand]
+
+                            let rightOperand = node.numOperands === 1 ? node.operands[0] : node.operands[1]
+                            rightOperand = (brackets && rightOperand?.precedence >= node.precedence) ? ["(", rightOperand, ")"] : [rightOperand]
+
+                            if (node.numOperands === 0) {
+                                infix.splice(i, 1, ...joinFunc(node.token))
+                            } else if (node.numOperands === 1) {
+                                infix.splice(i, 1, ...joinFunc(node.token, rightOperand))
+                            } else if (node.numOperands === 2) {
+                                infix.splice(i, 1, ...joinFunc(node.token, rightOperand, leftOperand))
+                            }
+                        }
+                    }
+                })
+            }
+
+            return infix
+        }
+
+        static toInfix(proposition) {
+            return proposition.infix
+        }
+
+    }
+
+    class Tautology extends Proposition {
+        constructor() {
+            return Proposition.new("⊤")
+        }
+    }
+
+    class Contradiction extends Proposition {
+        constructor() {
+            return Proposition.new("⊥")
+        }
+    }
+
+    class Predicate extends Proposition {
+        constructor(token, operand) {
+            super(token, operand)
+            this.quantifiers = []
+        }
+        static new(token, operand) {
+            return new Predicate(token, operand)
+        }
+    }
+
+    class Quantifier extends Proposition {
+        constructor(quantifier, variable, operand) {
+            super(quantifier, variable, operand)
+            this.variable = variable
+        }
+
+        static new(quantifier, variable, operand) {
+            return new Quantifier(quantifier, variable, operand)
+        }
+
+        quantify() {
+            this.dfs(proposition => {
+                if (proposition instanceof Predicate) proposition.quantifiers.push(`${this.token}${this.variable}`)
+            })
+        }
+    }
+
+    class Inference {
+        constructor(description, conclusion, ...premises) {
+            this.description = description
+            this.conclusion = new Template(conclusion)
+            this.premiseTemplates = premises
+                .map(expression => new Template(expression))
+                .sort((a, b) => Token.precedence(b.prefix[0]) - Token.precedence(a.prefix[0])) // Sort by precedence of main connective
+        }
+
+        match(premises) {
+            // Check if all given premises match to one of the templates
+            if (premises.length !== this.premiseTemplates.length) return false
+
+            let matches = premises
+                .sort((a, b) => b.precedence - a.precedence)
+                .map((proposition, i) => this.premiseTemplates[i].match(proposition))
+
+            if (matches.some(match => !match)) return false // If any matches are null then the structure does not match
+
+            // Check if all subtrees are consistent
+            let consistent = true
+            let globalSubtrees = matches.reduce((globalSubtrees, subtrees) => {
+                for (let key in subtrees) {
+                    if (key in globalSubtrees) {
+                        consistent = consistent && subtrees[key].sameAs(globalSubtrees[key])
+                    } else {
+                        globalSubtrees[key] = subtrees[key]
+                    }
+                }
+                return globalSubtrees
+            }, {})
+
+            return consistent && globalSubtrees // Return consistent globalSubtrees if they are consistent and false otherwise
+        }
+
+        infer(premises) {
+            let subtrees = this.match(premises)
+            if (subtrees) {
+                let proposition = this.conclusion.apply(subtrees)
+                return { proposition, description: this.description }
+            }
+            return
+        }
+    }
+
+    class Deduction {
+        constructor(proposition, premises = [], description = "", type) {
+            this.proposition = proposition
+            this.premises = (premises instanceof Array) ? premises : [premises]
+            this.description = description
+            this.type = type
+        }
+
+        get premiseText() {
+            // return this.type || `from ${this.premises.map(v => v?.proposition?.infix || String(v)).join(", ")}`
+            return this.premises.length > 0 ? `from ${this.premises.map(v => v?.proposition?.infix || String(v)).join(", ")}` : "premise"
+        }
+
+        get text() {
+            return `${this.proposition.infix}    ${this.premiseText}: ${this.description}`
+        }
+
+        get html() {
+            return `<tr>
+                        <td>${this.proposition.infix}</td>
+                        <td>${this.premiseText}</td>
+                        <td>${this.description}</td>
+                    </tr>`
+        }
+
+        numericHTML(index) {
+            return `<tr>
+                        <td>${index}</td>
+                        <td>${this.proposition.infix}</td>
+                        <td>${this.premiseText}</td>
+                        <td>${this.description}</td>
+                    </tr>`
+        }
+
+        traceSteps() {
+            if (this.premises.length > 0) return this.premises.map(deduction => deduction.traceSteps()).concat(this).flat()
+            else return [this]
+        }
+    }
+
+    class Argument {
+        proofType = "direct"
+        solved = false
+        proof
+        constructor(conclusion, ...premises) {
+            this.conclusion = (typeof conclusion === "string")
+                ? Proposition.toTree(conclusion)
+                : conclusion
+            this.deductions = [...premises].map(v => (typeof v === "string")
+                ? new Deduction(Proposition.toTree(v), [], "", "premise")
+                : new Deduction(v, [], "", "premise")) // Yay polymorphism
+
+            this.display()
+        }
+
+        simplifyAll() {
+            for (let i = 0; i < this.deductions.length; i++) {
+                let proposition = this.deductions[i].proposition
+                let simple = proposition.simplifyFully()
+                if (simple.depth < proposition.depth) {
+                    this.deduce(simple, [proposition], "Simplification")
+                }
+            }
+        }
+
+        deduce(proposition, premises, description, type) {
+            if (this.deductions.every(deduction => !proposition.sameAs(deduction.proposition))) { // If the deduction has not already been made
+                let deduction = new Deduction(proposition, premises, description, type)
+
+                // Auto Simplify
+                let simplified = proposition.simplifyFully()
+                if (!simplified.sameAs(proposition)) {
+                    this.deduce(simplified, [deduction], "Simplification")
+                }
+
+                // Limit complex propositions
+                if (proposition.depth - simplified.depth < 2) {
+                    this.deductions.push(deduction)
+                }
+
+                // Check if direct proof is finished
+                if (this.proofType === "direct" && proposition.sameAs(this.conclusion)) {
+                    let tautology = this.deduce(new Tautology, [deduction], `Since ${this.conclusion.infix} follows logically from the premises, the argument is valid. Q.E.D.`)
+                    if (tautology) this.finish(tautology)
+                }
+
+                // Check if proof by contradiction is finished
+                if (this.proofType === "contradiction" && proposition.sameAs(contradiction)) {
+                    let contradiction = this.deduce(new Contradiction, [deduction], `Since assuming ${this.conclusion.infix} is false leads to a contradiction, this implies assuming it is true leads to a tautology. Hence the argument is valid. Q.E.D.`)
+                    if (contradiction) this.finish(contradiction)
+                }
+
+                return deduction
+            }
+        }
+
+        infer(inference, ...premises) {
+            let deduction = inference.infer(premises.map(deduction => deduction.proposition))
+            if (deduction) this.deduce(deduction.proposition, premises, deduction.description)
+        }
+
+        prove(start = 0) {
+            this.simplifyAll()
+
+            for (let i = start; !this.solved && i < this.deductions.length; i++) {
+                let deduction = this.deductions[i]
+
+                unaryInferences.forEach(inference => this.infer(inference, deduction))
+
+                for (let j = i + 1; j < this.deductions.length; j++) {
+                    binaryInferences.forEach(inference => {
+                        if (
+                            this.deductions[i].proposition.token.precedence >=
+                            this.deductions[j].proposition.token.precedence) {
+                            this.infer(inference, this.deductions[i], this.deductions[j])
+                        }
+                        if (
+                            this.deductions[i].proposition.token.precedence <=
+                            this.deductions[j].proposition.token.precedence) {
+                            this.infer(inference, this.deductions[j], this.deductions[i])
+                        }
+                    })
+                }
+            }
+
+            if (!this.solved) {
+                if (this.proofType === "direct") { // If the direct proof has failed, try proving it by contradiction
+                    this.proofType = "contradiction"
+                    this.deduce(Proposition.new("¬", this.conclusion), [], "Proof by contradiction")
+                    this.prove()
+                } else { // If the contradiction proof has failed, it is likely that the argument is invalid. Try disproving it by counter example
+                    this.proofType = "counterexample"
+                    this.disprove()
+                }
+            }
+        }
+
+        disprove() {
+            // Extract primitives
+            let primitives = this.deductions.reduce((set, deduction) => set.union(
+                new Set(
+                    deduction.proposition.postfixExpression.flat()
+                        .filter(token => token.type === "primitive")
+                    // .map(token => token.value)
+                )
+            ), new Set())
+
+            // Find deduced primitives or negations
+            let known = {}
+            let unknownSet = new Set()
+            primitives.forEach(primitive => {
+                this.deductions.forEach(deduction => {
+                    if (deduction.proposition.infix === primitive.value) known[primitive.value] = true // If it can be deduced that the primitive is true from the premises, then it must be true in the counter example
+                    else if (deduction.proposition.infix === `¬${primitive.value}`) known[primitive.value] = false // Likewise if it is known to be false
+                    else unknownSet.add(primitive.value) // Otherwise put it in an array for brute forcing
+                })
+            })
+            let unknown = Array.from(unknownSet)
+
+            console.log(known, unknown)
+
+            // Make truth table of unproven primitives
+            let argumentPremises = this.deductions
+                .filter(deduction => deduction.type === "premise")
+                .map(deduction => deduction.proposition)
+
+            for (let i = 0; i < 2 ** unknown.length; i++) {
+                // The binary value of i represents the assignment of truth to each unknown variable
+                let assigned = unknown.reduce((table, variable, j) => {
+                    let truth = Boolean((i >> j) % 2)
+                    table[variable] = truth
+                    return table
+                }, known)
+
+                let premiseTruths = argumentPremises.map(proposition => proposition.evaluate(assigned))
+                let conclusionTruth = this.conclusion.evaluate(assigned)
+
+                console.log(primitives)
+
+                let table = document.querySelector("tbody")
+                if (premiseTruths.every(truth => truth) && !conclusionTruth) { // We have found a counter-example
+                    table.innerHTML = `<tr><td></td><td></td><td>Assign the following truth values to each variable:</td></tr>`
+                    primitives.forEach(primitive => {
+                        table.innerHTML += `<tr><td></td><td>${primitive.value} = ${assigned[primitive.value]}</td></tr>`
+                    })
+                    table.innerHTML += `<tr><td></td><td></td><td>It follows that:</td></tr>`
+                    argumentPremises.forEach(proposition => {
+                        table.innerHTML += `<tr><td></td><td>${proposition.infix} is true</td></tr>`
+                    })
+                    table.innerHTML += `<tr><td></td><td>${this.conclusion.infix} is false</td></tr>
+                    <tr><td></td><td></td><td>The existence of this counter-example proves the argument is invalid. Q.E.D.</td></tr>`
+                    return
+                }
+
+                // If code gets this far, a counter-example could not be found
+                table.innerHTML = `<tr><td></td><td>Failed to prove or disprove argument.</td></tr>`
+            }
+        }
+
+        finish(finalStep) {
+            this.solved = true
+            this.proof = new Proof(finalStep)
+            this.proof.display()
+        }
+
+        display(deductions = this.deductions) {
+            document.querySelector("thead").innerHTML = `<tr><th></th><th>${this.conclusion.infix}</th><th>conclusion</th></tr>`
+            document.querySelector("tbody").innerHTML = deductions.map((deduction, i) => deduction.numericHTML(i + 1)).join("")
+        }
+    }
+
+    class Proof {
+        constructor(finalStep) {
+            let allSteps = finalStep.traceSteps()
+            let premises = allSteps.filter(deduction => deduction.premises.length === 0)
+            let lemmas = allSteps.filter(deduction => deduction.proposition.token.type === "primitive")
+            let lemmaSteps = lemmas.map(deduction => deduction.traceSteps()).flat()
+
+            let numberings = premises.reduce((numberings, deduction, i) => {
+                numberings[deduction.proposition.postfix] = i
+                return numberings
+            }, {})
+            this.steps = lemmaSteps.reduce((steps, deduction) => {
+                let postfix = deduction.proposition.postfix
+                if (postfix in numberings) return steps
+                else {
+                    numberings[postfix] = steps.length
+                    return steps.concat(deduction)
+                }
+            }, premises).map(deduction => {
+                deduction.premises = deduction.premises.map(premise => numberings[premise.proposition.postfix] + 1)
+                return deduction
+            })
+        }
+
+        display(deductions = this.steps) {
+            document.querySelector("tbody").innerHTML = this.steps.map((deduction, i) => deduction.numericHTML(i + 1)).join("")
+        }
+    }
+
+    class LogicInput {
+        constructor(parent = document.body, label = "Logic Input", onenter = () => { throw new Error(`No function bound to logic input`) }) {
+            this.div = document.createElement("div")
+            this.div.className = "logicInput"
+
+            this.label = document.createElement("label")
+            this.label.innerHTML = label + "<br>"
+            this.div.appendChild(this.label)
+
+            this.input = document.createElement("input")
+            this.input.addEventListener("input", this.preview.bind(this))
+            this.input.addEventListener("change", this.enter.bind(this, onenter))
+            this.label.appendChild(this.input)
+
+            this.button = document.createElement("button")
+            this.button.innerHTML = "Enter"
+            this.button.addEventListener("click", this.enter.bind(this, onenter))
+            this.div.appendChild(this.button)
+
+            this.output = document.createElement("output")
+            this.output.style.minHeight = "1em"
+            this.output.style.display = "block"
+            this.div.appendChild(this.output)
+
+            parent.appendChild(this.div)
+        }
+
+        get infix() {
+            return this.input.value.trim()
+        }
+
+        get proposition() {
+            return Proposition.toTree(this.infix)
+        }
+
+        get isValid() {
+            return Proposition.isValid(this.infix)
+        }
+
+        preview() {
+            this.output.innerHTML = Expression.tokenise(this.infix).map(token => token.value).join("")
+            this.output.style.color = this.isValid ? "black" : "red"
+        }
+
+        enter(onenter) {
+            if (this.isValid) {
+                onenter(this.proposition)
+                this.input.value = ""
+                this.output.innerHTML = ""
+            }
+            else this.output.innerHTML = "Invalid logic expression"
+        }
+
+        disable() {
+            this.button.disabled = true
+        }
+
+        enable() {
+            this.button.disabled = false
+        }
+    }
+
+    const memos = {
+        propositions: {},
+        simplifications: {},
+        tokens: {}
+    }
+
+    const simplificationLaws = [
+        new Simplification("Double Negation", "¬¬p", "p"),
+        new Simplification("Annihilation Law", "p&F", "F"),
+        new Simplification("Annihilation Law", "p|T", "T"),
+        new Simplification("Identity Law", "p&T", "p"),
+        new Simplification("Identity Law", "p|F", "p"),
+        new Simplification("Idempotent Law", "p&p", "p"),
+        new Simplification("Idempotent Law", "p|p", "p"),
+        new Simplification("Law of Contradiction", "p&¬p", "F"),
+        new Simplification("Law of Excluded Middle", "p|¬p", "T"),
+        // new Simplification("Commutative Law", "p&q", "q&p"),
+        // new Simplification("Commutative Law", "p|q", "q|p"),
+        // new Simplification("Left Distributive Law", "p&(q|r)", "p&q|p&r"),
+        // new Simplification("Left Distributive Law", "p|(q&r)", "p|q&p|r"),
+        // new Simplification("Right Distributive Law", "(p|q)&r", "p&r|q&r"),
+        // new Simplification("Right Distributive Law", "(p&q)|r", "p|r&q|r"),
+        new Simplification("De Morgan's Law", "¬(p&q)", "¬p|¬q"),
+        new Simplification("De Morgan's Law", "¬(p|q)", "¬p&¬q"),
+        // new Simplification("Anti-Commutative Law", "p→q", "q←p"),
+        // new Simplification("Anti-Commutative Law", "p←q", "q→p"),
+        new Simplification("Implication Chaining", "p->(q->r)", "(p&q)->r"),
+        new Simplification("Biconditionality", "(p&q)|(¬p&¬q)", "p<->q"),
+        new Simplification("Absorption", "p&(p|q)", "p"),
+        new Simplification("Absorption", "p|(p&q)", "p"),
+    ]
+    const unaryInferences = [
+        // Make lots of implications
+        new Inference("Biconditionality", "p->q", "p<->q"),
+        new Inference("Biconditionality", "q->p", "p<->q"),
+        new Inference("Material Implication", "p->q", "¬p|q"),
+
+        // Implications
+        new Inference("Anti-commutativity", "p->q", "q<-p"),
+        new Inference("Contrapositive", "¬q->¬p", "p->q"),
+        new Inference("Implication Chaining", "p&q->r", "p->(q->r)"),
+        new Inference("Implication Chaining", "p->(q->r)", "p&q->r"),
+        new Inference("Disjunctive Syllogism", "p->r", "p|q->r"),
+        new Inference("Disjunctive Syllogism", "q->r", "p|q->r"),
+
+        // Disjunctions
+        new Inference("Material Implication", "¬p|q", "p->q"),
+        new Inference("Associativity", "p|(q|r)", "(p|q)|r"),
+        new Inference("Associativity", "(p|q)|r", "p|(q|r)"),
+        new Inference("Commutativity", "p|q", "q|p"),
+        new Inference("Commutativity", "q|p", "p|q"),
+
+        // Conjunctions
+        new Inference("Law of Contradiction", "F", "p", "¬p"),
+        new Inference("Conjunction Elimination", "p", "p&q"),
+        new Inference("Conjunction Elimination", "q", "p&q"),
+        new Inference("Associativity", "p&(q&r)", "(p&q)&r"),
+        new Inference("Associativity", "(p&q)&r", "p&(q&r)"),
+        new Inference("Commutativity", "p&q", "q&p"),
+        new Inference("Commutativity", "q&p", "p&q"),
+
+    ]
+    const binaryInferences = [
+        // Implications
+        new Inference("Modus Ponens", "q", "p->q", "p"),
+        new Inference("Modus Tollens", "¬p", "p->q", "¬q"),
+        new Inference("Law of Syllogism", "p->r", "p->q", "q->r"),
+
+        // Disjunctions
+        new Inference("Disjunctive Syllogism", "q", "p|q", "¬p"),
+        new Inference("Disjunctive Syllogism", "p", "p|q", "¬q"),
+    ]
+
+    let argument
+    let premises = []
+
+    const tautology = new Tautology()
+    const contradiction = new Contradiction()
+
+    let conclusionInput = new LogicInput(document.querySelector("#argumentInput"), "Enter conclusion:", conclusion => {
+        argument = new Argument(conclusion, ...premises)
+        conclusionInput.disable()
+    })
+    let premiseInput = new LogicInput(document.querySelector("#argumentInput"), "Enter premises:", proposition => {
+        if (argument) {
+            argument.deduce(proposition, [], "", "premise")
+            argument.display()
+        } else {
+            premises.push(proposition)
+            document.querySelector("tbody").innerHTML = premises.map((proposition, i) => `<tr><td>${i + 1}</td><td>${proposition.infix}</td><td>premise</td></tr>`).join("")
+        }
+    })
+
+
+
+    let simpleArgument = new Argument("r → p ∨ ¬q", "¬p → q ∨ ¬r")
+    // argument = new Argument("j", "(m&!b)->j", "(f|s)->m", "b->t", "f->¬t", "f")
+    // let invalidArgument = new Argument("s", "p|q", "q->r", "¬r|s")
+
+
+    simpleArgument.prove()
+    // partyArgument.prove()
+
+</script>
+
+</html>

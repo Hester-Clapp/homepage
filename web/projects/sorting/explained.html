@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./favicon.png">
+    <title>Sorting Algorithms Explained</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        li {
+            padding: 0.5rem 0;
+        }
+
+        h1 {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: 600;
+            padding: 1rem 1ch;
+            margin-bottom: 1rem;
+            margin-top: 0;
+            background: #445;
+            color: white
+        }
+
+        h2,
+        h3 {
+            text-align: center;
+            text-decoration: underline;
+            font-weight: 600;
+            margin: 2rem 0;
+        }
+
+        p,
+        li {
+            text-align: justify;
+            margin-left: 10%;
+            margin-right: 10%;
+        }
+
+        a {
+            color: blue;
+            text-decoration: none;
+        }
+
+        code {
+            text-align: left;
+            font-family: monospace;
+            background-color: #eee;
+            padding: 1ch;
+            display: block;
+            white-space: break-spaces;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            border: 0.5ch inset #f7f7f7;
+        }
+
+        iframe {
+            width: 80%;
+            height: 36rem;
+            border: 1ch outset #aaa;
+            margin: 2rem 0;
+        }
+
+        hr {
+            margin-top: 8rem;
+        }
+
+        div,
+        ol {
+            width: fit-content;
+            display: inline-block;
+        }
+
+        table {
+            display: inline-block;
+        }
+
+        tr,
+        th,
+        td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 1ch;
+        }
+
+        td.c {
+            background-color: royalblue;
+        }
+
+        td.logn {
+            background-color: lightskyblue;
+        }
+
+        td.log2n {
+            background-color: mediumaquamarine;
+        }
+
+        td.n {
+            background-color: limegreen;
+        }
+
+        td.nlogn {
+            background-color: gold;
+        }
+
+        td.nlog2n {
+            background-color: orange;
+        }
+
+        td.n2 {
+            background-color: tomato;
+        }
+
+        td.yes {
+            background-color: violet;
+        }
+
+        td.no {
+            background-color: grey;
+        }
+
+        footer {
+            text-align: center;
+            height: 16rem;
+            margin: 0;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            background: #445;
+            color: white;
+        }
+
+        footer p {
+            text-align: center;
+            padding: 1ch;
+        }
+
+        footer a {
+            color: white;
+            padding: 1ch 0;
+        }
+
+        footer a:hover {
+            color: black;
+            background-color: white;
+            padding: 1ch 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sorting Algorithms Explained</h1>
+    <p>A sorting algorithm takes an array of values, usually numbers, and putting them in order. There are many
+        different algorithms to do this, each with their unique features and benefits.</p>
+    <p>There are many things to consider about a sorting algorithm. One of the most important is <b>time complexity</b>,
+        which
+        is a form of asymptotic notation for how long it takes to sort an array, depending on how many items there are.
+    </p>
+    <h2>Asymptotic (Big O) Notation</h2>
+    <p>Measuring the actual amount of time an algorithm takes is almost meaningless. Different hardware will take
+        different amounts of time to perform different types of operations. What is more important is how much longer
+        the algorithm takes when the number of inputs gets big.</p>
+    <p>If we were to plot a graph of time taken to execute against n (the number of items to be sorted), we can use the
+        rough shape of the curve at a large scale to rate the algorithm.</p>
+    <p>Asymptotic notation defines a set, which can be thought of as an area. If we can move and scale the graph so that
+        it is entirely inside the area, the graph is in that order. For example, if the curve could be represented as
+        the equation 3n²+10n+80, we could stretch it by 1/3 in the y and translate it down and to the left, and then the
+        positive x section would be entirely underneath the graph y=x². This means 3n²+10n+80 is in O(n²), meaning it is
+        "of the order of n²"</p>
+    <p>Note that it would also be entirely underneath many other graphs, such as x! or 2^x. Thus 3n²+10n+80 is also in
+        O(2^n) and O(n!). However, 3n²+10n+80 is not in O(n), because no matter how much we stretch it, there will
+        always be a point where the curve goes above the line y=x.</p>
+    <p>We can think of orders as having a size. O(n!) is bigger than O(n²), which is bigger than O(n). 3n²+10n+80 is of
+        the order of n², because O(n²) is the smallest order which it fits under.</p>
+    <p>To find the order of an equation, we take the following steps:</p>
+    <div>
+        <ol>
+            <li>If multiple terms are added together, discard everything except for the highest order term (in our case
+                3n²)</li>
+            <li>Discard coefficients, since they are constant they are irrelevant to scaling.</li>
+            <li>We can also ignore bases of logarithms, and powers inside logarithms, since these are equivalent to
+                constants anyway. Exponents and bases of exponentials however do matter.</li>
+        </ol>
+    </div>
+    <h2>Simple Sorting Algorithms</h2>
+    <p>A sorted list contains the smallest item first, the second-smallest item second, and so on. If you wanted to make
+        a sorted list, one way would be to find the smallest and put it at the front, then find the next smallest and
+        put it afterwards, repeating until there are no unsorted items left.</p>
+    <p>This algorithm is called <b>selection sort</b>. The pseudocode might look like this:</p>
+    <code>for i = 0 to n{
+Find the smallest value between i and n
+Swap it with the value at position i
+// The value at position i is now in the right place
+}</code>
+    <p>To find the smallest value, a linear search is performed, checking every item in order and keeping a record of
+        which is smallest. This has a time complexity of O(n), because every item must be checked, and this is repeated
+        n times, so the whole algorithm has a time complexity of O(n²).</p>
+    <p>Selection sort is inefficient because we need to check every item every time to find the smallest. But what if
+        instead of finding the right item to go in the next position, we find the right position for the next item?</p>
+    <p>An algorithm that does this is called <b><a href="./visualised.html?sort=Insertion&shuffled=true">insertion
+                sort</a></b>. Similarly to selection sort, we keep the front part
+        of the array in order. The items may not be in their final positions already, but they are in ascending order.
+    </p>
+    <p>In each pass, we look at the next item after the sorted section. We compare it with the item to its left, and if
+        they are in the wrong order, they are swapped. This is repeated until the new item is greater than the item on
+        its left. This means the front array is in ascending order again, and we can stop computing the new item and
+        move on to the next one.</p>
+    <code>for i = 0 to n {
+for j = i to 1 {
+if item j is smaller than item j-1 {
+swap them
+} else {
+    break
+}
+}</code>
+    <p>The operations that we save when the new item is in the right place mean that insertion sort is always faster
+        than selection sort on the same machine. However, since we are still doing an operation O(n) times O(n) times,
+        the time complexity is still O(n²). This shows that time complexity is not always a good description of
+        algorithmic efficiency.</p>
+    <iframe src="./visualised.html?sort=Insertion&shuffled=true&locked=true"></iframe>
+    <p>On the exam specification there is another simple O(n²) sorting algorithm called <b><a
+                href="./visualised.html?sort=Bubble&shuffled=true">bubble sort</a></b>, which is similar to insertion
+        sort but it does things in a different order. Instead of sorting items into an ascending sublist at the front,
+        it repeatedly swaps each pair to move the largest to the right.</p>
+    <code>for i = n-1 to 1 {
+for j = 0 to i-1 {
+if item j is smaller than item j-1 {
+swap them
+}
+}
+}</code>
+    <p>Some argue that the code to implement bubble sort is simpler, but there are fewer optimisations to be made, so
+        bubble sort usually takes longer to finish than insertion sort.</p><iframe
+        src="./visualised.html?sort=Bubble&shuffled=true&locked=true"></iframe>
+    <p>In fact, insertion sort is one of the best simple algorithms for sorting small datasets or data which is almost
+        sorted. It is used in a number of hybrid algorithms which make use of these good cases. One of the main problems
+        with insertion sort is that it has to move small items a long way into the ascending sublist, and there are a
+        couple of algorithms that address this problem.</p>
+    <p><b>Binary insertion sort</b> uses a binary search instead of a linear search to find the location of new items.
+        Binary search makes use of the fact that the list is in order to halve the remaining search space every time,
+        allowing it to find the location in O(log n) time. However, the algorithm still has to swap each pair of items
+        between the right location and the end of the sublist, so in practice the improvement is minimal.</p>
+    <p>A more complex improvement is called <b>Shell sort</b>. It works by performing insertion sort on every kth item
+        in the array starting at 0, then on every kth item starting at 1, and so on up to k. It then reduces k by a
+        shrink factor and rounds down to the next integer, and then it repeats the whole process, continuing until k is
+        1. This has the effect of first moving items long distances to get them roughly in the right order, and then
+        coming back later to get them even closer to the right order.</p>
+    <p>Finding an optimal starting value for k and an optimal shrink factor is a difficult process, but the true answer
+        is approximately 3. To sort 32 items with a shrink factor of 3, the algorithm would first use k = 27 and
+        insertion sort items 0 and 27, 1 and 28, 2 and 29 etc up to 5 and 32. It would then decrease k by 3 to get k =
+        9, and then sort items 0, 9, 18 and 27, 1, 10, 19 and 28, etc up to 5, 14, 23, 32. Then repeat with k = 3 and k
+        = 1 (regular insertion sort)</p>
+    <p>Shell sort has a time complexity of O(n (log n)^2), which is better than O(n²) but still roughly polynomial. It
+        is slightly smaller than O(n^1.2).</p><iframe
+        src="./visualised.html?sort=Shell&shuffled=true&locked=true"></iframe>
+    <p>If we want to do better than polynomial time complexity, we need to use a problem-solving technique called
+        "divide-and-conquer". This involves splitting up problems into smaller problems which we can solve faster. If we
+        do this recursively until the array only contains one item, we will have to split roughly log2(n) times, the
+        order of which is smaller than O(n).</p>
+    <h2>Divide-and-Conquer Algorithms</h2>
+    <p>One of the most well-known divide-and-conquer algorithms is known as <b><a
+                href="./visualised.html?sort=Merge&shuffled=true&n=64">merge sort</a></b>. Merge sort uses the following
+        principle:</p>
+    <code>Sort the left half
+Sort the right half
+Merge the two sorted halves together</code>
+    <p>We can sort the left and right halves recursively with merge sort as well, stopping when the arrays contain only
+        single items. The only challenge is merging the sorted halves.</p>
+    <p>To do this, we need to use an <b>auxiliary array</b>, an extra array to store data. Basic merge sort needs an
+        auxiliary array of size n to complete the final merge - this means it has a <b>space complexity</b> of O(n),
+        because the amount of extra space we need is of the order of n.</p>
+    <p>To merge two sorted sublists, both halves are first copied to the auxiliary array. We then store two pointers,
+        which point to the starts of the left and right sublists. Then we create a third pointer to the start of the
+        first half in the original.</p>
+    <p>We compare the items in the auxiliary array at both of the pointers. If the left is greater than the right, we
+        copy the value on the left into the original array, and increment the left pointer and the main pointer.
+        Otherwise, we copy the right, and increment the right and main pointers.</p>
+    <p>The merging operation has a time complexity of O(n), which means it takes roughly the same amount of time to
+        merge the last two halves of the array as it does to merge all of the sets of 2 elements combined, or any other
+        level. Since the number of levels is of the order O(log n), merge sort itself has time complexity O(n log n).
+    </p><iframe src="./visualised.html?sort=Merge&shuffled=true&n=64&locked=true"></iframe>
+    <p>Merge sort can be implemented recursively or iteratively. A recursive merge sort starts at the top and calls
+        itself on two halves of the data, repeating until it is only handling individual items that are trivially easy
+        to sort. Meanwhile an iterative merge sort starts at the bottom with just single items, putting them all into
+        sorted pairs, then merging pairs to make groups of 4, then merging groups of 4 to make groups of 8 until it has
+        merged the whole array.</p>
+    <p>Recursive merge sort always splits the data in half, which means every merge is almost symmetrical, which is most
+        efficient. However, it also requires use of a call stack to keep track of function calls and resume from the
+        right place. This requires space complexity of O(log n). The overall space complexity is still O(n) because O(n)
+        is bigger than O(log n), but this extra space can still be a realistic consideration.</p>
+    <p>Iterative merge sort tends to perform asymmetrical merges towards the end if n is not a power of 2, which can
+        lead to more merges overall. However, since merges are not dependent on the completion of other merges of the
+        same level, <a href="./visualised.html?sort=IterativeMerge&shuffled=true&n=64&concurrent=true">parallel
+            processing</a> can be
+        used to improve overall performance, maximising use of the auxiliary
+        array.</p>
+    <h3>Quick Sort</h3>
+    <p><b><a href="./visualised.html?sort=Quick&shuffled=true&n=64">Quick sort</a></b> is an alternative to merge sort,
+        which also has O(n log n) average time complexity. This is the pseudocode:</p>
+    <code>Choose an item to be the pivot
+Iterate over the remaining data {
+    If the value is smaller than the pivot, put it at the start
+    If the value is greater than the pivot, put it at the end
+}
+Put the pivot in between the two groups
+Quick sort everything smaller than the pivot
+Quick sort everything larger than the pivot</code>
+    <p>As you can see, quick sort also uses recursion to split the data in half and sort the halves separately. However,
+        the data is only split in half if the pivot is close to the median of the data. If the pivot has one of the
+        smallest values, the group of items larger than the pivot will contain most of the remaining data points, and
+        sorting all of them will not be much faster than the original set.</p><iframe
+        src="./visualised.html?sort=Quick&shuffled=true&n=64&locked=true"></iframe>
+    <p>While quick sort is O(n log n) in the average case, it may take much longer in the worst case due to unequally
+        dividing the array. In the very worst case for quick sort, a list of items in descending order, there will be n
+        recursion levels, giving a worst-case time complexity of O(n²).</p>
+    <p>Quick sort doesn't use auxiliary arrays, so you might assume space complexity is O(1). However, it needs to use a
+        call stack to keep track of the function calls, the length of which is the number of recursion levels. This is
+        of the order of log n in the average case and O(n) in the worst case.</p>
+    <p>Another disadvantage of quick sort compared to merge sort is that it isn't <b>stable</b>. This means, if there
+        are two items that have the same value and one is before the other before sorting, it might not be before the
+        other after being quick sorted. This seems like an insignificant issue, but stable sorting algorithms can be
+        used to efficiently sort by multiple categories.</p>
+    <p>Imagine you are trying to sort a deck of cards. You want it to be sorted by suite (spades before hearts before
+        clubs before diamonds), and within each suite you also want the cards to be in ascending order. You might start
+        by sorting the cards by suite, and then sorting each suite by number, but this means you would have to perform 5
+        separate sorting operations!</p>
+    <p>Alternatively, you could first sort all of the cards by number, so that the 4 aces are at the front, followed by
+        4 ones, and then 4 twos and so on. Then, you can use a stable algorithm like insertion sort to sort by suite.
+        The first spade that you encounter must be the ace of spades, because all of the aces are first. The second time
+        you find a spade card, it will be the one of spades, because everything else comes after all of the ones. You
+        can insert this card into your deck in front of all of the other suites, until you find the ace of spades, where
+        you can leave it. The third spade will be a two, and this will end up immediately after the one, and so on. When
+        you finish, all of the cards will be in order, after only sorting them twice!</p>
+    <h3>Bitonic Sort</h3>
+    <p>There is a version of merge sort called <a href="./visualised.html?sort=Bitonic&shuffled=true&n=64">bitonic
+            sort</a>, which is designed for very low-level applications. It doesn't use auxiliary arrays, and uses lots
+        of operations that can be processed in parallel, which makes it very well suited for use on a GPU with lots of
+        cores.</p>
+    <p>A bitonic sequence is a sequence of numbers which is formed of two parts. All of the items in the first half are
+        in ascending order, and all of the items in the second half are in descending order (or vice versa).</p>
+    <p>
+        The sorter assumes the bitonic sequence is equally weighted, with half of the items in each part, and iterates
+        over the first half. It compares each item with the corresponding item in the second half, and swaps them if
+        they are out of order. Note that all of these operations are independent and can be processed in parallel.
+    </p>
+    <p>
+        After this, the list will have been partitioned with each item in the left half being smaller than every item in
+        the right half.But more importantly, each half will form another bitonic sequence! This means this method can be
+        applied recursively to sort the sequence like quick sort, but a call stack is not required since the halves can
+        be partitioned simulaneously in parallel!
+    </p>
+    <p>
+        When this finishes, the bitonic sequence will form an ascending sequence. Equally, we could have applied the
+        swaps to items not in descending order to form a descending sequence. If we form one ascending sequence and
+        follow it with a descending sequence, we get yet another bitonic sequence! This can be sorted using the
+        previously described method, repeating until the whole list is sorted.
+    </p>
+    <p>
+        This method only works when the number of items to sort is a power of 2. However, we can adapt it to work with
+        any number by getting rid of all of the descending swaps. If all of the swaps are putting items in ascending
+        order, we can simply ignore them if the other item is out of range, because we assume it is larger than
+        everything else in the array. We can do this by swapping items along concentric circles, effectively reversing
+        the order of items in the second half.
+    </p>
+    <iframe src="./visualised.html?sort=Bitonic&shuffled=true&n=64&locked=true"></iframe>
+    <h3>Heap Sort</h3>
+    <p><b><a href="./visualised.html?sort=Heap&shuffled=true&n=64">Heap sort</a></b> is an algorithm which is similar to
+        selection sort, but with O(n log n) average time complexity. Instead of using divide-and-conquer like merge sort
+        and quick sort, heap sort achieves O(n log n) by using a tree data structure, specifically a <b>max heap</b>.
+        This is a type of binary tree, in which every node is greater than both of its children (this is known as the
+        heap property). This tree is represented implicitly using an array, where the children of index i are at 2i+1
+        and 2i+2. Reading the tree from left-to-right top-to-bottom will produce the nodes in the order of this array.
+        The tree must also be structured so that there are no gaps in the array.</p>
+    <p>Heaps have a number of operations, the most important of which for heap sort are <b>extract max</b> and <b>sift
+            down</b>. Extracting the max is easy, since if the heap property is upheld, the maximum value must
+        necessarily be the root node of the tree, or the first item in the array. To extract it, the first and last
+        items are swapped and a variable keeping track of the length of the heap is decreased by 1 to exclude the
+        recently extracted value. Extract max has a time complexity of O(1), but it causes the root to be smaller than
+        at least one of its children, so the heap property is now violated.</p>
+    <p>To fix this, we need to use sift down on the root node. This will compare the children to see which is greatest,
+        then if the largest child is greater than the given node, they are swapped. It continues swapping until the
+        greatest child is smaller than the node being sifted, so it is in the right place. This has time complexity
+        O(log n) and causes the heap property to be upheld, allowing us to find the maximum value in O(log n) time as
+        opposed to selection sort's O(n).</p>
+    <p>Heap sort itself works by first turning the whole unsorted array into an implicit heap, and then repeatedly
+        extracting the max and sifting the new root node down to keep the heap property. Extracting the max n times is
+        where O(n log n) time comes from.</p>
+    <code>for every node that has children {
+sift it down
+// This turns the array into a heap
+}
+for heapLength = n to 1 {
+extract max
+sift down the root
+}</code>
+    <p>The space complexity of heap sort is O(1) since the heap is stored implicitly in the main array, and it doesn't
+        use recursion or auxiliary arrays. However, it is not stable, and is usually slower than merge and quick sort
+        because it has to build the heap before it can start sorting. For this reason it is mostly used where data is
+        already stored in a heap structure such as priority queues, or in embedded systems where memory is limited.</p>
+    <iframe src="./visualised.html?sort=Heap&shuffled=true&n=64&locked=true"></iframe>
+    <h2>Distribution Sorts</h2>
+    <p>So far, all of the algorithms we have looked at are <b>comparison sorts</b>, because they work by comparing items
+        to other items. It has been mathematically proven that the lower bound for the worst-case and average-case time
+        complexity is O(n log n), and if we want to improve this, we need to use a different approach.</p>
+    <p><b>Distribution sorts</b> are a different type of sorting algorithm which look at items individually and decide
+        where they should be placed directly, without comparing them to others. They are more constrained than
+        comparison sorts since they can only sort numeric values, and are usually affected by the precision of the most
+        precise value, so are usually only practical with integers. However, this is the sacrifice that has to be made
+        to achieve O(n) average time complexity.</p>
+    <p>In the following examples, we will be sorting integers inclusively between 0 and 99. One of the most intuitive
+        algorithms to do this is <b><a href="./visualised.html?sort=Counting&shuffled=true&n=100">pigeonhole
+                sort</a></b>. This works by creating 100 buckets (or pigeonholes) and
+        numbering them from 0 to 99. Then for each item in the array, we put it in the corresponding pigeonhole. For
+        example, if the number is 24, we put it in pigeonhole number 24. There may be multiple items in one pigeonhole,
+        but this is allowed.</p>
+    <p>Afterwards, we start at pigeonhole 0 and copy each item in it back to the original array. If we keep track of the
+        order they came in, we can make pigeonhole sort stable. We then do the same for pigeonhole number 1, and then 2
+        and so on up to 99.</p>
+    <code>Make an auxiliary array of length r, filled with empty pigeonholes
+for i = 0 to n {
+    put the item at index i into pigeonhole i
+}
+for i = 0 to r {
+    copy the items in pigeonhole i to the main array
+}</code><iframe src="./visualised.html?sort=Counting&shuffled=true&n=100&locked=true"></iframe>
+    <p>Note that the above algorithm is actually called counting sort. It is similar to pigeonhole sort, but instead of
+        storing the actual values in the auxiliary array, it stores the number of </p>
+    <p>The time and space complexities of pigeonhole sort are both O(n+r), where n is the number of items we are sorting
+        and r is the number of different values they could take. It works best n and r are approximately equal. However,
+        if r is a lot bigger than n, the amount of space required to store all of the pigeonholes makes the sort
+        impractical.</p>
+    <p>What if we only wanted to sort 20 items between 0 and 99? What we could do is put them into larger pigeonholes
+        which accept multiple different values, then sort each pigeonhole before emptying them. This is called <b>bucket
+            sort</b>, and the pigeonholes are referred to as buckets. In this example, we might choose to have 10
+        buckets, one that accepts numbers from 0 to 9, another for 10-19 etc up to 90-99. We then sort each bucket using
+        insertion sort because it is simple and works well with small amounts of data, before joining them back together
+        like in pigeonhole sort.
+    </p>
+    <p>The average time and space complexity of bucket sort is O(n + k), where k is the number of buckets we use. If we
+        use too many, we increase the time and space complexity and eventually end up with pigeonhole sort. However, if
+        we use too few, we get more items in each individual bucket and eventually end up with plain insertion sort.
+        This means the worst case of bucket sort, where all of the items end up in the same bucket, is insertion sort's
+        O(n²).</p>
+    <p>You're probably thinking why we don't sort each bucket using bucket sort? That would avoid the worst case of
+        having to use insertion sort on the whole array. The answer is - we can! This gives us a new algorithm called
+        <b>radix sort</b>, specifically MSD radix sort because we start with the most significant digit (hence MSD).
+    </p>
+    <code>Add leading zeros to every number so they are all the same length
+Bucket sort the data by the first digit from the left
+Bucket sort each bucket by the second digit from the left
+etc ... until the rightmost digit
+Recombine each bucket</code>
+    <p>In our example, we are using normal base-10 numbers, using 10 buckets each time to sort them. Real radix sort
+        uses base-4, because it is a nice power of 2, but just using 2 buckets is less efficient.</p>
+    <p>If we don't add leading zeros first, then the number 2 will come before 21, because it will be treated as 20.
+        This is bad for numbers, but if instead of numbers we want to sort words alphabetically, we can treat them as
+        base-26 numbers, and then this effect is exactly what we want!</p>
+    <p>The average time complexity of MSD radix sort is O(n * M), where M is the average length of the numbers being
+        sorted. However, the space complexity is O(n + M), plus the call stack since MSD radix sort is recursive.</p>
+    <p>You might have noticed that we are splitting the data into categories and then recursively sorting these
+        categories, like our deck of cards earlier. This implies that we could use a stable sorting algorithm starting
+        at the bottom to remove recursion entirely. The algorithm that does this is called <b><a
+                href="./visualised.html?sort=Radix&shuffled=true&n=100">LSD radix sort</a></b> (Least Significant
+        Digit), and
+        is a far more popular
+        implementation of radix sort for that reason.</p>
+    <p>After converting to base-4 and adding leading zeros, LSD radix sort starts by iterating over the data, doing
+        multiple things as it does this:</p>
+    <div>
+        <ul>
+            <li>It copies each item to an auxiliary array</li>
+            <li>It keeps separate tallies of how many numbers end in 0, 1, 2 and 3</li>
+            <li>It performs a linear search to find the length of the longest number, storing this as M (it only does
+                this the first time)</li>
+        </ul>
+    </div>
+    <p>After this, it uses the tallies to create 4 buckets of exactly the right size, storing these in the main array
+        with pointers to the starts of each bucket. Next, it iterates over the auxiliary array, copying each item into
+        the correct bucket at the pointer and incrementing it.</p>
+    <p>Now it has stably sorted all of the numbers by the last digit. It then repeats the whole procedure again with the
+        second-last digit, doing this a total of M times until the array is sorted.</p>
+    <iframe src="./visualised.html?sort=Radix&shuffled=true&n=100&locked=true"></iframe>
+    <p>The average time complexity for LSD radix sort is O(n * M), because we iterate over two arrays of size n M times
+        in total. If all of the numbers are integers, M is given by the logarithm of r, the largest number, so the time
+        complexity is O(n log r). This means, if the range of values is constant, LSD radix sort finishes in O(n) time,
+        the limit for distribution sorting algorithms, but if r is in O(n^k), the time complexity is O(n log n), or in
+        the worst case where r is in O(k^n), the time complexity is actually O(n²).</p>
+    <h2>Conclusions</h2>
+    <p>We have seen that different sorting algorithms have different strengths and weaknesses. Here are all of the
+        algorithms we have looked at in one table:</p>
+    <table>
+        <tr>
+            <th>Algorithm:</th>
+            <th>Time (Best):</th>
+            <th>Time (Average):</th>
+            <th>Time (Worst):</th>
+            <th>Space:</th>
+            <th>In Place?</th>
+            <th>Stable?</th>
+            <th>Principle:</th>
+            <th>Use Cases:</th>
+        </tr>
+        <tr>
+            <td>Selection</td>
+            <td class="n2">O(n²)</td>
+            <td class="n2">O(n²)</td>
+            <td class="n2">O(n²)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="no">no</td>
+            <td>Nested Iteration</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Insertion</td>
+            <td class="n">O(n)</td>
+            <td class="n2">O(n²)</td>
+            <td class="n2">O(n²)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="yes">yes</td>
+            <td>Nested Iteration</td>
+            <td>Almost-sorted data</td>
+        </tr>
+        <tr>
+            <td>Bubble</td>
+            <td class="n">O(n)</td>
+            <td class="n2">O(n²)</td>
+            <td class="n2">O(n²)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="yes">yes</td>
+            <td>Nested Iteration</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Shell</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlog2n">O(n log²n)</td>
+            <td class="n2">O(n²)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="no">no</td>
+            <td>Spaced Insertion</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Merge</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="n">O(n)</td>
+            <td class="no">no</td>
+            <td class="yes">yes</td>
+            <td>Post-order Recursion</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Bitonic</td>
+            <td class="log2n">O(log²n)</td>
+            <td class="log2n">O(log²n)</td>
+            <td class="log2n">O(log²n)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="no">no</td>
+            <td>Nested Iteration</td>
+            <td>Multiprocessors e.g. GPU</td>
+        </tr>
+        <tr>
+            <td>Quick</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="n2">O(n²)</td>
+            <td class="logn">O(log n)</td>
+            <td class="yes">yes</td>
+            <td class="no">no</td>
+            <td>Pre-order Recursion</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Heap</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="nlogn">O(n log n)</td>
+            <td class="c">O(1)</td>
+            <td class="yes">yes</td>
+            <td class="no">no</td>
+            <td>Iteration</td>
+            <td>Memory-tight applications</td>
+        </tr>
+        <tr>
+            <td>Pigeonhole</td>
+            <td class="n">O(n + r)</td>
+            <td class="n">O(n + r)</td>
+            <td class="n">O(n + r)</td>
+            <td class="n">O(r)</td>
+            <td class="no">no</td>
+            <td class="yes">yes</td>
+            <td>Index = Value</td>
+            <td>Integers where n = r</td>
+        </tr>
+        <tr>
+            <td>Bucket</td>
+            <td class="n">O(n + r)</td>
+            <td class="n">O(n + r + n²/r)</td>
+            <td class="n2">O(n²)</td>
+            <td class="n">O(n + r)</td>
+            <td class="no">no</td>
+            <td class="yes">yes</td>
+            <td>Categoric Distribution</td>
+            <td>Uniformly distributed integers</td>
+        </tr>
+        <tr>
+            <td>Radix MSD</td>
+            <td class="nlogn">O(n log r)</td>
+            <td class="nlogn">O(n log r)</td>
+            <td class="nlogn">O(n log r)</td>
+            <td class="n">O(n + r)</td>
+            <td class="no">no</td>
+            <td class="yes">yes</td>
+            <td>Pre-order Recursion</td>
+            <td>Strings of variable length</td>
+        </tr>
+        <tr>
+            <td>Radix LSD</td>
+            <td class="n">O(n log r)</td>
+            <td class="nlogn">O(n log r)</td>
+            <td class="n2">O(n²)</td>
+            <td class="n">O(n)</td>
+            <td class="no">no</td>
+            <td class="yes">yes</td>
+            <td>Multi-category Sorting</td>
+            <td>Integers with limited precision</td>
+        </tr>
+    </table>
+    <br>
+    <footer>
+        <p>Watch this video on <a href="https://youtu.be/InGeRuRk3f8">Block sort, Wiki sort and Grail sort</a>, a
+            comparison-based stable in-place O(n log n) algorithm!</p>
+        <p>Also check out my <a href="./visualised.html">sorting algorithm visualiser</a>!</p>
+        <br>
+        <a href="cms-compsci.deno.dev/hester">Homepage</a>
+    </footer>
+</body>
+
+</html>

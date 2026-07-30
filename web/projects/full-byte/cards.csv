@@ -1,0 +1,151 @@
+Category;Title;Description;Net;Target Net;Targets
+CPU;CPU;Play two more cards;-3;0;0
+CPU;ALU;Add up all card numbers in your hand. If over 100, pick up 3. If under 50, discard 2.;-0.5;0;0
+CPU;Address Bus;Choose a player and peek at one card from their hand;-1;0;1
+CPU;Control Bus;Reverse the current action;-1;0;0
+CPU;Data Bus;Take one card from another player;0;-1;1
+CPU;FDE Cycle;Take one card from another player and play it immediately;-1;-1;1
+CPU;Cache;Play a card without discarding it;0;0;0
+CPU;Pipelining;All players must commit one card to play on their next turn;-1;0;n
+CPU;Program Counter;Choose a new winning number of cards between 1 and 16;-1;0;0
+CPU;Accumulator;Draw 2 cards;1;0;0
+CPU;CIR;Repeat the action of the previous card;-1;0;0
+CPU;Reduced Instruction Set;Play one more card;-2;0;0
+CPU;Complex Instruction Set;Play two more cards;-3;0;0
+CPU;Havard Architecture;Split your hand into two piles. You may not play two cards from different piles for the next 3 turns.;-1;0;0
+CPU;Von Neumann Architecture;Choose another player and shuffle your cards together with theirs. Deal the same number of cards to each player as they had to start with;-1;0;1
+Memory and Storage;RAM;Discard any number of cards and draw the same number;-1;0;0
+Memory and Storage;ROM;Place one of your cards face up in front of you. It cannot be stolen, discarded or played from now on, but still counts towards your hand total.;-1;0;0
+Memory and Storage;Secondary Storage;Place one of your cards face down in front of you. While it is down, it cannot be stolen or discarded, but still counts towards your hand total. You may retrieve and play it on a later turn;-1;0;0
+Memory and Storage;Virtual Storage;Place one of your cards face down in front of you. It cannot be stolen, discarded or played from now on, but still counts towards your hand total.;-1;0;0
+Memory and Storage;Paging;Swap the next 4 cards in the deck with 4 cards from your hand;-1;0;0
+Memory and Storage;Segmentation;Cut the deck into 3 segments and rearrange them;-1;0;0
+Memory and Storage;Virtual Memory;If you have more than 8 cards, discard until you have exactly 8 left in your hand.;0;0;0
+Scheduling;First Come First Served;The next player's turn is skipped;-1;0;0
+Scheduling;Round Robin;If another player takes more than 5 seconds on their turn, skip their turn. This card may be played at any time;-1;0;0
+Scheduling;Shortest Job First;The player with the lowest numbered card goes next;-1;0;0
+Scheduling;Shortest Time Remaining;The player with the fewest cards left goes next;-1;0;0
+Scheduling;Multi Level Feedback Queue;Choose two players to swap hands;-1;0;2
+Scheduling;Interrupt Request;Prevent any action. This card may be played at any time.;-1;0;0
+Scheduling;Interrupt Service Routine;Play one of your cards. This card may be played at any time.;-2;0;0
+Operating Systems;Operating System;Choose another player to skip their next turn;-1;0;1
+Operating Systems;BIOS;Take one card from every player;n-1;-1;n
+Operating Systems;Distributed OS;Play one of your cards, which will affect all players;-2;0;n
+Operating Systems;Multi Tasking OS;Play two more cards;-3;0;0
+Operating Systems;Multi User OS;Choose another player. On their next turn, you may play a card as well.;-1;0;1
+Operating Systems;Device Driver;Take one card from the discard pile.;0;0;0
+Operating Systems;Defragmentation;Shuffle the deck;-1;0;0
+Operating Systems;Security;Prevent another player from stealing cards. This card may be played at any time;-1;-1;1
+Operating Systems;Virtual Machine;Take one card from the discard pile and play it immediately;-1;0;0
+Assembly Code;Compiler;Discard any cards from your hand in the "Programming" or "OOP" categories. Take any cards in the discard pile from the "Assembly Code" category;-1;0;0
+Assembly Code;Library Code;Draw 5 cards;4;0;0
+Assembly Code;Linker;Play two more cards;-3;0;0
+Assembly Code;Loader;Take 3 cards from another player;2;-3;1
+Software;Open Source Licence;All players must reveal one of their cards and keep it face up. The card can still be played, discarded or stolen;-1;0;n
+Software;Waterfall Methodology;Commit the cards you want to play on your next 3 turns. You cannot change your decision afterwards;-1;0;0
+Software;Agile Methodology;Take one card from the discard pile;0;0;0
+Software;Rapid Application Development;Draw one card and play it immediately;-1;0;0
+Software;Extreme Programming;Partner with the next player for their next turn. Between you you may choose a card to play from either of your hands;-1;0;1
+Programming;Encapsulation;Prevent another player from peeking at any cards. This card may be played at any time;-1;0;1
+Programming;Inheritance;Take two cards from the discard pile;1;0;0
+Programming;Polymorphism;Repeat the action of the previous card;-1;0;0
+Assembly Code;OUT;Discard as many cards as you want;-k-1;0;0
+Assembly Code;LDA;Take one card from another player;0;-1;1
+Assembly Code;STA;Give one card to another player;-2;1;1
+Assembly Code;ADD;Draw one card;0;0;0
+Assembly Code;BRA;Choose another player to go next;-1;0;0
+Assembly Code;HLT;If a player tries to take one of your cards, cancel the action skip their turn. This card may be played at any time;-1;-1;1
+Assembly Code;Immediate Addressing;Declare a specific card. If anyone has it, they must discard it;-1;-r;n
+Assembly Code;Direct Addressing;Take one card from the next player;0;-1;1
+Assembly Code;Indirect Addressing;Declare a specific card. If anyone has it, they must give it to you;r-1;-r;n
+Assembly Code;Indexed Addressing;Take one card from 3 other players;2;-1;3
+Databases;Run Length Encoding;Repeat the previous 3 cards;-1;0;0
+Databases;Dictionary Compression;Discard any cards in your hand from the same category;-r-1;0;0
+Databases;Symmetric Encryption;Swap one card with another player;-1;0;1
+Databases;Asymmetric Encryption;Give another player one of your cards and take one of theirs;-1;0;1
+Databases;First Normal Form;Choose a player. If they have any cards from the same category, they must discard all but one of them;-1;-r;1
+Databases;Second Normal Form;Prevent another player from drawing multiple cards. This card may be played at any time;-1;-1;1
+Databases;Third Normal Form;Prevent another player from playing multiple cards in the same turn. This card may be played at any time;-1;1;1
+Databases;Secondary Index;Take one card from the discard pile;0;0;0
+Databases;SELECT Query;Declare a category. Every player must give you all of their cards from that category (if applicable);r-1;-1;n
+Databases;INSERT Query;Give another player as many cards as you want;-k-1;k;1
+Databases;DELETE Query;Declare a category. Every player must discard all of their cards from that category;-1;-r;n
+Databases;Atomicity;Swap your entire hand with another player;-1;0;1
+Databases;Referential Integrity;Declare that another player has a specific card. If you are correct, pick up one card. If you are incorrect, discard one card.;-1;0;1
+Databases;Deadlock;Choose two players and prevent them from exchanging any cards.;-1;0;2
+Databases;Durability;Prevent one of your cards from being stolen. This card may be played at any time;0;-1;0
+Networks;Network;Swap one card with another player;-1;0;1
+Networks;LAN;Take one card from the player on either side of you;1;-1;2
+Networks;DNS;Declare a specific card. If anyone has it, they must give it to you;r-1;-r;0
+Networks;Packet Switching;Take one card from 3 players, and redistribute them randomly;-1;0;3
+Networks;Circuit Switching;Choose two players to be linked, so all effects target them both.;-1;0;2
+Networks;Denial of Service Attack;Cancel any action. This card may be played at any time;-1;0;0
+Networks;Spyware;Look at another player's hand and take one card;0;-1;1
+Networks;Firewall;Cancel any incoming action against you. This card may be played at any time;-1;0;0
+Networks;Proxy Server;Redirect any action to another player. This card may be played at any time;-1;0;1
+Networks;Router;Take one card from one player and give it to another player;-1;0;1
+Networks;Network Switch;Choose two players to swap hands;-1;0;2
+Networks;Client-Server;All players place one card in the middle. Shuffle these cards and deal one to each player;-1;0;n
+Networks;Peer-to-Peer;All players give one of their cards to another player;-1;0;n
+Networks;JavaScript;Automate a card, causing its effect to repeat every turn for the next two rounds;-1;0;0
+Networks;Web Crawler;Take 2 cards from the discard pile;1;0;0
+Networks;Web Indexing;Declare a category. Every player must give you one of their cards from that category (if applicable);r-1;-r;n
+Networks;PageRank;Peek at the top 5 cards of the deck. Place them back in an order you decide;-1;0;0
+Networks;Client-side Processing;Take one card from another player and play it immediately;-1;0;1
+Networks;Server-side Processing;Take one card from the deck and play it immediately;-1;0;0
+Binary;Binary;Choose a player to reveal every card in their hand with an even card number;-1;0;1
+Binary;Unsigned Binary;If you have zero cards after playing this card, draw 8 cards.;-1;0;0
+Binary;Sign and Magnitude;If a player tries to discard cards, make them pick up instead, and vice versa. This card may be played at any time;-1;0;1
+Binary;Two's Complement;Add up the numbers of your cards. If the total is greater than 256, discard one card. Otherwise, pick up one card;-1;0;0
+Binary;Binary Addition;Draw two cards;1;0;0
+Binary;Floating Point;Play a card and double its effect;-2;0;0
+Binary;Left Bit Shift;All players pass one card to the player on their left;-1;0;n
+Binary;Right Bit Shift;All players pass one card to the player on their right;-1;0;n
+Data Structures;Array;Draw 3 cards;2;0;0
+Data Structures;Tuple;Play 3 more cards;-4;0;0
+Data Structures;List;Place one card from your hand anywhere in the deck;-2;0;0
+Data Structures;Graph;All players give one of their cards to another player;-1;0;n
+Data Structures;Stack;For the next 3 turns, you must play the card that you drew most recently;-1;0;0
+Data Structures;Queue;For the next 3 turns, you must play cards in the order that you drew them;-1;0;0
+Data Structures;Hash Table;Declare a specific card. If anyone has it, they must give it to you;r-1;-r;n
+Data Structures;Binary Search Tree;Choose a number. The player on your left must give you a card with a number smaller than the number you chose. The player on your right must give you a card with a number larger than the number you chose.;1;-1;2
+Logic;AND Gate;Choose another player and force them to play 2 cards on their next turn;-1;-2;1
+Logic;NOT Gate;Cancel current action. This card may be played at any time;-1;0;0
+Logic;XOR Gate;Choose another player and force them to play only one card on their next turn;-1;0;1
+Logic;De Morgan's Law;If a player tries to discard cards, make them pick up instead, and vice versa;-1;0;1
+Logic;Half Adder;Draw 2 cards;1;0;0
+Logic;Full Adder;Draw 3 cards and discard one of them;1;0;0
+Logic;D Flip-Flop;Skip your turn but commit one card to play next turn;-1;0;0
+Legislation;Data Protection Act;Prevent another player taking cards from the discard pile. This card may be played at any time;-1;-1;1
+Legislation;Computer Misuse Act;Prevent another player from stealing cards. This card may be played at any time;-1;-1;1
+Legislation;Copyright Designs and Patents Act;Prevent another player from drawing cards. This card may be played at any time;-1;-1;1
+Legislation;Regulation of Investigatory Powers Act;Peek at the next 5 cards in the deck;-1;0;0
+Legislation;Artificial Intelligence;Draw one card and play it immediately;-1;0;0
+Legislation;E-Waste;Choose a player to discard half of their hand;-1;-x/2;1
+Legislation;Personal Information;Ask another player whether they have a specific card. They must answer truthfully;-1;0;0
+Computational Thinking;Abstraction;Remove one card from the game;-1;0;0
+Computational Thinking;Precondition;Redirect any action to another player. This card may be played at any time;-1;0;1
+Computational Thinking;Decomposition;Discard one card from your hand and draw 2 from the deck;0;0;0
+Computational Thinking;Precomputation;Take one card from the discard pile;0;0;0
+Computational Thinking;Procedure;Turn one of your cards into a procedure. You can now play this card without discarding it. It can still be stolen;-1;0;0
+Computational Thinking;Concurrent Processing;Play up to 3 more cards;-k-1;0;0
+Programming;Iteration;Play a card and repeat its action up to 3 times;-2;0;0
+Programming;Recursion;Repeat the action of the previous card;-1;0;0
+Programming;Selection;Draw 3 cards and keep one of them;0;0;0
+Programming;Local Variable;Prevent another player from peeking at any cards. This card may be played at any time;-1;0;1
+Programming;Global Variable;Play one of your cards, which will affect all players;-2;0;n
+Programming;Pass by Value;Give one card to another player. They must play it immediately;-2;1;1
+Computational Thinking;Divide and Conquer;Choose a player and take half of their hand;x/2-1;-x/2;1
+Computational Thinking;Backtracking;Reverse the direction of play;-1;0;0
+Computational Thinking;Data Mining;Draw 10 cards and keep 4 of them;3;0;0
+Computational Thinking;Heuristic;Make a guess about which player has a specific card. If you are correct, draw 3 cards.;r-1;0;0
+Computational Thinking;Performance Modelling;Compare hands with another player. Whoever has fewer cards draws 2.;-1;0;1
+Computational Thinking;Visualisation;All players must reveal all of their cards, and then hide them again;-1;0;n
+Algorithms;Depth First Traversal;Choose a player. On their next turn, they must play at least 3 cards, or discard one if it is not possible;-1;-1;1
+Algorithms;Breadth First Traversal;Choose a player. On their next 2 turns, they must only play one card.;-1;0;1
+Algorithms;Linear Search;Draw 10 cards and keep one of them;0;0;0
+Algorithms;Bubble Sort;All players give their highest numbered card to the player after them;-1;0;n
+Algorithms;Insertion Sort;Give one of your cards to the next player. The card may be passed on until someone decides to keep it.;-2;1;1
+Algorithms;Quick Sort;Choose a pivot number. The player on your left must give all of their cards with a smaller number than the pivot to the player on your right. The player on your right must give all of their cards with a larger number than the pivot to the player on your left.;r+r-1;-r;2
+Algorithms;Merge Sort;Choose another player and shuffle your cards together with theirs. Deal the same number of cards to each player as they had to start with;-1;0;1
+Algorithms;Pathfinding;Choose another player to go next;-1;0;1

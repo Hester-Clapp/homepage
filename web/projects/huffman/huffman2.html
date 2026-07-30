@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Encoding</title>
+</head>
+
+<body id="body">
+    <form id="form">
+        <input id="textInput" placeholder="Enter message...">
+        <input id="submitButton" type="submit">
+    </form>
+    <p id="uncompressed"></p>
+    <p id="uncompressedSize"></p>
+    <button id="constructButton">Construct Tree</button>
+    <table id="table"></table>
+    <canvas id="canvas"></canvas>
+    <p id="compressed"></p>
+    <p id="compressedSize"></p>
+    <p id="acwl"></p>
+</body>
+<script>
+    const ctx = canvas.getContext("2d")
+    form.addEventListener("submit", e => {
+        e.preventDefault()
+    })
+</script>
+<style>
+    body {
+        margin-bottom: 100px;
+    }
+
+    p {
+        word-wrap: break-word;
+    }
+
+    th,
+    td {
+        padding: 10px;
+        text-align: center;
+    }
+
+    tr:nth-child(odd) {
+        background-color: #ddd;
+    }
+
+    tr:nth-child(even) {
+        background-color: #eee;
+    }
+
+    canvas {
+        padding: 10px;
+    }
+</style>
+
+</html>

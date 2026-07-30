@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phydeaux Bridge</title>
+</head>
+
+<body>
+    <canvas style="background-color:lightblue"></canvas>
+</body>
+<script type="module">
+    import { Game } from "./attempt3/Game.js";
+
+    const canvas = document.querySelector("canvas");
+    canvas.width = window.innerWidth - 40;
+    canvas.height = window.innerHeight - 20;
+    const ctx = canvas.getContext("2d");
+
+    const game = new Game(ctx);
+    window.game = game
+    window.addEventListener("click", event => game.click(event))
+    window.addEventListener("contextmenu", event => game.rightclick(event))
+    window.addEventListener("keydown", event => game.keypress(event))
+
+    function loop(millis) {
+        if (millis) {
+            const time = millis / 1000
+            const dt = time - prevTime
+            prevTime = time
+            if (dt < 0.1) game.tick(dt)
+        }
+        game.draw()
+        window.requestAnimationFrame(loop)
+    }
+
+    let prevTime = 0
+    loop()
+</script>
+
+</html>

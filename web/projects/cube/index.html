@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Cube</title>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    function resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+    }
+    resize()
+    window.addEventListener("resize", resize)
+
+    class Cubie {
+        constructor(place) {
+            this.place = place
+            this.pos = place
+            this.faces = {
+                F: place.match("F") ? "F" : "",
+                B: place.match("B") ? "B" : "",
+                L: place.match("L") ? "L" : "",
+                R: place.match("R") ? "R" : "",
+                U: place.match("U") ? "U" : "",
+                D: place.match("D") ? "D" : "",
+            }
+        }
+    }
+
+    const faces = ["F", "B", "L", "R", "U", "D"]
+    const pieces = ["FL", "FR", "FU", "FD", "BL", "BR", "BU", "BD", "LU", "LD", "RU", "RD", "FLU", "FLD", "FRU", "FRD", "BLU", "BLD", "BRU", "BRD"]
+    const mappings = {
+        UDRL: {
+            L: "U",
+            R: "D",
+            U: "R",
+            D: "L",
+        },
+        DULR: {
+            L: "D",
+            R: "U",
+            U: "L",
+            D: "R",
+        },
+        DUFB: {
+            F: "D",
+            B: "U",
+            U: "F",
+            D: "B",
+        },
+        UDBF: {
+            F: "U",
+            B: "D",
+            U: "B",
+            D: "F",
+        },
+        LRBF: {
+            F: "L",
+            B: "R",
+            L: "B",
+            R: "F",
+        },
+        RLFB: {
+            F: "R",
+            B: "L",
+            L: "F",
+            R: "B",
+        }
+    }
+
+    const moves = {
+        "F": {
+            affects: pieces.filter(v => v.match("F")),
+            mapping: mappings.UDRL
+        },
+        "F'": {
+            affects: pieces.filter(v => v.match("F")),
+            mapping: mappings.DULR
+        },
+        "B": {
+            affects: pieces.filter(v => v.match("B")),
+            mapping: mappings.DULR
+        },
+        "B'": {
+            affects: pieces.filter(v => v.match("B")),
+            mapping: mappings.UDRL
+        },
+        "L": {
+            affects: pieces.filter(v => v.match("L")),
+            mapping: mappings.DUFB
+        },
+        "L'": {
+            affects: pieces.filter(v => v.match("L")),
+            mapping: mappings.UDBF
+        },
+        "R": {
+            affects: pieces.filter(v => v.match("R")),
+            mapping: mappings.UDBF
+        },
+        "R'": {
+            affects: pieces.filter(v => v.match("R")),
+            mapping: mappings.DUFB
+        },
+        "U": {
+            affects: pieces.filter(v => v.match("U")),
+            mapping: mappings.LRBF
+        },
+        "U'": {
+            affects: pieces.filter(v => v.match("U")),
+            mapping: mappings.RLFB
+        },
+        "D": {
+            affects: pieces.filter(v => v.match("D")),
+            mapping: mappings.RLFB
+        },
+        "D'": {
+            affects: pieces.filter(v => v.match("D")),
+            mapping: mappings.LRBF
+        },
+    }
+
+    class Cube {
+        cubies = ["F", "B", "L", "R", "U", "D", ...pieces].reduce((obj, v) => { obj[v] = new Cubie(v); return obj }, {})
+        cubiesByPlace = { ...this.cubies }
+
+        move(action) {
+            let move = moves[action]
+            let newCubies = { ...this.cubies }
+            move.affects.forEach(pos => {
+                let cubie = this.cubies[pos]
+                let copyCubie = { ...cubie }
+
+                Object.keys(move.mapping).forEach(face => {
+                    cubie.faces[face] = copyCubie.faces[move.mapping[face]]
+                })
+                cubie.pos = Object.values(cubie.faces).filter(v => v).sort(v => faces.indexOf(v)).join("")
+                newCubies[cubie.pos] = cubie
+            })
+            this.cubiesByPlace = Object.values(newCubies).reduce((obj, cubie) => {
+                obj[cubie.place] = cubie
+                return obj
+            }, {})
+            this.cubies = { ...newCubies }
+        }
+    }
+
+    let cube = new Cube()
+    console.log(cube.cubiesByPlace.FL)
+    cube.move("F'")
+    console.log(cube.cubiesByPlace.FL)
+    cube.move("U'")
+    console.log(cube.cubiesByPlace.FL)
+    // console.log(cube.cubies.LU)
+    // cube.move("L'")
+    // console.log(cube.cubies.FL)
+</script>
+
+</html>

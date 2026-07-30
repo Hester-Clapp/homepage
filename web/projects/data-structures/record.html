@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Table | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Records</h2>
+    <p>
+        A record is an abstract data structure designed for databases, which is based on a hash table. It contains
+        multiple pieces of data, which can be of many different types, which are indexed by a key or field instead of a
+        number.
+    </p>
+    <p>
+        Similarly to a hash table, a record makes use of hashing to store data in an array. The main difference is that
+        data is stored as a key-value pair, consisting of an array of length 2.
+    </p>
+    <p>
+        Records are fundamental to flat-file and relational databases, which are arrays of record which all have the
+        same keys.
+    </p>
+    <hr>
+    <form id="addForm" autocomplete="off">
+        <input id="addKey" placeholder="Add a key" required>
+        <input id="addValue" placeholder="Assign a value" required>
+        <input id="addButton" type="submit" value="Add">
+    </form>
+    <form id="queryForm" autocomplete="off">
+        <input id="queryInput" placeholder="Query a key" required>
+        <input id="queryButton" type="submit" value="Query">
+    </form>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="hashTable">
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+    </ol>
+</body>
+
+<script>
+    let hashTable = document.getElementById("hashTable").children
+    let probe
+
+    function hash(input) {
+        return String(input).split("").reduce((a, chr) => a + chr.charCodeAt() ** 2, 0) % 8
+    }
+
+    function add(k, v, i) {
+        hashTable[i].innerHTML = [k, v].join(": ")
+        hashTable[i].className = "success"
+        setTimeout(() => { hashTable[i].className = "" }, 500)
+        clearInterval(probe)
+        document.getElementById("addButton").disabled = false
+    }
+
+    function query(i, result) {
+        if (result) {
+            hashTable[i].className = "success"
+            document.getElementById("textOutput").innerHTML = hashTable[i].innerHTML.split(":")[1].trim()
+        } else {
+            hashTable[i].className = "failure"
+            document.getElementById("textOutput").innerHTML = "Not found!"
+        }
+        setTimeout(() => { hashTable[i].className = hashTable[i].innerHTML ? "" : "empty" }, 500)
+        clearInterval(probe)
+        document.getElementById("queryButton").disabled = false
+    }
+
+    document.getElementById("addForm").addEventListener("submit", e => {
+        e.preventDefault()
+        document.getElementById("addButton").disabled = true
+        let k = document.getElementById("addKey").value
+        let v = document.getElementById("addValue").value
+        let index = hash(k)
+        let i = index
+        document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+        if (hashTable[i].innerHTML) {
+            hashTable[i].className = "failure"
+            i = (i + 1) % 8
+            probe = setInterval(() => {
+                hashTable[(i + 7) % 8].className = hashTable[(i + 7) % 8].innerHTML ? "" : "empty"
+                if (hashTable[i].innerHTML) {
+                    if (i === index) {
+                        console.log(i)
+                        hashTable[i].className = ""
+                        document.getElementById("textOutput").innerHTML = "Cannot add key, hash table is full!"
+                        clearInterval(probe)
+                    } else {
+                        hashTable[i].className = "failure"
+                        i = (i + 1) % 8
+                    }
+                } else {
+                    add(k, v, i)
+                }
+            }, 500)
+        } else {
+            add(k, v, i)
+        }
+
+        document.getElementById("addForm").reset()
+        document.getElementById("addKey").focus()
+    })
+    document.getElementById("queryForm").addEventListener("submit", e => {
+        e.preventDefault()
+        document.getElementById("queryButton").disabled = true
+        let k = document.getElementById("queryInput").value
+        let index = hash(k)
+        let i = index
+        document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+        if (hashTable[i].innerHTML) {
+            if (hashTable[i].innerHTML.split(":")[0] === k) {
+                query(i, true)
+            } else {
+                hashTable[i].className = "failure"
+                i = (i + 1) % 8
+                probe = setInterval(() => {
+                    hashTable[(i + 7) % 8].className = hashTable[(i + 7) % 8].innerHTML ? "" : "empty"
+                    if (hashTable[i].innerHTML) {
+                        if (hashTable[i].innerHTML === v) {
+                            query(i, true)
+                        } else {
+                            if (i === index) {
+                                query(i, false)
+                                hashTable[i].className = ""
+                            } else {
+                                hashTable[i].className = "failure"
+                                i = (i + 1) % 8
+                            }
+                        }
+                    } else {
+                        query(i, false)
+                    }
+                }, 500)
+            }
+        } else {
+            query(i, false)
+        }
+        document.getElementById("queryForm").reset()
+        document.getElementById("queryInput").focus()
+    })
+</script>
+
+</html>

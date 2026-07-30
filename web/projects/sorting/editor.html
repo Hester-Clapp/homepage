@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorting Algorithm Editor</title>
+    <style>
+        #array,
+        #aux {
+            position: relative;
+            width: 50rem;
+            height: 15rem;
+            background: #333;
+        }
+
+        .item {
+            position: absolute;
+            box-sizing: border-box;
+            bottom: 0;
+            z-index: 1;
+        }
+
+        .item.accessing,
+        .item.comparing {
+            box-shadow: 0 0 1rem inset seagreen;
+        }
+
+        .item.swapping,
+        .item.copying {
+            box-shadow: 0 0 1rem inset tomato;
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body>
+    <section id="array"></section>
+    <section id="aux"></section>
+</body>
+
+<script type="module">
+    import { Visualisation } from "./Visualisation.js"
+    import * as sorts from "./sorts.js"
+
+    const vis = new Visualisation(200, document.querySelector("#array"), document.querySelector("#aux"))
+    vis.initialise(40)
+    await vis.shuffle()
+    await vis.sort(sorts.quickSelectSort)
+
+    window.vis = vis
+    window.sorts = sorts
+
+    window.test = async function (algorithm, limit = 4096) {
+        const tasks = []
+        for (let n = 32; n < limit; n = Math.floor(1.8 * n)) {
+            const worker = new Worker("./track.js", { type: "module" })
+            worker.postMessage({ n, algorithm })
+
+            tasks.push(new Promise(resolve => {
+                worker.addEventListener("message", resolve)
+            }))
+        }
+
+        await Promise.all(tasks)
+
+        const accesses = {}
+        const comparisons = {}
+        const swaps = {}
+
+        for (const task of tasks) {
+            const event = await task
+            const result = event.data
+
+            accesses[result.n] = result.accesses
+            comparisons[result.n] = result.comparisons
+            swaps[result.n] = result.swaps
+        }
+
+        console.log(estimatePower(accesses))
+        console.log(estimatePower(comparisons))
+        console.log(estimatePower(swaps))
+    }
+
+    function estimatePower(data) {
+        let sum = 0
+        let sumN = 0
+        let sumV = 0
+        let sumNN = 0
+        let sumNV = 0
+
+        let sumVlog = 0
+        let sumNVlog = 0
+        for (const [n, v] of Object.entries(data)) {
+            sum += 1
+            sumN += Math.log(n)
+            sumV += Math.log(v)
+            sumNN += Math.log(n) ** 2
+            sumNV += Math.log(n) * Math.log(v)
+
+            sumVlog += Math.log(v / Math.log(n))
+            sumNVlog += Math.log(n) * Math.log(v / Math.log(n))
+        }
+
+        const Snv = (sumNV * sum) - (sumN * sumV)
+        const Snvlog = (sumNVlog * sum) - (sumN * sumVlog)
+        const Snn = (sumNN * sum) - (sumN ** 2)
+
+        return { linear: Snv / Snn, logarithmic: Snvlog / Snn }
+    }
+
+</script>
+
+</html>

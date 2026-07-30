@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./favicon.ico">
+    <title>Exam Timetable</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: small;
+        }
+
+        h3 {
+            margin: 0.5rem;
+            margin-top: 0;
+            cursor: pointer;
+        }
+
+        table,
+        tr,
+        td {
+            border: 1px solid black;
+            vertical-align: baseline;
+        }
+
+        td>div.minimised {
+            display: none;
+        }
+
+        label {
+            display: block;
+            margin: 0.2rem 0;
+        }
+
+        input[type="range"] {
+            width: 3rem;
+            appearance: none;
+            outline: none;
+            border-radius: 5px;
+            background: #ccc;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 1ch;
+            height: 1ch;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid black;
+        }
+
+        input[type="text"] {
+            width: 3ch;
+            border: 1px solid black;
+            padding: 0;
+            margin: 0 0.2rem;
+        }
+
+        a {
+            font-weight: bold;
+            margin: 0.5rem;
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <th>Monday</th>
+            <th>Tuesday</th>
+            <th>Wednesday</th>
+            <th>Thursday</th>
+            <th>Friday</th>
+            <th>Saturday</th>
+            <th>Sunday</th>
+        </tr>
+        <tr>
+            <td>19<h3></h3>
+            </td>
+            <td>20<h3></h3>
+            </td>
+            <td>21<h3></h3>
+            </td>
+            <td>22<h3>Further Maths Core Pure (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=further&exam=core_pure"
+                        target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Logical Deduction
+    Proof by Induction (sequences / series / matrices)"><input type="range" value="0"> Proof</label>
+                    <label title="Topics:
+    Complex Roots of Polynomials
+    Addition / Multiplication
+    Cartesian / Modulus-Argument / Exponential Form
+    Argand Diagrams
+    De Moivre's Theorem
+    Roots of Unity"><input type="range" value="0"> Complex Numbers</label>
+                    <label title="Topics:
+    Multiplication / Identity
+    Transformations
+    Invariant Lines / Points
+    Determinants
+    Inverses"><input type="range" value="0"> Matrices I</label>
+                    <label title="Topics:
+    Dot Product
+    Intersection of Planes
+    Cross Product
+    Intersection / Skewness of Lines
+    Angles
+    Minimum Distances"><input type="range" value="0"> Vectors II</label>
+                    <label title="Topics:
+    Standard Series (r / r^2 / r^3)
+    Converging Series
+    Maclaurin Series"><input type="range" value="0"> Series</label>
+                    <label title="Topics:
+    Improper Integrals
+    Volumes of Revolution
+    Mean Value
+    Integrating Inverse Trig"><input type="range" value="0"> Integration II</label>
+                    <label title="Topics:
+    Converting between Polar and Cartesian
+    Sketching Explicit Functions
+    Polar Integration"><input type="range" value="0"> Polar Coordinates</label>
+                    <label title="Topics:
+    Exponential Definitions
+    Identities
+    Inverse Functions
+    Differentiation / Integration"><input type="range" value="0"> Hyperbolics</label>
+                    <label title="Topics:
+    Formulating Problems / Mechanics
+    General / Particular Solutions
+    Integrating Factor
+    Second Order Homogenous DEs
+    Complementary Function
+    Particular Integral
+    Simple Harmonic Motion
+    Simultaneous Differential Equations"><input type="range" value="0"> Differential Equations</label>
+                </div>
+            </td>
+            <td>23<h3>Physics Paper 1 Modelling (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="physics room">, Seat:<input type="text"
+                            class="physics seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=physics&exam=modelling" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    SI Base Units
+    Homogeneity
+    Scalars / Vectors"><input type="range" value="0"> Quantities</label>
+                    <label title="Topics:
+    Types of Errors
+    Precision and Accuracy
+    Uncertainty"><input type="range" value="0"> Measurements</label>
+                    <label title="Topics:
+    Displacement / Velocity / Acceleration
+    Graphs against Time
+    Uniform Motion (suvat)
+    Projectiles / Free Fall"><input type="range" value="0"> Kinematics</label>
+                    <label title="Topics:
+    Newton's Second Law
+    Weight / Normal Contact / Tension / Friction
+    Terminal Velocity
+    Equilibrium
+    Moments / Torque
+    Density / Pressure / Upthrust"><input type="range" value="0"> Forces</label>
+                    <label title="Topics:
+    Work Done by a Force
+    Conservation of Energy
+    Kinetic / Gravitational Potential Energy
+    Power
+    Efficiency"><input type="range" value="0"> Energy</label>
+                    <label title="Topics:
+    Springs / Hooke's Law
+    Elastic Potential Energy
+    Stress / Strain / Young's Modulus
+    Stress-Strain Graphs
+    Properties of Materials (ductile / brittle / polymeric)
+    Elastic / Plastic Deformation"><input type="range" value="0"> Materials</label>
+                    <label title="Topics:
+    Newton's Laws of Motion
+    Impulse
+    Conservation of Momentum
+    Elastic Collisions"><input type="range" value="0"> Momentum</label>
+                    <label title="Topics:
+    Thermal Equilibrium
+    Kelvin Scale / Absolute Zero
+    States of Matter
+    Internal Energy
+    Specific Heat Capacity
+    Specific Latent Heat
+    Boyle's / Charles' / Avogadro's /Gay-Lussac's Gas Laws
+    Ideal Gas Model / Kinetic Theory
+    Distribution of Particle Velocities / RMS Speed"><input type="range" value="0"> Thermal</label>
+                    <label title="Topics:
+    Angular Velocity / Radians
+    Centripetal Force"><input type="range" value="0"> Circular Motion</label>
+                    <label title="Topics:
+    Simple Harmonic Motion
+    Displacement / Velocity / Acceleration in SHM
+    Energy Transfers
+    Free / Forced Oscillations / Resonance
+    Damping"><input type="range" value="0"> Oscillations</label>
+                    <label title="Topics:
+    Point Masses
+    Gravitational Field Strength
+    Newton's Law of Gravitation
+    Planetary Motion
+    Kepler's Laws
+    Gravitational Potential"><input type="range" value="0"> G-Fields</label>
+                    <label title="Topics:
+    Life Cycle of a Star
+    HR Diagrams
+    Blackbody Radiation
+    Emission / Absorption Spectra
+    Wien's / Stefan's Laws"><input type="range" value="0"> Astrophysics</label>
+                    <label title="Topics:
+    Astronomical Units / Light Years / Parsecs
+    Cosmological Principle
+    Doppler Effect
+    Hubble's Law
+    Big Bang Theory / Evolution of the Universe"><input type="range" value="0"> Cosmology</label>
+                </div>
+            </td>
+            <td>24<h3></h3>
+            </td>
+            <td>25<h3></h3>
+            </td>
+        </tr>
+        <tr>
+            <td>26<h3></h3>
+            </td>
+            <td>27<h3></h3>
+            </td>
+            <td>28<h3></h3>
+            </td>
+            <td>29<h3></h3>
+            </td>
+            <td>30<h3></h3>
+            </td>
+            <td>31<h3></h3>
+            </td>
+            <td>1<h3></h3>
+            </td>
+        </tr>
+        <tr>
+            <td>2<h3></h3>
+            </td>
+            <td>3<h3>Further Maths Algorithms (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="alg room">, Seat:<input type="text" class="alg seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=further&exam=algorithms"
+                        target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Pseudocode / Flowcharts
+    Complexity
+    Heuristics"><input type="range" value="0"> Algorithms</label>
+                    <label title="Topics:
+    Bubble / Insertion / Quick Sort
+    Proof of Optimality
+    First Fit / Decreasing Heuristic / Full Bins Heuristic"><input type="range" value="0"> Packing / Sorting</label>
+                    <label title="Topics:
+    Types of Graphs
+    Modelling Problems with Graphs"><input type="range" value="0"> Graph Theory</label>
+                    <label><input type="range" value="0"> Prim / Kruskal / Dijkstra</label>
+                    <label title="Topics:
+    Critical Path Analysis
+    Independent / Interfering Float"><input type="range" value="0"> Activity Networks</label>
+                    <label title="Topics:
+    Min-cut Max-flow Theorem"><input type="range" value="0"> Flow Networks</label>
+                    <label title="Topics:
+    Formulation
+    Standard / Augmented Form
+    Slack / Surplus / Artifical Variables
+    Substitution
+    Solving Graphically"><input type="range" value="0"> Linear Programming</label>
+                    <label title="Topics:
+    Constructing a Tableau
+    Iteration
+    Two-stage Simplex"><input type="range" value="0"> Simplex</label>
+                    <label title="Topics:
+    Indicator Variables
+    Shortest / Longest Path
+    Maximum Flow
+    Matching / Allocation / Transport Problems"><input type="range" value="0"> Network Problems as LP</label>
+                </div>
+            </td>
+            <td>4<h3>Maths Pure and Mechanics (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=maths&exam=mech" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Direct Proof
+    Proof by Contradiction
+    Disproof by Counterexample"><input type="range" value="0"> Proof</label>
+                    <label title="Topics:
+    Rearrangement
+    Linear Equations
+    Quadratic Equations
+    Simultaneous Equations
+    Surds and Indices
+    Inequalities
+    Partial Fractions
+    Rational Functions
+    Polynomials
+    Factor Theorem / Remainder Theorem"><input type="range" value="0"> Algebra</label>
+                    <label title="Topics:
+    Domain and Range
+    Composite Functions
+    Inverse Functions
+    Modulus Function"><input type="range" value="0"> Functions</label>
+                    <label title="Topics:
+    Sketching
+    Intercepts / Asymptotes / Stationary Points
+    Linear Transformations"><input type="range" value="0"> Graphs</label>
+                    <label title="Topics:
+    Gradients
+    Distances / Midpoints
+    Linear Equations
+    Intersections
+    Circle Theorems
+    Parametric Equations"><input type="range" value="0"> Coordinates</label>
+                    <label title="Topics:
+    Binomial Expansion
+    Arithmetic Sequences / Series
+    Geometric Sequences / Series"><input type="range" value="0"> Sequences / Series</label>
+                    <label title="Topics:
+    Sin / Cos / Tan / Cot / Sec / Cosec
+    Right-angled Triangles / Unit Circle / Graphs
+    Exact Values
+    Sine / Cosine / Area Rule
+    Solving Equations
+    Pythagorean Identities
+    Addition Formulae
+    Double Angle Formulae
+    Radians / Small Angle Approximations"><input type="range" value="0"> Trigonometry</label>
+                    <label title="Topics:
+    Definition of logarithms
+    Laws of logarithms
+    Modelling with exponentials
+    e and ln"><input type="range" value="0"> Exponentials / Logarithms</label>
+                    <label title="Topics:
+    First Principles
+    Stationary Points
+    Second Derivatives / Concavity
+    Standard Derivatives
+    Chain / Product / Quotient Rules
+    Implicit Differentiation"><input type="range" value="0"> Differentiation</label>
+                    <label title="Topics:
+    Fundamental Theorem of Calculus
+    Definite and Indefinite Integrals
+    Limit of Riemann Sums
+    Area under a curve
+    Standard Integrals
+    Integration by Substitution
+    Reverse Chain Rule / Inspection
+    Integration by Parts"><input type="range" value="0"> Integration</label>
+                    <label title="Topics:
+    Separation of Variables
+    Modelling"><input type="range" value="0"> 1st Order Differential Equations</label>
+                    <label title="Topics:
+    Change of Sign
+    Fixed Point Iteration
+    Newton-Raphson Method
+    Approximating Integrals with Series
+    Trapezium Rule"><input type="range" value="0"> Numerical Methods</label>
+                    <label title="Topics:
+    Components / Unit Vectors
+    Magnitude / Direction
+    Position Vectors
+    Addition and Scaling"><input type="range" value="0"> Vectors I</label>
+                    <label title="Topics:
+    Quantities and Units
+    Kinematics
+    Forces and Newton's Laws
+    Moments"><input type="range" value="0"> Quantities</label>
+                    <label title="Topics:
+    Kinematics of a Particle
+    Constant Acceleration
+    Variable Acceleration"><input type="range" value="0"> Kinematics</label>
+                    <label title="Topics:
+    Projectiles
+    Horizontal and Vertical Components
+    Range and Maximum Height"><input type="range" value="0"> Projectiles</label>
+                    <label title="Topics:
+    Forces in Equilibrium
+    Friction
+    Tension and Compression"><input type="range" value="0"> Forces</label>
+                    <label title="Topics:
+    Newton's Second Law
+    Connected Particles
+    Inclined Planes"><input type="range" value="0"> Dynamics</label>
+                </div>
+            </td>
+            <td>5<h3></h3>
+            </td>
+            <td>6<h3>Further Maths Mechanics (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=further&exam=mech" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Dimensions
+    Units
+    Homogeneity
+    Proposing Formulae"><input type="range" value="0"> Dimensional Analysis</label>
+                    <label title="Topics:
+    Friction
+    Equilibrium
+    Moments / Torque"><input type="range" value="0"> Forces</label>
+                    <label title="Topics:
+    Work Done by a Force
+    Kinetic / Gravitational Potential Energy
+    Work-Energy Principle
+    Work Done in a Time Interval
+    Variable Driving Force"><input type="range" value="0"> Work / Energy</label>
+                    <label title="Topics:
+    Impulse
+    Conservation of Momentum
+    Law of Restitution
+    Elastic / Coalescent Collisions"><input type="range" value="0"> Momentum</label>
+                    <label title="Topics:
+    Weighted Average
+    COM of Rods / Triangular / Rectangular Laminae
+    Rigid Bodies / Sliding or Toppling"><input type="range" value="0"> Centre of Mass</label>
+                </div>
+            </td>
+            <td>7<h3></h3>
+            </td>
+            <td>8<h3></h3>
+            </td>
+        </tr>
+        <tr>
+            <td>9<h3>Physics Paper 2 Exploring (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="physics room">, Seat:<input type="text"
+                            class="physics seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=physics&exam=exploring" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    SI Base Units
+    Homogeneity
+    Scalars / Vectors"><input type="range" value="0"> Quantities</label>
+                    <label title="Topics:
+    Types of Errors
+    Precision and Accuracy
+    Uncertainty"><input type="range" value="0"> Measurements</label>
+                    <label title="Topics:
+    Quantisation of Charge
+    Conservation of Charge
+    Drift Velocity"><input type="range" value="0"> Charge / Current</label>
+                    <label title="Topics:
+    Potential Difference / Electromotive Force
+    Electrical Work / Power
+    Resistance
+    I-V Characteristics (resistor / lamp / diode / thermistor / LDR)
+    Resistivity"><input type="range" value="0"> Energy / Voltage</label>
+                    <label title="Topics:
+    Circuit Symbols
+    Series / Parallel Circuits
+    Kirchoff's Laws
+    Internal Resistance
+    Potential Dividers"><input type="range" value="0"> Circuits</label>
+                    <label title="Topics:
+    Properties of Waves
+    Frequency / Wavelength / Velocity
+    Intensity and Amplitude"><input type="range" value="0"> Wave Motion</label>
+                    <label title="Topics:
+    Types of EM Waves
+    Refraction
+    Polarisation"><input type="range" value="0"> Electromagnetic Waves</label>
+                    <label title="Topics:
+    Principle of Superposition
+    Two-source Interference
+    Young's Double Slit Experiment"><input type="range" value="0"> Superposition</label>
+                    <label title="Topics:
+    Comparison with Progressive Waves
+    Nodes / Antinodes
+    Modes of Vibration"><input type="range" value="0"> Standing Waves</label>
+                    <label title="Topics:
+    Photons / Quantisation of Light
+    Photoelectric Effect
+    Wave-Particle Duality"><input type="range" value="0"> Quantum</label>
+                    <label title="Topics:
+    Capcitors in Series / Parallel
+    Energy Stored in a Capacitor
+    Charging / Discharging / Exponential Decay"><input type="range" value="0"> Capacitance</label>
+                    <label title="Topics:
+    Point Charges
+    Coulomb's Law
+    Electrical Field Strength
+    Uniform Fields
+    Electrical Potential"><input type="range" value="0"> Electric Fields</label>
+                    <label title="Topics:
+    Magnetic Fields
+    Magnetic Flux Density
+    Lorentz Force (motor effect)
+    Motion of Charged Particles
+    Flux / Flux Linkage
+    Electromagnetic Induction
+    Faraday's Law / Lenz's Law
+    Transformers"><input type="range" value="0"> Electromagnetism</label>
+                    <label title="Topics:
+    Model of the Atom / Alpha Particle Scattering Experiment
+    Standard Model
+    Up / Down / Strange Quarks
+    Electrons / Neutrinos
+    Antimatter
+    Conservation Laws"><input type="range" value="0"> Fundamental Particles</label>
+                    <label title="Topics:
+    Alpha / Beta / Gamma Decay
+    Activity / Decay Constant / Half-life
+    Carbon Dating"><input type="range" value="0"> Radioactivity</label>
+                    <label title="Topics:
+    Mass-Energy Equivalence
+    Binding Energy
+    Nuclear Fission
+    Nuclear Fusion"><input type="range" value="0"> Nuclear Reactions</label>
+                    <label title="Topics:
+    X-Rays
+    CAT Scanners
+    Gamma Cameras
+    PET Scanners / Radiotracers
+    Ultrasound
+    Acoustic Impedance"><input type="range" value="0"> Medical Imaging</label>
+                </div>
+            </td>
+            <td>10<h3>Chemistry Paper 1 Physical (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="chem room">, Seat:<input type="text"
+                            class="chem seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=chemistry&exam=physical" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Isotopes
+    Electron Structure
+    Ionic / Covalent / Metallic Bonding
+    Intermolecular Forces"><input type="range" value="0"> Atomic Structure</label>
+                    <label title="Topics:
+    Reacting Masses
+    Ideal Gases
+    Redox
+    Electrode Potentials
+    Electrochemical Cells"><input type="range" value="0"> Reactions</label>
+                    <label title="Topics:
+    Periodicity
+    Group Trends
+    Group 2 elements
+    Group 7 elements (halogens)
+    Tests for Anions and Cations"><input type="range" value="0"> Periodic Table</label>
+                    <label title="Topics:
+    Enthalpy Changes
+    Hess's Law
+    Bond Enthalpy
+    Lattice Enthalpy
+    Born-Haber Cycles
+    Enthalpy of Solution & Hydration
+    Entropy (ΔS)
+    Gibbs Free Energy (ΔG)"><input type="range" value="0"> Enthalpy</label>
+                    <label title="Topics:
+    Collision Theory
+    Catalysts
+    Maxwell-Boltzmann Distribution
+    Rate Equations"><input type="range" value="0"> Rates of Reaction</label>
+                    <label title="Topics:
+                    Le Chatalier's Principle
+                    Equilibrium Constants"><input type="range" value="0"> Equilibrium</label>
+                    <label title="Topics:
+    pH calculations
+    Strong / Weak Acids
+    Buffer Solutions"><input type="range" value="0"> Acids and Bases</label>
+                    <label title="Topics:
+    Properties and Complex Ion Formation
+    Ligand Substitution
+    Precipitation Reactions
+    Catalysis"><input type="range" value="0"> Transition Elements</label>
+                </div>
+            </td>
+            <td>11<h3>CompSci Paper 1 Computer Systems (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="cs room">, Seat:<input type="text" class="cs seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=compsci&exam=computer_systems"
+                        target="_blank">Past
+                        Papers</a>
+                    <label title=" Topics: Structure of the Processor Systems Architecture Types of Processor Input /
+                        Output / Storage Devices"><input type="range" value="0"> Components of a Computer</label>
+                    <label title="Topics:
+    Operating Systems
+    Application / Utility Software
+    Software Development
+    Assembly Code
+    Programming Paradigms"><input type="range" value="0"> Software</label>
+                    <label title="Topics:
+    Encapsulation
+    Information Hiding / Private Attributes
+    Getter / Setter / Constructor Methods
+    Inheritance
+    Class Diagrams
+    Polymorphism"><input type="range" value="0"> OOP</label>
+                    <label title="Topics:
+    Compression / Encryption / Hashing
+    Relational Databases
+    SQL
+    Transaction Handling"><input type="range" value="0"> Exchanging Data</label>
+                    <label title="Topics:
+    Protocols
+    TCP/IP stack
+    Domain Name System
+    Types of Network
+    Network Security"><input type="range" value="0"> Networks</label>
+                    <label title="Topics:
+    HTML / JS / CSS
+    Search Engine Indexing / Ranking
+    Client-Side / Server-Side Processing"><input type="range" value="0"> Web Technology</label>
+                    <label title="Topics:
+    Integers / Floats / Characters / Strings / Booleans
+    Unsigned / Sign-Magnitude / Two's Complement Binary Integers
+    Binary Addition
+    Floating Point Numbers
+    Bitwise Operations
+    Character Sets"><input type="range" value="0"> Data Types</label>
+                    <label title="Topics:
+    Arrays / Tuples / Lists / Records
+    Stack / Queue / Priority Queue
+    Linked Lists
+    Hash Tables
+    Graphs
+    Trees / Binary Search Trees"><input type="range" value="0"> Data Structures</label>
+                    <label title="Topics:
+    Truth Tables
+    Simplification Laws
+    Logic Gates / Diagrams
+    Half Adder / Full Adder / D Flip-Flop"><input type="range" value="0"> Boolean Algebra</label>
+                    <label title="Topics:
+    Computing-related Legislation
+    Computers in the Workforce
+    Automated Decision Making
+    AI
+    Environmental Effects
+    Online Censorship / Monitoring
+    Privacy of Personal Information
+    Piracy / Offensive Communications
+    Online Accessibility"><input type="range" value="0"> Legal, Ethical, Cultural Issues</label>
+                </div>
+            </td>
+            <td>12<h3>Maths Pure and Statistics (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=maths&exam=stats" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Direct Proof
+    Proof by Contradiction
+    Disproof by Counterexample"><input type="range" value="0"> Proof</label>
+                    <label title="Topics:
+    Rearrangement
+    Linear Equations
+    Quadratic Equations
+    Simultaneous Equations
+    Surds and Indices
+    Inequalities
+    Partial Fractions
+    Rational Functions
+    Polynomials
+    Factor Theorem / Remainder Theorem"><input type="range" value="0"> Algebra</label>
+                    <label title="Topics:
+    Domain and Range
+    Composite Functions
+    Inverse Functions
+    Modulus Function"><input type="range" value="0"> Functions</label>
+                    <label title="Topics:
+    Sketching
+    Intercepts / Asymptotes / Stationary Points
+    Linear Transformations"><input type="range" value="0"> Graphs</label>
+                    <label title="Topics:
+    Gradients
+    Distances / Midpoints
+    Linear Equations
+    Intersections
+    Circle Theorems
+    Parametric Equations"><input type="range" value="0"> Coordinates</label>
+                    <label title="Topics:
+    Binomial Expansion
+    Arithmetic Sequences / Series
+    Geometric Sequences / Series"><input type="range" value="0"> Sequences / Series</label>
+                    <label title="Topics:
+    Sin / Cos / Tan / Cot / Sec / Cosec
+    Right-angled Triangles / Unit Circle / Graphs
+    Exact Values
+    Sine / Cosine / Area Rule
+    Solving Equations
+    Pythagorean Identities
+    Addition Formulae
+    Double Angle Formulae
+    Radians / Small Angle Approximations"><input type="range" value="0"> Trigonometry</label>
+                    <label title="Topics:
+    Definition of logarithms
+    Laws of logarithms
+    Modelling with exponentials
+    e and ln"><input type="range" value="0"> Exponentials / Logarithms</label>
+                    <label title="Topics:
+    First Principles
+    Stationary Points
+    Second Derivatives / Concavity
+    Standard Derivatives
+    Chain / Product / Quotient Rules
+    Implicit Differentiation"><input type="range" value="0"> Differentiation</label>
+                    <label title="Topics:
+    Fundamental Theorem of Calculus
+    Definite and Indefinite Integrals
+    Limit of Riemann Sums
+    Area under a curve
+    Standard Integrals
+    Integration by Substitution
+    Reverse Chain Rule / Inspection
+    Integration by Parts"><input type="range" value="0"> Integration</label>
+                    <label title="Topics:
+    Separation of Variables
+    Modelling"><input type="range" value="0"> 1st Order Differential Equations</label>
+                    <label title="Topics:
+    Change of Sign
+    Fixed Point Iteration
+    Newton-Raphson Method
+    Approximating Integrals with Series
+    Trapezium Rule"><input type="range" value="0"> Numerical Methods</label>
+                    <label title="Topics:
+    Components / Unit Vectors
+    Magnitude / Direction
+    Position Vectors
+    Addition and Scaling"><input type="range" value="0"> Vectors I</label>
+                    <label title="Topics:
+    Sample vs Population
+    Bias / Representation
+    Random Samples
+    Simple Random / Systematic / Stratified / Cluster / Opportunity / Quota Sampling Methods"><input type="range"
+                            value="0"> Sampling</label>
+                    <label title="Topics:
+    Types of Data
+    Bar Graph / Pie Chart / Frequency Polygon for Categoric Data
+    Stem and Leaf Diagram / Cumulative Frequency Graph / Box Plot / Histogram for Continuous Data
+    Scatter Diagrams / Time Series for Bivariate Data
+    "><input type="range" value="0"> Data Presentation</label>
+                    <label title="Topics:
+    Measures of location (mean / median / mode / midrange)
+    Measures of spread (variance / standard deviation / range / IQR / quartiles)
+    Distribution (skewness / bimodal)
+    Cleaning / Outliars
+    Correlation (Product Moment / Spearman's Rank)
+    Coding
+    "><input type="range" value="0"> Data Interpretation</label>
+                    <!-- <label title="Topics:
+    "><input type="range" value="0"> Bivariate Data</label> -->
+                    <label title="Topics:
+    Events / Sample Space
+    Independence / Mutual Exclusivity / Exhaustivity
+    Law of Total Probability
+    Conditional Probability / Bayes' Theorem"><input type="range" value="0"> Probability Theory</label>
+                    <label title="Topics:
+    Expectation / Variance
+    Probability Density Functions
+    Cumulative Density Functions
+    Uniform / Binomial / Geometric / Normal Distributions"><input type="range" value="0"> Random Variables</label>
+                    <label title="Topics:
+    Significance Level
+    1 tail / 2 tail
+    Critical Regions
+    Sample Variance"><input type="range" value="0"> Hypothesis Testing</label>
+                </div>
+            </td>
+            <td>13<h3>Further Maths Statistics</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=further&exam=stats" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Desirable Properties of Samples"><input type="range" value="0"> Sampling</label>
+                    <label title="Topics:
+    Expectation and Variance
+    Coding
+    Uniform / Binomial / Poisson / Geometric Distributions
+    Sum of Poisson Variables Theorem"><input type="range" value="0"> Random Variables</label>
+                    <label title="Topics:
+    Explanatory / Response / Controlled Variables
+    Correlation (product moment / Spearman's rank)
+    Least Squares Regression Lines
+    Interpolation / Extrapolation"><input type="range" value="0"> Bivariate Data</label>
+                    <label title="Topics:
+    Contingency Tables
+    Goodness of Fit Test
+    Degrees of Freedom"><input type="range" value="0"> Chi-Squared Test</label>
+                </div>
+            </td>
+            <td>14<h3></h3>
+            </td>
+            <td>15<h3></h3>
+            </td>
+        </tr>
+        <tr>
+            <td>16<h3>Chemistry Paper 2 Organic (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="chem room">, Seat:<input type="text"
+                            class="chem seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=chemistry&exam=organic" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Isotopes
+    Electron Structure
+    Ionic / Covalent / Metallic Bonding
+    Intermolecular Forces"><input type="range" value="0"> Atomic Structure</label>
+                    <label title="Topics:
+    Nomenclature
+    Functional Groups
+    Types of Formulae
+    Structural / Stereoisomerism Isomerism"><input type="range" value="0"> Basics of Organic Chemistry</label>
+                    <label title="Topics:
+    Radical Substitution (alkanes)
+    Electrophilic Addition (alkenes)
+    Addition Polymerisation"><input type="range" value="0"> Alkanes and Alkenes</label>
+                    <label title="Topics:
+    Oxidation / Esterification / Dehydration Reactions
+    Uses of alcohols (fuels / solvents)"><input type="range" value="0"> Alcohols</label>
+                    <label title="Topics:
+    Nucleophilic Substitution Reactions
+    Rates of Hydrolysis"><input type="range" value="0"> Haloalkanes</label>
+                    <label title="Topics:
+    Practical Techniques (reflux / distillation / separation / purification)
+    Synthetic Routes"><input type="range" value="0"> Organic Synthesis</label>
+                    <label title="Topics:
+    Benzene Structure
+    Phenol Chemistry"><input type="range" value="0"> Aromatic Compounds</label>
+                    <label title="Topics:
+    Aldehydes & Ketones (Nucleophilic Addition / Reduction)
+    Carboxylic Acids 
+    Esters
+    Acyl Chlorides"><input type="range" value="0"> Carbonyl compounds</label>
+                    <label title="Topics:
+    Aminides
+    Amino Acids"><input type="range" value="0"> Nitrogen Compounds</label>
+                    <label title="Topics:
+    Condensation Polymers
+    Carbon-Carbon Bonding
+    Biodegradable vs Disposable"><input type="range" value="0"> Polymers</label>
+                    <label title="Topics:
+    Thin-layer Chromatography (TLC)
+    Gas Chromatography (GC)"><input type="range" value="0"> Chromatography</label>
+                    <label title="Topics:
+    Infrared Spectroscopy
+    Mass Spectrometry
+    Nuclear Magnetic Resonance Spectroscopy"><input type="range" value="0"> Spectroscopy</label>
+                </div>
+            </td>
+            <td>17<h3>Physics Paper 3 Unified (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="physics room">, Seat:<input type="text"
+                            class="physics seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=physics&exam=unified" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    SI Base Units
+    Homogeneity
+    Scalars / Vectors"><input type="range" value="0"> Quantities</label>
+                    <label title="Topics:
+    Types of Errors
+    Precision and Accuracy
+    Uncertainty"><input type="range" value="0"> Measurements</label>
+                    <label title="Topics:
+    Displacement / Velocity / Acceleration
+    Graphs against Time
+    Uniform Motion (suvat)
+    Projectiles / Free Fall"><input type="range" value="0"> Kinematics</label>
+                    <label title="Topics:
+    Newton's Second Law
+    Weight / Normal Contact / Tension / Friction
+    Terminal Velocity
+    Equilibrium
+    Moments / Torque
+    Density / Pressure / Upthrust"><input type="range" value="0"> Forces</label>
+                    <label title="Topics:
+    Work Done by a Force
+    Conservation of Energy
+    Kinetic / Gravitational Potential Energy
+    Power
+    Efficiency"><input type="range" value="0"> Energy</label>
+                    <label title="Topics:
+    Springs / Hooke's Law
+    Elastic Potential Energy
+    Stress / Strain / Young's Modulus
+    Stress-Strain Graphs
+    Properties of Materials (ductile / brittle / polymeric)
+    Elastic / Plastic Deformation"><input type="range" value="0"> Materials</label>
+                    <label title="Topics:
+    Newton's Laws of Motion
+    Impulse
+    Conservation of Momentum
+    Elastic Collisions"><input type="range" value="0"> Momentum</label>
+                    <label title="Topics:
+    Quantisation of Charge
+    Conservation of Charge
+    Drift Velocity"><input type="range" value="0"> Charge / Current</label>
+                    <label title="Topics:
+    Potential Difference / Electromotive Force
+    Electrical Work / Power
+    Resistance
+    I-V Characteristics (resistor / lamp / diode / thermistor / LDR)
+    Resistivity"><input type="range" value="0"> Energy / Voltage</label>
+                    <label title="Topics:
+    Circuit Symbols
+    Series / Parallel Circuits
+    Kirchoff's Laws
+    Internal Resistance
+    Potential Dividers"><input type="range" value="0"> Circuits</label>
+                    <label title="Topics:
+    Properties of Waves
+    Frequency / Wavelength / Velocity
+    Intensity and Amplitude"><input type="range" value="0"> Wave Motion</label>
+                    <label title="Topics:
+    Types of EM Waves
+    Refraction
+    Polarisation"><input type="range" value="0"> Electromagnetic Waves</label>
+                    <label title="Topics:
+    Principle of Superposition
+    Two-source Interference
+    Young's Double Slit Experiment"><input type="range" value="0"> Superposition</label>
+                    <label title="Topics:
+    Comparison with Progressive Waves
+    Nodes / Antinodes
+    Modes of Vibration"><input type="range" value="0"> Standing Waves</label>
+                    <label title="Topics:
+    Photons / Quantisation of Light
+    Photoelectric Effect
+    Wave-Particle Duality"><input type="range" value="0"> Quantum</label>
+                    <label title="Topics:
+    Thermal Equilibrium
+    Kelvin Scale / Absolute Zero
+    States of Matter
+    Internal Energy
+    Specific Heat Capacity
+    Specific Latent Heat
+    Boyle's / Charles' / Avogadro's /Gay-Lussac's Gas Laws
+    Ideal Gas Model / Kinetic Theory
+    Distribution of Particle Velocities / RMS Speed"><input type="range" value="0"> Thermal</label>
+                    <label title="Topics:
+    Angular Velocity / Radians
+    Centripetal Force"><input type="range" value="0"> Circular Motion</label>
+                    <label title="Topics:
+    Simple Harmonic Motion
+    Displacement / Velocity / Acceleration in SHM
+    Energy Transfers
+    Free / Forced Oscillations / Resonance
+    Damping"><input type="range" value="0"> Oscillations</label>
+                    <label title="Topics:
+    Point Masses
+    Gravitational Field Strength
+    Newton's Law of Gravitation
+    Planetary Motion
+    Kepler's Laws
+    Gravitational Potential"><input type="range" value="0"> G-Fields</label>
+                    <label title="Topics:
+    Life Cycle of a Star
+    HR Diagrams
+    Blackbody Radiation
+    Emission / Absorption Spectra
+    Wien's / Stefan's Laws"><input type="range" value="0"> Astrophysics</label>
+                    <label title="Topics:
+    Astronomical Units / Light Years / Parsecs
+    Cosmological Principle
+    Doppler Effect
+    Hubble's Law
+    Big Bang Theory / Evolution of the Universe"><input type="range" value="0"> Cosmology</label>
+                    <label title="Topics:
+    Model of the Atom / Alpha Particle Scattering Experiment
+    Standard Model
+    Up / Down / Strange Quarks
+    Electrons / Neutrinos
+    Antimatter
+    Conservation Laws"><input type="range" value="0"> Fundamental Particles</label>
+                    <label title="Topics:
+    Alpha / Beta / Gamma Decay
+    Activity / Decay Constant / Half-life
+    Carbon Dating"><input type="range" value="0"> Radioactivity</label>
+                    <label title="Topics:
+    Mass-Energy Equivalence
+    Binding Energy
+    Nuclear Fission
+    Nuclear Fusion"><input type="range" value="0"> Nuclear Reactions</label>
+                    <label title="Topics:
+    X-Rays
+    CAT Scanners
+    Gamma Cameras
+    PET Scanners / Radiotracers
+    Ultrasound
+    Acoustic Impedance"><input type="range" value="0"> Medical Imaging</label>
+                </div>
+            </td>
+            <td>18<h3>CompSci Paper 2 Algorithms and Programming (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="cs room">, Seat:<input type="text" class="cs seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=compsci&exam=algorithms_programming"
+                        target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Arrays / Tuples / Lists / Records
+    Stack / Queue / Priority Queue
+    Linked Lists
+    Hash Tables
+    Graphs
+    Trees / Binary Search Trees"><input type="range" value="0"> Data Structures</label>
+                    <label title="Topics:
+    Abstraction
+    Preconditions
+    Caching
+    Sub-procedures
+    Logic / Decision Making
+    Concurrent Processing"><input type="range" value="0"> Computational Thinking</label>
+                    <label title="Topics:
+    Sequence / Iteration / Branching
+    Recursion
+    Functions / Modularity
+    OOP / Encapsulation
+    Using an IDE"><input type="range" value="0"> Programming Techniques</label>
+                    <label title="Topics:
+    Decomposition / Divide and Conquer
+    Heuristics
+    Backtracking
+    Data Mining
+    Pipelining
+    Visualisation"><input type="range" value="0"> Computational Methods</label>
+                    <label title="Topics:
+    Encapsulation
+    Information Hiding / Private Attributes
+    Getter / Setter / Constructor Methods
+    Inheritance
+    Class Diagrams
+    Polymorphism"><input type="range" value="0"> OOP</label>
+                    <label title="Topics:
+    Complexity
+    Data Structures / Traversals
+    Bubble / Insertion / Quick / Merge Sort
+    Linear / Binary Search
+    Dijkstra / A* Pathfinding"><input type="range" value="0"> Algorithms</label>
+                </div>
+            </td>
+            <td>19<h3>Maths Pure and Comprehension (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=maths&exam=pure" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Direct Proof
+    Proof by Contradiction
+    Disproof by Counterexample"><input type="range" value="0"> Proof</label>
+                    <label title="Topics:
+    Rearrangement
+    Linear Equations
+    Quadratic Equations
+    Simultaneous Equations
+    Surds and Indices
+    Inequalities
+    Partial Fractions
+    Rational Functions
+    Polynomials
+    Factor Theorem / Remainder Theorem"><input type="range" value="0"> Algebra</label>
+                    <label title="Topics:
+    Domain and Range
+    Composite Functions
+    Inverse Functions
+    Modulus Function"><input type="range" value="0"> Functions</label>
+                    <label title="Topics:
+    Sketching
+    Intercepts / Asymptotes / Stationary Points
+    Linear Transformations"><input type="range" value="0"> Graphs</label>
+                    <label title="Topics:
+    Gradients
+    Distances / Midpoints
+    Linear Equations
+    Intersections
+    Circle Theorems
+    Parametric Equations"><input type="range" value="0"> Coordinates</label>
+                    <label title="Topics:
+    Binomial Expansion
+    Arithmetic Sequences / Series
+    Geometric Sequences / Series"><input type="range" value="0"> Sequences / Series</label>
+                    <label title="Topics:
+    Sin / Cos / Tan / Cot / Sec / Cosec
+    Right-angled Triangles / Unit Circle / Graphs
+    Exact Values
+    Sine / Cosine / Area Rule
+    Solving Equations
+    Pythagorean Identities
+    Addition Formulae
+    Double Angle Formulae
+    Radians / Small Angle Approximations"><input type="range" value="0"> Trigonometry</label>
+                    <label title="Topics:
+    Definition of logarithms
+    Laws of logarithms
+    Modelling with exponentials
+    e and ln"><input type="range" value="0"> Exponentials / Logarithms</label>
+                    <label title="Topics:
+    First Principles
+    Stationary Points
+    Second Derivatives / Concavity
+    Standard Derivatives
+    Chain / Product / Quotient Rules
+    Implicit Differentiation"><input type="range" value="0"> Differentiation</label>
+                    <label title="Topics:
+    Fundamental Theorem of Calculus
+    Definite and Indefinite Integrals
+    Limit of Riemann Sums
+    Area under a curve
+    Standard Integrals
+    Integration by Substitution
+    Reverse Chain Rule / Inspection
+    Integration by Parts"><input type="range" value="0"> Integration</label>
+                    <label title="Topics:
+    Separation of Variables
+    Modelling"><input type="range" value="0"> 1st Order Differential Equations</label>
+                    <label title="Topics:
+    Change of Sign
+    Fixed Point Iteration
+    Newton-Raphson Method
+    Approximating Integrals with Series
+    Trapezium Rule"><input type="range" value="0"> Numerical Methods</label>
+                    <label title="Topics:
+    Components / Unit Vectors
+    Magnitude / Direction
+    Position Vectors
+    Addition and Scaling"><input type="range" value="0"> Vectors I</label>
+                </div>
+            </td>
+            <td>20<h3>Chemistry Paper 3 Unified (morning)</h3>
+                <div>
+                    <label>Room:<input type="text" class="chem room">, Seat:<input type="text"
+                            class="chem seat"></label>
+                    <a href="../past-papers/index.html?board=ocr&subject=chemistry&exam=unified" target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Isotopes
+    Electron Structure
+    Ionic / Covalent / Metallic Bonding
+    Intermolecular Forces"><input type="range" value="0"> Atomic Structure</label>
+                    <label title="Topics:
+    Reacting Masses
+    Ideal Gases
+    Redox
+    Electrode Potentials
+    Electrochemical Cells"><input type="range" value="0"> Reactions</label><label title="Topics:
+    Periodicity
+    Group Trends
+    Group 2 elements
+    Group 7 elements (halogens)
+    Tests for Anions and Cations"><input type="range" value="0"> Periodic Table</label>
+                    <label title="Topics:
+    Enthalpy Changes
+    Hess's Law
+    Bond Enthalpy
+    Lattice Enthalpy
+    Born-Haber Cycles
+    Enthalpy of Solution & Hydration
+    Entropy (ΔS)
+    Gibbs Free Energy (ΔG)"><input type="range" value="0"> Enthalpy</label>
+                    <label title="Topics:
+    Collision Theory
+    Catalysts
+    Maxwell-Boltzmann Distribution
+    Rate Equations"><input type="range" value="0"> Rates of Reaction</label>
+                    <label title="Topics:
+                    Le Chatalier's Principle
+                    Equilibrium Constants"><input type="range" value="0"> Equilibrium</label>
+                    <label title="Topics:
+    pH calculations
+    Strong / Weak Acids
+    Buffer Solutions"><input type="range" value="0"> Acids and Bases</label>
+                    <label title="Topics:
+    Properties and Complex Ion Formation
+    Ligand Substitution
+    Precipitation Reactions
+    Catalysis"><input type="range" value="0"> Transition Elements</label>
+                    <label title="Topics:
+    Nomenclature
+    Functional Groups
+    Types of Formulae
+    Structural / Stereoisomerism Isomerism"><input type="range" value="0"> Basics of Organic Chemistry</label>
+                    <label title="Topics:
+    Radical Substitution (alkanes)
+    Electrophilic Addition (alkenes)
+    Addition Polymerisation"><input type="range" value="0"> Alkanes and Alkenes</label>
+                    <label title="Topics:
+    Oxidation / Esterification / Dehydration Reactions
+    Uses of alcohols (fuels / solvents)"><input type="range" value="0"> Alcohols</label>
+                    <label title="Topics:
+    Nucleophilic Substitution Reactions
+    Rates of Hydrolysis"><input type="range" value="0"> Haloalkanes</label>
+                    <label title="Topics:
+    Practical Techniques (reflux / distillation / separation / purification)
+    Synthetic Routes"><input type="range" value="0"> Organic Synthesis</label>
+                    <label title="Topics:
+    Benzene Structure
+    Phenol Chemistry"><input type="range" value="0"> Aromatic Compounds</label>
+                    <label title="Topics:
+    Aldehydes & Ketones (Nucleophilic Addition / Reduction)
+    Carboxylic Acids 
+    Esters
+    Acyl Chlorides"><input type="range" value="0"> Carbonyl compounds</label>
+                    <label title="Topics:
+    Aminides
+    Amino Acids"><input type="range" value="0"> Nitrogen Compounds</label>
+                    <label title="Topics:
+    Condensation Polymers
+    Carbon-Carbon Bonding
+    Biodegradable vs Disposable"><input type="range" value="0"> Polymers</label>
+                    <label title="Topics:
+    Thin-layer Chromatography (TLC)
+    Gas Chromatography (GC)"><input type="range" value="0"> Chromatography</label>
+                    <label title="Topics:
+    Infrared Spectroscopy
+    Mass Spectrometry
+    Nuclear Magnetic Resonance Spectroscopy"><input type="range" value="0"> Spectroscopy</label>
+                </div>
+                <h3>Further Maths Extra Pure (afternoon)</h3>
+                <div>
+                    <label>Room:<input type="text" class="maths room">, Seat:<input type="text"
+                            class="maths seat"></label>
+                    <label><input type="range" value="0"> Recurrence Relations</label>
+                    <a href="../past-papers/index.html?board=ocr-mei&subject=further&exam=extra_pure"
+                        target="_blank">Past
+                        Papers</a>
+                    <label title="Topics:
+    Set Notation
+    Group Axioms
+    Cayley Tables
+    Cyclic Groups
+    Subgroups
+    Lagrange's Theorem
+    Isomorphisms"><input type="range" value="0"> Group Theory</label>
+                    <label title="Topics:
+    Eigenvalues and Eigenvectors
+    Diagonalisation
+    Cayley-Hamilton Theorem"><input type="range" value="0"> Matrices II</label>
+                    <label title="Topics:
+    Explicit multivariable equations
+    Contours and Sections
+    Partial Differentiation
+    Implicit functions
+    Grad"><input type="range" value="0"> Multivariable Calculus</label>
+                </div>
+            </td>
+            <td>21<h3></h3>
+            </td>
+            <td>22<h3></h3>
+            </td>
+        </tr>
+    </table>
+
+</body>
+<script>
+    let confidenceValues = JSON.parse(localStorage.getItem("confidenceValues")) || {}
+    let minimisedExams = JSON.parse(localStorage.getItem("minimisedExams")) || {}
+    let examSeats = JSON.parse(localStorage.getItem("examSeats")) || {
+        maths: {}, chem: {}, cs: {}, physics: {}, alg: {}
+    }
+    function colour(v) {
+        return v ? `linear-gradient(to right, hsl(${v}, 80%, 50%) 0%, hsl(${v}, 80%, 50%) 100%)` : "linear-gradient(to right, #ccc 0%, #ccc 100%)"
+    }
+    document.querySelectorAll(`input[type="range"]`).forEach((input, i) => {
+        // let id = `input${i}`
+        let id = input.parentElement.innerText.replaceAll(/[^a-zA-Z]/g, "")
+        input.className = id
+        if (id in confidenceValues) {
+            let v = String(confidenceValues[id])
+            input.value = v
+            input.style.background = `linear-gradient(to right, hsl(${v}, 80%, 50%) 0%, hsl(${v}, 80%, 50%) 100%)`;
+        }
+    })
+    document.querySelectorAll(`input[type="range"]`).forEach(input => {
+        let id = input.className
+        let linked = document.querySelectorAll(`input[type="range"].${id}`)
+
+        input.addEventListener("change", event => {
+            localStorage.setItem("confidenceValues", JSON.stringify(confidenceValues))
+        })
+        input.addEventListener("input", event => {
+            const v = Number(input.value);
+            confidenceValues[id] = v
+            input.style.background = colour(v)
+            linked.forEach(linkedInput => {
+                linkedInput.value = String(v)
+                linkedInput.style.background = colour(v)
+            })
+        })
+    })
+    document.querySelectorAll(`td`).forEach(td => {
+        let headings = td.querySelectorAll("h3")
+        headings.forEach(heading => {
+            let content = heading.nextElementSibling//parentElement.querySelector("div")
+            if (heading.innerText in minimisedExams) {
+                content.classList.toggle("minimised", minimisedExams[heading.innerText])
+            }
+            heading.addEventListener("click", event => {
+                content.classList.toggle("minimised")
+                minimisedExams[heading.innerText] = content.classList.contains("minimised")
+                localStorage.setItem("minimisedExams", JSON.stringify(minimisedExams))
+            })
+        })
+    })
+    Object.keys(examSeats).forEach(subject => {
+        document.querySelectorAll(`.${subject}.room`).forEach(input => {
+            if (examSeats[subject].room) {
+                input.value = examSeats[subject].room
+            }
+            input.addEventListener("input", event => {
+                examSeats[subject].room = input.value
+                localStorage.setItem("examSeats", JSON.stringify(examSeats))
+                document.querySelectorAll(`.${subject}.room`).forEach(input => {
+                    if (input.value !== examSeats[subject].room) {
+                        input.value = examSeats[subject].room
+                    }
+                })
+            })
+        })
+        document.querySelectorAll(`.${subject}.seat`).forEach(input => {
+            if (examSeats[subject].seat) {
+                input.value = examSeats[subject].seat
+            }
+            input.addEventListener("input", event => {
+                examSeats[subject].seat = input.value
+                localStorage.setItem("examSeats", JSON.stringify(examSeats))
+                document.querySelectorAll(`.${subject}.seat`).forEach(input => {
+                    if (input.value !== examSeats[subject].seat) {
+                        input.value = examSeats[subject].seat
+                    }
+                })
+            })
+        })
+    })
+</script>
+
+</html>

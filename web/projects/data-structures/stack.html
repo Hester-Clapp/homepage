@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Stacks</h2>
+    <p>
+        A stack is an abstract data structure based on an array, that operates on a first-in, last-out basis
+        (FILO). Items can be
+        pushed onto the top of the stack, and popped off the top too.
+    </p>
+    <p>
+        Stacks are very fast since they only have one pointer (to keep track of where the top is), and items do not need
+        to be moved.
+    </p>
+    <p>
+        Stacks are used to keep track of function calls, store browser history, and traverse <a
+            href="./graph.html">graphs</a> depth-first.
+    </p>
+    <hr>
+    <form id="pushForm" autocomplete="off">
+        <input id="pushInput" placeholder="Push an item to the stack" required>
+        <input id="pushButton" type="submit" value="Push">
+    </form>
+    <button id="popButton" type="submit" disabled>Pop from the stack</button>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="stackElements" reversed>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="top"></li>
+    </ol>
+</body>
+<script>
+    let stack = document.getElementById("stackElements").children
+    let topIndex = 7
+
+    document.getElementById("pushForm").addEventListener("submit", e => {
+        e.preventDefault()
+        document.getElementById("popButton").disabled = false
+        stack[topIndex].innerHTML = document.getElementById("pushInput").value
+        stack[topIndex].className = ""
+        topIndex--
+        if (topIndex < 0) {
+            document.getElementById("pushButton").disabled = true
+        } else {
+            document.getElementById("pushButton").disabled = false
+            stack[topIndex].className = "top"
+        }
+        document.getElementById("pushForm").reset()
+        document.getElementById("pushInput").focus()
+    })
+    document.getElementById("popButton").addEventListener("click", e => {
+        document.getElementById("pushButton").disabled = false
+        if (topIndex < 7) {
+            document.getElementById("popButton").disabled = false
+            if (topIndex >= 0) stack[topIndex].className = "empty"
+            topIndex++
+            stack[topIndex].className = "top"
+            document.getElementById("textOutput").innerHTML = stack[topIndex].innerHTML
+        } else {
+            document.getElementById("popButton").disabled = true
+        }
+    })
+</script>
+
+</html>

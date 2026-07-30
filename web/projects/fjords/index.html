@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fjord Generation</title>
+    <style>
+        p,
+        label {
+            display: block;
+            margin: 0.2rem;
+        }
+
+        span.param {
+            margin-right: 1ch;
+        }
+
+        /* span.param::after {
+            content: "ⓘ";
+        } */
+
+        div.info {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid black;
+            padding: 4px;
+            pointer-events: none;
+        }
+
+        span.param:hover>div.info {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <label>Scale: <input type="range" oninput="this.nextElementSibling.innerHTML = this.value"><output></output></label> -->
+    <label><span class="param">Spawn Tries: <div class="info">
+                The number of blocks the algorithm will spawn.<br>More tries will create a bigger fjord system but take
+                longer.
+            </div></span><input type="range" min="100" max="4000" value="1000"
+            oninput="this.nextElementSibling.innerHTML = this.value; spawnTries = this.value"><output>1000</output></label>
+    <label><span class="param">Max Steps: <div class="info">
+                The maximum number of steps a block can move by before it is cancelled.<br>More steps will create fewer,
+                longer branches but may take longer, while fewer steps will make lots of short, thin branches.
+            </div></span><input type="range" min="10" max="500" value="100"
+            oninput="this.nextElementSibling.innerHTML = this.value; maxSteps = this.value"><output>100</output></label>
+    <label><span class="param">Max Embryo Fjords: <div class="info">
+                The maximum number of blocks that can stick to the edge.<br>More embryos will create more fjords while
+                fewer embryos will create fewer longer fjords.
+            </div></span><input type="range" min="1" max="50" value="10"
+            oninput="this.nextElementSibling.innerHTML = this.value; maxEmbryos = this.value"><output>10</output></label>
+    <label><span class="param">Spawn Area Advance Rate: <div class="info">
+                The rate at which the area that blocks can spawn in advances to the right.<br>A higher value will create
+                a longer fjord, while a lower one will create a more dense fjord system.
+            </div></span><input type="range" min="1" max="20" value="5"
+            oninput="this.nextElementSibling.innerHTML = this.value; advanceRate = this.value"><output>5</output></label>
+    <button onclick="generate()">Generate</button>
+    <button onclick="draw()">Draw</button>
+    <p></p>
+    <canvas>
+    </canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    let width, height
+    const scale = 5
+
+    let blocks = []
+
+    let spawnTries = 1000
+    let maxSteps = 100
+    let minSpawnX = 0
+    let advanceRate = 5
+    let maxEmbryos = 10
+    let embryos = 0
+
+    function resize() {
+        width = window.innerWidth - 20
+        height = window.innerHeight - 180
+        canvas.width = width
+        canvas.height = height
+        draw()
+    }
+    window.addEventListener("resize", resize)
+    resize()
+
+    ctx.strokeStyle = "darkblue"
+    ctx.lineCap = "round"
+
+    function isJoined(x, y, i) {
+        if (x < 0 && embryos <= maxEmbryos) {
+            embryos++
+            return { hit: true, from: 0 }
+        } else {
+            let hits = blocks.map((block, i) => {
+                const dx = block.x - x
+                const dy = block.y - y
+                if (dx > -scale * 1.2 && dx < scale * 2.4 && dy > -scale * 0.8 && dy < scale * 1.6) return i
+                else return undefined
+            }).filter(v => v)
+            if (hits.length) {
+                return { hit: true, from: hits[0] }
+            } else return { hit: false }
+        }
+    }
+
+    async function generate() {
+        embryos = 0
+        minSpawnX = 0
+        ctx.clearRect(0, 0, width, height)
+        // resize()
+        window.removeEventListener("resize", resize)
+        blocks = []
+
+        for (let i = 0; i < spawnTries; i++) {
+            document.querySelector("p").innerHTML = `Spawning block ${i} of ${spawnTries}`
+            let x = Math.random() * 100 + minSpawnX
+            let y = Math.random() * height
+            for (let step = 0; step < maxSteps; step++) {
+                x += (Math.random() * 2 - 1.2)
+                y += (Math.random() * 2 - 1) * 0.4
+                if (x > width || y < 0 || y > height) {
+                    x = Math.random() * width
+                    y = Math.random() * height
+                    step = 0
+                }
+                let join = isJoined(x, y)
+                if (join.hit) {
+                    let block = { x: Math.floor(x), y: Math.floor(y), from: join.from }
+                    blocks.push(block)
+                    let depth = 1
+                    while (block.from > 0) {
+                        ctx.lineWidth = depth / 10
+                        ctx.beginPath()
+                        ctx.moveTo(block.x, block.y)
+                        ctx.lineTo(blocks[block.from].x, blocks[block.from].y)
+                        ctx.closePath()
+                        ctx.stroke()
+                        depth++
+                        block = blocks[block.from]
+                    }
+                    if (Math.random() > 0.8) await sleep()
+
+                    x = Math.random() * 100 + minSpawnX
+                    y = Math.random() * height
+                    i++
+                    step = 0
+                    minSpawnX += Math.random() ** 2 * advanceRate / 10
+                }
+            }
+            x = Math.random() * advanceRate * 10 + minSpawnX
+            y = Math.random() * height
+            i--
+            step = 0
+
+        }
+        window.addEventListener("resize", resize)
+    }
+    async function draw() {
+        ctx.fillStyle = "darkblue"
+        ctx.strokeStyle = "darkblue"
+        ctx.clearRect(0, 0, width, height)
+        await blocks.forEach(async block => {
+            let depth = 1
+            while (block.from > 0) {
+                ctx.lineWidth = depth / 10
+                ctx.beginPath()
+                ctx.moveTo(block.x, block.y)
+                ctx.arc(block.x, block.y, (depth + 1) / 20, 0, 2 * Math.PI)
+                ctx.closePath()
+                ctx.fill()
+
+                ctx.beginPath()
+                ctx.moveTo(block.x, block.y)
+                ctx.lineTo(blocks[block.from].x, blocks[block.from].y)
+                ctx.closePath()
+                ctx.stroke()
+                depth++
+                block = blocks[block.from]
+                await sleep()
+            }
+        })
+
+    }
+    function sleep() {
+        return new Promise(resolve => window.requestAnimationFrame(resolve))
+    }
+</script>
+
+</html>

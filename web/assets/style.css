@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+* {
+    font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif;
+}
+
+header {
+    height: 11rem;
+}
+
+#header a {
+    display: inline;
+    position: relative;
+    z-index: 1;
+    width: 63px;
+    height: 41px;
+
+    * {
+        position: absolute;
+        width: 63px;
+        height: 41px;
+        text-align: center;
+        font-weight: bold;
+        font-family: Orbitron, 'Comic Sans MS', cursive, sans-serif;
+        font-size: 16px;
+        color: white;
+    }
+
+    img:hover {
+        filter: brightness(1.2);
+    }
+
+    img:active,
+    img:active+span {
+        top: 10px;
+    }
+
+    img:hover+span {
+        text-shadow: white 0px 1px 3px;
+    }
+}
+
+body {
+    background-repeat: repeat;
+}
+
+footer {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: linear-gradient(to bottom, red, yellow, lime, cyan, blue, magenta);
+    ;
+    border: 1px solid #00ccff;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #00ccff, #003366);
+    border-radius: 4px;
+    border: 1px solid #006699;
+    box-shadow:
+        inset 0 0 2px #00ffff;
+}
+
+.tooltip {
+    position: fixed;
+    display: inline;
+    pointer-events: none;
+    color: #00ff00;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    text-shadow:
+        0 0 2px #030,
+        0 0 4px #090,
+        0 0 6px #0f0;
+    opacity: 0;
+    z-index: 9999;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    transform: translateY(10px);
+    filter: contrast(1.2) brightness(1.1);
+}
+
+div.image-paragraph {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+}
+
+div.slideshow-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap:wrap;
+
+    img {
+        width: 10rem;
+        height: 10rem;
+        border-radius: 2px;
+        box-shadow: 1px 1px 0.5rem grey;
+    }
+    
+    img:hover {
+        filter: brightness(105%);
+    }
+
+}

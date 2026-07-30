@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<style>
+    body {
+        background-color: lightblue;
+        font-family: "Comic Sans MS";
+        color: navy;
+        text-align: center;
+    }
+
+    fieldset {
+        max-width: 300px;
+        margin-bottom: 10px;
+        display: block
+    }
+
+    legend {
+        font-weight: bold;
+    }
+
+    label {
+        display: block;
+        padding: 5px;
+    }
+
+    img {
+        height: 200px;
+        width: auto;
+    }
+
+    #title {
+        width: 50%;
+        height: auto;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<html>
+<img src="./bolla.gif" id="title">
+<br>
+
+<img src="./exterior.jpg">
+
+<img src="./expensive-double.jpg">
+
+<p>View the gorgeous views and sites of Cambridge by staying at Bob’s B&B. With a location in the centre of this
+    historic city you can indulge one of 3 premium rooms with lavish interiors. You can enjoy a delectable Full English
+    breakfast featuring an inclusive vegetarian option (NO VEGANS!). </p>
+
+<img src="./breakfast.jpg">
+
+<p>In your booking you must include the room you’ve selected, how many days you’re staying, the breakfast option
+    (vegetarian or Full English (NO VEGANS!)) and a booking name. </p>
+
+<h2>Create a Booking:</h2>
+<form>
+    From: <input type="text" name="from">
+
+    <fieldset>
+        <div>
+            <legend>Room:</legend>
+            <label><input type="radio" name="room" value="Single" onchange="updateRoom()">Single - £70 per night</label>
+            <label><input type="radio" name="room" value="Cheap-Double" onchange="updateRoom()">Double - £100 per
+                night</label>
+            <label><input type="radio" name="room" value="Expesive-Double" onchange="updateRoom()">Double - £120 per
+                night</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <div>
+
+            <legend>Number of days:</legend>
+            <canvas width="400px" height="100px">
+                <script>
+                    const canvas = document.currentScript.parentElement
+                    const ctx = canvas.getContext("2d")
+                    ctx.font = "24px Arial"
+                    ctx.textAlign = "center"
+                    ctx.textBaseline = "middle"
+                    const scaleX = canvas.width * 0.004
+                    const scaleY = canvas.height * 0.5
+                    let bound = canvas.getBoundingClientRect()
+                    let real = 0
+                    let imaginary = 0
+                    let mousedown = false
+                    drawSlider(scaleX * 140, scaleY)
+                    function drawSlider(x, y) {
+                        bound = canvas.getBoundingClientRect()
+                        real = Math.floor((x / scaleX - 100) / 2) / 10
+                        imaginary = Math.ceil(((y - scaleY) / scaleX) / 2) / 10
+                        ctx.clearRect(0, 0, canvas.width, canvas.height)
+                        ctx.beginPath()
+                        ctx.moveTo(scaleX * 100, scaleY)
+                        ctx.lineTo(scaleX * 200, scaleY)
+                        ctx.stroke()
+                        ctx.beginPath()
+                        ctx.arc(x, y, scaleX * 5, 0, 2 * Math.PI)
+                        ctx.fill()
+                        ctx.fillText(imaginary ?
+                            (imaginary < 0 ? `${real} + ${-imaginary}i` :
+                                `${real} - ${imaginary}i`) :
+                            real, scaleX * 50, scaleY)
+                    }
+                    window.addEventListener("mousedown", e => { mousedown = true })
+                    window.addEventListener("mouseup", e => { mousedown = false })
+                    window.addEventListener("mouseout", e => { mousedown = false })
+                    window.addEventListener("mousemove", e => { if (mousedown) { drawSlider(e.clientX - bound.left, e.clientY - bound.top) } })
+                </script>
+            </canvas>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <div>
+
+            <legend>Breakfast:</legend>
+            <label><input type="radio" name="breakfast" value="Normal">Full English</label>
+            <label><input type="radio" name="breakfast" value="Vegetarian">Full English (vegetarian)</label>
+        </div>
+    </fieldset>
+
+    <button>Send</button>
+</form>
+
+<h2>Reviews:</h2>
+
+<p>5/5 stars: The most exquisite room I’ve ever stayed in. Bob was the friendliest of hosts and the breakfast was of the
+    highest quality, I plan on visiting again at least 13 times more in my lifetime – Fred Smith the 3rd.
+
+</p>
+<p>
+
+    6/5 stars: The best B&B in the best city with the best breakfasts and there were no vegans (thank goodness). I left
+    a very generous tip at the end, and I think all customers should do the same as the quality was outstanding – Not
+    Bob.
+
+</p>
+
+
+<i>This review has been removed as it doesn’t obey the terms of service. </i>
+
+</html>

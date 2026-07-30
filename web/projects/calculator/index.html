@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Train Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        input {
+            width: 100%;
+            height: 50px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="text" onchange="start()">
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    function resize() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight - 30
+    }
+    resize()
+    window.addEventListener("resize", resize)
+
+    let scale = 50
+    let tick = 400
+
+    class Wagon {
+        constructor(value, x, y, angle = 0) {
+            this.id = Date.now()
+            this.value = value
+            this.x = x
+            this.y = y
+            this.angle = angle
+            this.animations = [] // Animation queue
+            this.halt = null // Function to resolve the animation promise
+            this.precedence = 0
+
+            if (value === "NaN") {
+                this.type = "error"
+            } else if (value.match(/[eπ\.\d]/)) {
+                this.type = "number"
+            } else if (value.match(/[\(\{\[]/)) {
+                this.type = "bracket-open"
+            } else if (value.match(/[\)\}\]]/)) {
+                this.type = "bracket-close"
+            } else if (value.match(/[\+\-\*\/\^]/)) {
+                this.type = "operator" // infix (e.g. a + b)
+                this.precedence = value.match(/\^/g) ? 3 : value.match(/[\*\/]/g) ? 2 : value.match(/[\+\-]/g) ? 1 : 0
+            } else {
+                this.type = "function" // prefix (e.g. sin a)
+                this.precedence = 4
+            }
+        }
+
+        draw() {
+            ctx.save()
+            ctx.fillStyle = this.type === "number" ? "green"
+                : this.type.match(/bracket.*/) ? "orange"
+                    : this.type === "function" ? "cornflowerblue"
+                        : this.type === "operator" ? "purple"
+                            : this.type === "error" ? "red"
+                                : "grey"
+
+            ctx.translate(this.x * scale, this.y * scale)
+            ctx.rotate(-this.angle)
+            ctx.fillRect(scale * -0.4, scale * -0.3, scale * 0.8, scale * 0.6)
+            ctx.rotate(this.angle)
+            ctx.fillStyle = "white"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+            ctx.font = `${scale / 4}px Segoe UI`
+            let value = this.type === "error" ? "NaN" : this.value
+            if (Number(value)) value = Math.round(1000 * this.value) / 1000
+            ctx.fillText(value, 0, 0)
+            ctx.restore()
+        }
+
+        async animate(to, type = "linear", duration) {
+            this.animations.push({
+                type,
+                from: { x: this.x, y: this.y, angle: this.angle },
+                to,
+                duration: duration || tick * Math.hypot(to.x - this.x, to.y - this.y),
+                startTime: this.animationEndTime || Date.now()
+            })
+            return new Promise(resolve => this.halt = resolve)
+        }
+
+        update(currentTime = Date.now()) {
+            if (this.animations.length) {
+                let t = (currentTime - this.animations[0].startTime) / this.animations[0].duration // Interpolation constant
+
+                if (t > 1) { // The animation has finished
+                    this.x = this.animations[0].to.x
+                    this.y = this.animations[0].to.y
+                    this.angle = this.animations[0].to?.angle || this.angle
+                    this.animations.shift()
+                    if (this.animations.length === 0) {
+                        this.halt()
+                    }
+                } else {
+                    if (this.animations[0].type === "linear") {
+                        // Linear Interpolation
+                        this.x = this.animations[0].to.x * t + this.animations[0].from.x * (1 - t)
+                        this.y = this.animations[0].to.y * t + this.animations[0].from.y * (1 - t)
+                        this.angle = this.animations[0].to.angle * t + this.animations[0].from.angle * (1 - t)
+                    }
+                    if (this.animations[0].type === "bezier") {
+                        // Quadratic Bezier curve
+                        let from = this.animations[0].from
+                        let to = this.animations[0].to
+                        // Find intermediate point
+                        let t1 = Math.tan(from.angle)
+                        let t2 = Math.tan(to.angle)
+                        let mid = {
+                            x: (from.x * t1 - to.x * t2 + to.y - from.y) / (t1 - t2),
+                            y: (from.y * t2 - to.y * t1 + (to.x - from.x) * t1 * t2) / (t2 - t1)
+                        }
+
+                        this.x = from.x * t + from.x * t ^ 2 + mid.x - 2 * mid.x * t + 2 * mid.x * t ^ 2 + to.x * t - to.x * t ^ 2
+                        this.y = from.y * t + from.y * t ^ 2 + mid.y - 2 * mid.y * t + 2 * mid.y * t ^ 2 + to.y * t - to.y * t ^ 2
+                    }
+                }
+            }
+        }
+    }
+
+    class Pointer extends Wagon {
+        draw() {
+            ctx.save()
+            ctx.fillStyle = "grey"
+            ctx.translate(this.x * scale, this.y * scale)
+            ctx.rotate(-this.angle)
+            ctx.beginPath()
+            ctx.moveTo(scale * -0.1, 0)
+            ctx.lineTo(0, scale * -0.4)
+            ctx.lineTo(scale * 0.1, 0)
+            ctx.closePath()
+            ctx.fill()
+            ctx.restore()
+        }
+    }
+
+    const functions = {
+        rad: x => x * Math.PI / 180,
+        deg: x => x * 180 / Math.PI,
+        sin: x => Math.sin(x),
+        cos: x => Math.cos(x),
+        tan: x => Math.tan(x),
+        asin: x => Math.asin(x),
+        acos: x => Math.acos(x),
+        atan: x => Math.atan2(1, x),
+        log: x => Math.log10(x),
+        ln: x => Math.log(x),
+        sqrt: x => Math.sqrt(x),
+        abs: x => Math.abs(x),
+        floor: x => Math.floor(x),
+        ceil: x => Math.ceil(x),
+        round: x => Math.round(x),
+    }
+    const operators = {
+        "^": (x, y) => x ** y,
+        "*": (x, y) => x * y,
+        "/": (x, y) => x / y,
+        "+": (x, y) => x + y,
+        "-": (x, y) => x - y,
+    }
+    // const screen = []
+    Math.HALFPI = Math.PI * 0.5
+
+    const wagons = []
+    const pointer = new Pointer("", -1, -1)
+    let bracketCount = 0
+
+    async function start() {
+        input = document.querySelector("input").value.toLowerCase()
+            // .replace(/^[\d\+\-\*\/e\^\(\)sincotarp]/g, "") // Remove invalid characters
+            .replace(/ /g, "") // Remove spaces
+            .replace(/arc/g, "a") // Standardise inverse trig
+            .replace(/pi/g, "π") // Standardise pi
+            .replace(/([\deπ])([a-zeπ])/g, "$1*$2") // Add omitted multiplication
+        document.querySelector("input").value = input
+        input = input.split("")
+
+        input.forEach((char, x) => { // Build the train
+            let wagon = new Wagon(char, x + 5, 2)
+            wagon.draw()
+            wagons[x] = wagon
+        })
+
+        // Tokenisation
+        let i = 0
+        pointer.x = 5
+        pointer.y = 3
+        while (i < wagons.length) {
+            if (wagons[i].value === "-" && (i === 0 || wagons[i - 1]?.type !== "number")) { // Unary subtraction
+                wagons[i].type = "number"
+                await sleep()
+            }
+            if (wagons[i].type === "bracket-open") bracketCount++
+            if (wagons[i].type === "bracket-close") bracketCount++
+            if (i > 0) {
+                if (
+                    (wagons[i].type === "number" && wagons[i - 1].type === "number") // Multi-digit numbers
+                    || (wagons[i].value.match(/[a-z]/) && wagons[i - 1].value.match(/[a-z]/))) { // Wordy functions
+                    // Merge wagons together
+                    await Promise.all(wagons.slice(i).map(wagon => wagon.animate({ x: wagon.x - 1, y: wagon.y, angle: 0 })))
+                    wagons[i - 1].value += wagons[i].value
+                    wagons.splice(i, 1)
+                }
+                else {
+                    i++
+                    await pointer.animate({ x: i + 5, y: 3, angle: 0 })
+                }
+            } else i++
+        }
+        await sleep()
+        while (bracketCount > 0) {
+            wagons.push(new Wagon(")", i + 5, 2))
+            i++
+            bracketCount--
+            await pointer.animate({ x: i + 5, y: 3, angle: 0 })
+        }
+        pointer.x = -1
+        pointer.y = -1
+        let expressionLength = wagons.length
+
+        // Shunting Yard and Evaluation
+        let siding = []
+        let stack = []
+        async function moveToSignal(index) {
+            console.log(`Moving wagon ${wagons[index].value} to signal hump`)
+            await wagons[index].animate({ x: 5, y: 2, angle: 0 })
+        }
+        async function moveToSiding(index) {
+            console.log(`Moving wagon ${wagons[index].value} into siding`)
+            await Promise.all(siding.map(wagon => wagon.animate({ x: 4, y: wagon.y + 1, angle: Math.HALFPI })))
+            await wagons[index].animate({ x: 5, y: 2, angle: 0 })
+            await wagons[index].animate({ x: 4, y: 3, angle: Math.HALFPI })
+            siding.push(wagons[index])
+        }
+        async function moveToStack(index) {
+            console.log(`Moving wagon ${wagons[index].value} onto stack`)
+            if (stack.length > 0 && stack.at(-1).y === 3) await Promise.all(stack.map(wagon => wagon.animate({ x: 1, y: wagon.y + 1, angle: Math.HALFPI })))
+            await wagons[index].animate({ x: 2, y: 2, angle: 0 })
+            await wagons[index].animate({ x: 1, y: 3, angle: Math.HALFPI })
+            if (stack.length > 0) await wagons[index].animate({ x: 1, y: stack.at(-1).y - 1, angle: Math.HALFPI })
+            stack.push(wagons[index])
+            await evaluate()
+        }
+        async function moveFromSiding() {
+            let index = wagons.indexOf(siding.pop())
+            console.log(`Moving wagon ${wagons[index].value} from the siding onto the stack`)
+            wagons[index].angle = -Math.HALFPI
+
+            if (stack.length > 0 && stack.at(-1).y === 3) await Promise.all(stack.map(wagon => wagon.animate({ x: 1, y: wagon.y + 1, angle: Math.HALFPI })))
+            await wagons[index].animate({ x: 4, y: 3, angle: -Math.HALFPI })
+            await wagons[index].animate({ x: 3, y: 2, angle: 0 })
+            await wagons[index].animate({ x: 2, y: 2, angle: 0 })
+            await wagons[index].animate({ x: 1, y: 3, angle: Math.HALFPI })
+            if (stack.length > 0) await wagons[index].animate({ x: 1, y: stack.at(-1).y - 1, angle: Math.HALFPI })
+            stack.push(wagons[index])
+            await evaluate()
+        }
+        async function evaluate() {
+            if (stack.length > 1) {
+                let op = stack.at(-1)
+                let arg2 = stack.at(-2)
+                let arg1 = stack.at(-3) || null
+                let output = new Wagon("NaN", -1, 2, 0)
+
+                console.log(op.type, op.value, arg1?.value, arg2.value, stack.map(v => v.value))
+
+                if (["function", "operator"].includes(op.type)) {
+                    console.log(`Evaluating ${op.type} ${op.value} with arguments ${arg1?.value} and ${arg2.value} `)
+                }
+
+                if (op.type === "function") {
+                    await sleep()
+                    // Move carts off screen to ALU
+                    await Promise.all([op.animate({ x: 1, y: 3, angle: Math.HALFPI }).then(() =>
+                        op.animate({ x: 2, y: 2, angle: 0 })).then(() =>
+                            op.animate({ x: 3, y: 2, angle: 0 })),
+                    arg2.animate({ x: 1, y: 3, angle: Math.HALFPI }).then(() =>
+                        arg2.animate({ x: 2, y: 2, angle: 0 }))])
+                    await sleep()
+                    await Promise.all([op.animate({ x: -2, y: 2, angle: 0 }),
+                    arg2.animate({ x: -1, y: 2, angle: 0 })])
+
+                    stack = stack.slice(0, -2)
+
+                    // Set arguments to their values
+                    arg2.value = arg2.value === "π" ? Math.PI : arg2.value === "e" ? Math.E : Number(arg2.value)
+
+                    if (op.value in functions) { // If the function cart is a valid function word
+                        output.value = String(functions[op.value](arg2.value)) // Evaluate it
+                        output.type = output.value === "NaN" ? "error" : "number"
+                    }
+
+                    wagons.push(output)
+                    stack.push(output)
+                    await output.animate({ x: 2, y: 2, angle: 0 })
+                    await output.animate({ x: 1, y: 3, angle: Math.HALFPI })
+                    if (stack.length > 1) await output.animate({ x: 1, y: stack.at(-2).y - 1, angle: Math.HALFPI })
+                }
+                if (op.type === "operator" && arg1) {
+                    await sleep()
+                    // Move carts off screen to ALU
+                    await Promise.all([op.animate({ x: 1, y: 3, angle: Math.HALFPI }).then(() =>
+                        op.animate({ x: 2, y: 2, angle: 0 })).then(() =>
+                            op.animate({ x: 4, y: 2, angle: 0 })),
+                    arg2.animate({ x: 1, y: 3, angle: Math.HALFPI }).then(() =>
+                        arg2.animate({ x: 2, y: 2, angle: 0 })).then(() =>
+                            arg2.animate({ x: 3, y: 2, angle: 0 })),
+                    arg1.animate({ x: 1, y: 3, angle: Math.HALFPI }).then(() =>
+                        arg1.animate({ x: 2, y: 2, angle: 0 }))])
+                    await sleep()
+                    await Promise.all([
+                        op.animate({ x: -3, y: 2, angle: 0 }),
+                        arg2.animate({ x: -2, y: 2, angle: 0 }),
+                        arg1.animate({ x: -1, y: 2, angle: 0 }),
+                    ])
+
+                    stack = stack.slice(0, -3)
+
+                    // Set arguments to their values
+                    arg1.value = arg1.value === "π" ? Math.PI : arg1.value === "e" ? Math.E : Number(arg1.value)
+                    arg2.value = arg2.value === "π" ? Math.PI : arg2.value === "e" ? Math.E : Number(arg2.value)
+
+                    if (op.value in operators) { // If the function cart is a valid function word
+                        output.value = String(operators[op.value](arg1.value, arg2.value)).replace("Infinity", "∞")
+                        output.type = output.value === "NaN" ? "error" : "number"
+                    }
+
+                    wagons.push(output)
+                    stack.push(output)
+                    await output.animate({ x: 2, y: 2, angle: 0 })
+                    await output.animate({ x: 1, y: 3, angle: Math.HALFPI })
+                    if (stack.length > 1) await output.animate({ x: 1, y: stack.at(-2).y - 1, angle: Math.HALFPI })
+                }
+
+            }
+        }
+        for (i = 0; i < expressionLength; i++) {
+            console.log(`Shunting wagon ${wagons[i].value}`)
+            // Shunting Logic
+            if (wagons[i].type === "number") { // Move numbers past the siding
+                await moveToStack(i)
+            }
+            if (wagons[i].type === "function" || wagons[i].type === "bracket-open") { // Move functions and brackets into the siding
+                await moveToSiding(i)
+            }
+            if (wagons[i].type === "operator") { // Remove higher priority operators out of the siding first
+                await moveToSignal(i)
+                await sleep()
+                while (siding.length > 0 && siding.at(-1).precedence >= wagons[i].precedence) {
+                    await moveFromSiding()
+                }
+                await sleep()
+                await moveToSiding(i)
+            }
+            if (wagons[i].type === "bracket-close") { // Remove terms between the brackets out of the siding and remove the brackets
+                await moveToSignal(i)
+                await sleep()
+                while (siding.length > 0 && siding.at(-1).type !== "bracket-open") {
+                    await moveFromSiding()
+                }
+                let bracket = siding.pop()
+                let bracketIndex = wagons.indexOf(bracket)
+                await bracket.animate({ x: 4, y: 3, angle: Math.HALFPI })
+                await bracket.animate({ x: 5, y: 2, angle: 0 })
+                bracket.value += wagons[i].value
+                wagons[i].x = -1
+                console.log("Removing brackets")
+                await bracket.animate({ x: -1, y: 2, angle: 0 })
+            }
+            await sleep()
+        }
+        while (siding.length > 0) {
+            await moveFromSiding()
+        }
+        while (stack.length > 1 && (stack.at(-1).type === "operator" || stack.at(-1).type === "function")) {
+            await evaluate()
+        }
+        await sleep()
+        if (stack.length === 1 && stack[0].type === "number") {
+            await stack[0].animate({ x: 1, y: -1, angle: Math.HALFPI })
+            document.querySelector("input").value = stack[0].value
+        }
+    }
+
+    function sleep(time = tick) { return new Promise(resolve => setTimeout(resolve, time)) }
+
+    function parseNumber(num) {
+        return num === "π" ? Math.PI : num === "e" ? Math.E : num === "∞" ? Infinity : Number(num)
+    }
+
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        wagons.concat(pointer).forEach(wagon => { wagon.update(); wagon.draw() })
+        window.requestAnimationFrame(loop)
+    }
+    loop()
+
+</script>
+
+</html>

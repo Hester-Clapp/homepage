@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Youtube Video Player</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <main>
+        <div id="screen">
+            <div id="iframe"></div>
+            <h2 id="titler">LOADING</h2>
+            <img src="./noise.gif">
+        </div>
+        <h2 id="title"></h2>
+        <h3 id="author"></h3>
+        <div id="seekbarContainer">
+            <input type="range" min="0" value="0" step="0.1" id="seekbar">
+        </div>
+        <div id="volume-row">
+            <svg width="0.9rem" height="0.9rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="10,35 35,35 60,15 60,85 35,65 10,65" fill="black" />
+                <path d="M70,40 Q82,50 70,60" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+            </svg>
+            <input type="range" min="0" max="1" step="0.01" value="1" id="volume">
+            <svg width="0.9rem" height="0.9rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="10,35 35,35 60,15 60,85 35,65 10,65" fill="black" />
+                <path d="M70,40 Q82,50 70,60" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+                <path d="M78,28 Q98,50 78,72" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+            </svg>
+        </div>
+        <div id="controls">
+            <a id="youtube" title="Watch on YouTube">
+                <svg width="1.6rem" height="1.6rem" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <style>
+                            .cls-1 {
+                                fill: none;
+                            }
+                        </style>
+                    </defs>
+                    <title>logo--youtube</title>
+                    <path
+                        d="M29.41,9.26a3.5,3.5,0,0,0-2.47-2.47C24.76,6.2,16,6.2,16,6.2s-8.76,0-10.94.59A3.5,3.5,0,0,0,2.59,9.26,36.13,36.13,0,0,0,2,16a36.13,36.13,0,0,0,.59,6.74,3.5,3.5,0,0,0,2.47,2.47C7.24,25.8,16,25.8,16,25.8s8.76,0,10.94-.59a3.5,3.5,0,0,0,2.47-2.47A36.13,36.13,0,0,0,30,16,36.13,36.13,0,0,0,29.41,9.26ZM13.2,20.2V11.8L20.47,16Z" />
+                    <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;" class="cls-1"
+                        width="32" height="32" />
+                </svg>
+            </a>
+            <button id="previous" title="Jump to the previous bookmark">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="10" y1="15" x2="10" y2="85" stroke="black" stroke-width="12" stroke-linecap="round" />
+                    <polygon points="55,15 55,85 15,50" fill="black" />
+                    <polygon points="95,15 95,85 55,50" fill="black" />
+                </svg>
+            </button>
+            <button id="rewind" title="Rewind">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,20 5,50 50,80" fill="black" />
+                    <polygon points="95,20 50,50 95,80" fill="black" />
+                </svg>
+            </button>
+            <button id="playpause" title="Play or pause the audio">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,10 20,90 90,50" fill="black" />
+                </svg>
+            </button>
+            <button id="forwards" title="Fast-Forward">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="5,20 50,50 5,80" fill="black" />
+                    <polygon points="50,20 95,50 50,80" fill="black" />
+                </svg>
+            </button>
+            <button id="next" title="Jump to the next bookmark">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="5,15 5,85 45,50" fill="black" />
+                    <polygon points="45,15 45,85 85,50" fill="black" />
+                    <line x1="90" y1="15" x2="90" y2="85" stroke="black" stroke-width="12" stroke-linecap="round" />
+                </svg>
+            </button>
+            <button id="fullscreen" title="Enter fullscreen mode">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points="10,35 10,10 35,10" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="65,10 90,10 90,35" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="90,65 90,90 65,90" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="35,90 10,90 10,65" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+    </main>
+</body>
+<script>
+    // Must run synchronously before the YouTube API script so the callback
+    // is guaranteed to be registered before the API can fire it.
+    window.ytReady = new Promise(resolve => { window.onYouTubeIframeAPIReady = resolve })
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script type="module">
+    import { YoutubePlayer } from "./YoutubePlayer.js"
+
+    const params = new URL(window.location.href).searchParams
+    window.yp = new YoutubePlayer(params.get("v"))
+</script>
+
+</html>

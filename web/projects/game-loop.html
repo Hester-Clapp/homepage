@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<canvas width="600px" height="400px" style="border:1px solid #000000;"></canvas>
+
+<script>
+    let canvas = document.querySelector("canvas")
+    let ctx = canvas.getContext("2d")
+
+
+    class Vector2 {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+            this.magnitude = Math.sqrt(x * x + y * y)
+            this.angle = Math.atan2(x, y)
+        }
+
+        normalise() {
+            return new Vector2(this.x / this.magnitude, this.y / this.magnitude)
+        }
+
+        add(vector) {
+            return new Vector2(this.x + vector.x, this.y + vector.y)
+        }
+
+        stretch(coefficient) {
+            return new Vector2(this.x * coefficient, this.y * coefficient)
+        }
+
+        dot(vector) {
+            return this.x * vector.x + this.y * vector.y
+        }
+
+        angleBetween(vector) {
+            return vector.angle - this.angle
+        }
+
+        rotate(angle) {
+            return new Vector2(
+                this.x * Math.cos(angle) - this.y * Math.sin(angle),
+                this.x * Math.sin(angle) + this.y * Math.cos(angle))
+        }
+    }
+
+    class Body {
+        constructor(p, v, f) {
+            this.pos = p
+            this.velocity = v
+            this.forces = f
+        }
+        updateVelocity() {
+            for (let force of this.forces) {
+                this.velocity.add(force)
+            }
+        }
+
+        updatePos() {
+            this.pos.x += this.velocity.x * aTimeDiff * gameSpeed
+            this.pos.y += this.velocity.y * aTimeDiff * gameSpeed
+        }
+
+        updateAll() {
+            updateVelocity()
+            updatePos()
+            updateCollisions()
+        }
+
+        // isVisible() {
+        //     let visX = true
+        //     let visY = true
+
+        // }
+
+    }
+
+    class Box extends Body {
+        constructor(p, v, f, s) {
+            super(p, v, f)
+            this.size = s
+            this.mass = s.x * s.y
+        }
+
+        onEdge() {
+            if (this.pos.x < 0) return "-x"
+            else if (this.pos.y < 0) return "-y"
+            else if (this.pos.x + this.size.x > canvas.width) return "+x"
+            else if (this.pos.y + this.size.y > canvas.height) return "+y"
+            else return "=0"
+        }
+
+        update(aTimeDiff) {
+            // update velocity
+            this.velocity = this.velocity.add(g)
+
+            // update position
+
+            // update collisions
+            if (this.onEdge()[1] == "x") {
+                this.velocity.x *= elasticity
+                if (this.onEdge()[0] == "+") {
+                    this.pos.x = Math.min(this.pos.x, canvas.width - this.size.x)
+                    this.velocity.y = Math.min(this.velocity.y * friction, this.velocity.y * friction - 0.1)
+                } else { this.pos.x = 0 }
+            }
+            if (this.onEdge()[1] == "y") {
+                this.velocity.y *= elasticity
+                if (this.onEdge()[0] == "+") {
+                    this.pos.y = Math.min(this.pos.y, canvas.height - this.size.y)
+                    this.velocity.x = Math.min(this.velocity.x * friction, this.velocity.x * friction - 0.1)
+                } else { this.pos.y = 0 }
+            }
+        }
+
+        draw() {
+            ctx.lineWidth = this.mass / 512;
+            ctx.strokeRect(this.pos.x, this.pos.y, this.size.x, this.size.y)
+        }
+    }
+
+    /*class Ball extends Body {
+        constructor(p, v, f, r) {
+            super(p,v,f)
+            this.radius = r
+            this.mass = Math.PI*r*r
+        }
+
+        onEdge() {
+            if (this.pos.x - this.radius < 0) return "-x"
+            else if (this.pos.y - this.radius < 0) return "-y"
+            else if (this.pos.x + this.radius > canvas.width) return "+x"
+            else if (this.pos.y + this.radius > canvas.height) return "+y"
+            else return "=0"
+        }
+
+        draw() {
+            ctx.lineWidth = this.mass / 512;
+            ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI)
+            ctx.stroke()
+            // ctx.strokeArc(this.pos.x, this.pos.y, this.size.x, this.size.y)
+        }
+    }
+*/
+
+    class Ball {
+        constructor(pos, velocity, forces, r, colour) {
+            this.pos = pos
+            this.velocity = velocity
+            this.forces = forces
+            this.radius = Math.floor(r)
+            this.mass = r * r * Math.PI
+            this.colour = colour
+            this.trueRadius = r + Math.floor(this.mass / 1024)
+            this.forces[0] = this.forces[0].stretch(this.mass)
+        }
+
+        onEdge() {
+            if (this.pos.x - this.trueRadius < 0) return "-x"
+            else if (this.pos.y - this.trueRadius < 0) return "-y"
+            else if (this.pos.x + this.trueRadius > canvas.width) return "+x"
+            else if (this.pos.y + this.trueRadius > canvas.height) return "+y"
+            else return "=0"
+        }
+
+        touchingBall(ball) {
+            if (ball.trueRadius + this.trueRadius > Math.sqrt((ball.pos.x - this.pos.x) ** 2 + (ball.pos.y - this.pos.y) ** 2)) { return true } else { return false }
+        }
+
+        updateVelocity() {
+            for (let force of this.forces) {
+                this.velocity = this.velocity.add(force.stretch(1 / this.mass))
+            }
+        }
+
+        updatePos(aTimeDiff) {
+            this.pos.x += this.velocity.x * aTimeDiff * gameSpeed
+            this.pos.y += this.velocity.y * aTimeDiff * gameSpeed
+        }
+
+        updateWallCollisions() {
+            if (this.onEdge()[1] == "x") {
+                this.velocity.x *= elasticity
+                if (this.onEdge()[0] == "+") {
+                    this.velocity.y = Math.min(this.velocity.y * friction, this.velocity.y * friction - 0.1)
+                    this.pos.x = Math.min(this.pos.x, canvas.width - this.trueRadius)
+                } else {
+                    this.velocity.y = Math.min(this.velocity.y * friction, this.velocity.y * friction - 0.1)
+                    this.pos.x = this.trueRadius
+                }
+            }
+            if (this.onEdge()[1] == "y") {
+                this.velocity.y *= elasticity
+                if (this.onEdge()[0] == "+") {
+                    this.velocity.x = Math.min(this.velocity.x * friction, this.velocity.x * friction - 0.1)
+                    this.pos.y = Math.min(this.pos.y, canvas.height - this.trueRadius)
+                } else {
+                    this.velocity.x = Math.min(this.velocity.x * friction, this.velocity.x * friction - 0.1)
+                    this.pos.y = this.trueRadius
+                }
+            }
+        }
+
+        // updateBallCollision(ball) {
+        //     // console.log(ball)
+        //     let u = this.velocity
+        //     let normalOfBall = new Vector2(ball.pos.x - this.pos.x, ball.pos.y - this.pos.y)
+        //     let normalOfThis = new Vector2(this.pos.x - ball.pos.x, this.pos.y - ball.pos.y)
+        //     let momentum = this.mass * this.velocity.magnitude + ball.mass * ball.velocity.magnitude
+
+        //     //update the other ball
+
+        //     //update this ball
+        //     console.log(this.velocity.rotate(2 * Math.PI - this.velocity.angle(normalOfBall) * 2))
+        //     // this.velocity = this.velocity.rotate(2 * Math.PI - this.velocity.angle(normalOfBall) * 2)
+        // }
+
+        updateAll(state, aTimeDiff) {
+            this.updateVelocity()
+            this.updateWallCollisions()
+            this.updatePos(aTimeDiff)
+        }
+
+        draw() {
+            ctx.lineWidth = this.mass / 512;
+            ctx.fillStyle = this.colour
+            ctx.beginPath()
+            ctx.arc(this.pos.x, this.pos.y, this.radius, 0, 2 * Math.PI)
+            ctx.closePath()
+            // ctx.fill()
+            ctx.stroke()
+        }
+    }
+
+    // physics variables
+    let g = new Vector2(0, 3)
+    let elasticity = -0.3
+    let friction = 0.9
+    let mouseForce = 2000
+
+    let gameSpeed = 1 / 1000
+
+    let prevTime = 0
+    let isMouseDown = false
+    let mousePos = new Vector2(0, 0)
+
+    // initialise state
+    let state = {
+        /*bodies: [new Ball(
+                new Vector2(canvas.width / 2, canvas.height / 2),
+                new Vector2(Math.random() * 100 - 50, Math.random() * 40 - 20),
+                [g],
+                Math.random() * 40 + 10
+            )]*/
+        bodies: []
+    }
+
+    window.addEventListener('keydown', keyDown)
+    window.addEventListener('mousedown', mouseDown)
+    window.addEventListener('mouseup', mouseUp)
+    window.requestAnimationFrame(gameLoop)
+
+    createBall()
+
+    function gameLoop(currentTime) {
+        let timeDiff = currentTime - prevTime
+
+        updateBallCollisions()
+
+        updateCanvas(timeDiff)
+
+        drawCanvas()
+
+        prevTime = currentTime
+        window.requestAnimationFrame(gameLoop)
+    }
+
+    function createBox() {
+        state.bodies.push(
+            new Box(
+                new Vector2(canvas.width / 2, canvas.height / 2),
+                new Vector2(Math.random() * 100 - 50, Math.random() * 40 - 20),
+                [g],
+                new Vector2(Math.random() * 40 + 10, Math.random() * 40 + 10)
+            )
+        )
+    }
+
+    function createBall() {
+        state.bodies.push(
+            new Ball(
+                new Vector2(canvas.width / 2, canvas.height / 2),
+                new Vector2(Math.random() * 100 - 50, Math.random() * 40 - 20),
+                [g],
+                Math.random() * 20 + 15,
+                "red"
+            )
+        )
+    }
+
+    function keyDown(e) {
+        if (e.key === " ") {
+            createBall()
+        }
+    }
+
+    function mouseDown(evt) {
+        isMouseDown = true
+        for (let body of state.bodies) {
+            body.forces.push(body.pos.add(new Vector2(-evt.clientX, -evt.clientY)).stretch(-mouseForce))
+            body.updateVelocity()
+            body.forces.pop()
+        }
+    }
+
+    function mouseUp(evt) {
+        isMouseDown = false
+    }
+
+    function updateCanvas(aTimeDiff) {
+        for (let body of state.bodies) {
+            body.updateAll(state, aTimeDiff)
+        }
+    }
+
+    function updateBallCollisions() {
+        for (let i = 0; i < state.bodies.length - 1; i++) {
+            for (let j = 0; j < state.bodies.length; j++) {
+                console.log(i, j)
+            }
+        }
+    }
+
+    function drawCanvas() {
+        // if (Math.random() < 0.01 && state.bodies.length < 100) createBall()
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        for (let body of state.bodies) {
+            body.draw()
+            // console.log(body.pos.y + body.radius > canvas.height)
+        }
+    }
+</script>

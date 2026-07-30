@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <main>
+        <div id="screen">
+            <video id="player" class="no-signal"></video>
+            <h2 id="titler">NO SIGNAL</h2>
+            <img src="./noise.gif">
+        </div>
+        <h2 id="title">No media open</h2>
+        <h3 id="author">Insert a cassette below</h3>
+        <div id="seekbarContainer">
+            <input type="range" min="0" step="0.1" id="seekbar">
+        </div>
+        <div id="volume-row">
+            <svg width="0.9rem" height="0.9rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="10,35 35,35 60,15 60,85 35,65 10,65" fill="black" />
+                <path d="M70,40 Q82,50 70,60" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+            </svg>
+            <input type="range" min="0" max="1" step="0.01" value="1" id="volume">
+            <svg width="0.9rem" height="0.9rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="10,35 35,35 60,15 60,85 35,65 10,65" fill="black" />
+                <path d="M70,40 Q82,50 70,60" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+                <path d="M78,28 Q98,50 78,72" fill="none" stroke="black" stroke-width="8" stroke-linecap="round" />
+            </svg>
+        </div>
+        <div id="controls">
+            <label id="upload" for="fileInput" title="Upload a video file">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="15" y="0" width="70" height="40" rx="6" fill="black" />
+                    <circle cx="35" cy="20" r="8" fill="white" />
+                    <circle cx="65" cy="20" r="8" fill="white" />
+                    <line x1="50" y1="50" x2="50" y2="80" stroke="black" stroke-width="10" stroke-linecap="round" />
+                    <polyline points="35,65 50,80 65,65" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <rect x="0" y="90" width="100" height="10" rx="3" fill="black" />
+                </svg>
+            </label>
+            <button id="bookmark" title="Add or remove a bookmark here">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,5 80,5 80,95 50,75 20,95" fill="black" />
+                </svg>
+            </button>
+            <button id="previous" title="Jump to the previous bookmark">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="10" y1="15" x2="10" y2="85" stroke="black" stroke-width="12" stroke-linecap="round" />
+                    <polygon points="55,15 55,85 15,50" fill="black" />
+                    <polygon points="95,15 95,85 55,50" fill="black" />
+                </svg>
+            </button>
+            <button id="rewind" title="Rewind">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="50,20 5,50 50,80" fill="black" />
+                    <polygon points="95,20 50,50 95,80" fill="black" />
+                </svg>
+            </button>
+            <button id="playpause" title="Play or pause the audio">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="20,10 20,90 90,50" fill="black" />
+                </svg>
+            </button>
+            <button id="forwards" title="Fast-Forward">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="5,20 50,50 5,80" fill="black" />
+                    <polygon points="50,20 95,50 50,80" fill="black" />
+                </svg>
+            </button>
+            <button id="next" title="Jump to the next bookmark">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="5,15 5,85 45,50" fill="black" />
+                    <polygon points="45,15 45,85 85,50" fill="black" />
+                    <line x1="90" y1="15" x2="90" y2="85" stroke="black" stroke-width="12" stroke-linecap="round" />
+                </svg>
+            </button>
+            <button id="fullscreen" title="Enter fullscreen mode">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polyline points="10,35 10,10 35,10" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="65,10 90,10 90,35" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="90,65 90,90 65,90" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                    <polyline points="35,90 10,90 10,65" fill="none" stroke="black" stroke-width="10"
+                        stroke-linejoin="round" stroke-linecap="round" />
+                </svg>
+            </button>
+            <button id="pip" title="Enter picture-in-picture mode">
+                <svg width="1rem" height="1rem" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="5" y="20" width="90" height="60" rx="4" fill="none" stroke="black" stroke-width="8" />
+                    <rect x="48" y="48" width="42" height="28" rx="3" fill="black" />
+                </svg>
+            </button>
+        </div>
+    </main>
+    <input id="fileInput" type="file" accept=".avi,.mp4,.webm,.ogg,.mov" multiple>
+</body>
+<script type="module">
+    import { VideoPlayer } from "./VideoPlayer.js"
+
+    const params = new URL(window.location.href).searchParams
+    window.vp = new VideoPlayer(params)
+</script>
+
+</html>

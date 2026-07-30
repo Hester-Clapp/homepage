@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div.flex {
+            display: flex;
+        }
+
+        div#program,
+        div#stack,
+        div#regfile,
+        div#variables {
+            border: 1px solid black;
+            margin: 1rem;
+            padding: 0.5rem;
+            height: fit-content;
+        }
+
+        div.register {
+            padding: 0.5rem;
+        }
+
+        h4 {
+            margin: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="flex">
+        <div id="program">
+            <button onclick="running = true; executeNext()">Step</button>
+            <button onclick="running = true; executeAll()">Run</button>
+            <ol></ol>
+        </div>
+        <div id="regfile">
+            <h4>Registers</h4>
+            <div class="flex">
+                <div>
+                    <div class="register" id="RDI">RDI: 0</div>
+                    <div class="register" id="RSI">RSI: 0</div>
+                </div>
+                <div>
+                    <div class="register" id="RAX">RAX: 0</div>
+                    <div class="register" id="RBX">RBX: 0</div>
+                    <div class="register" id="RCX">RCX: 0</div>
+                    <div class="register" id="RDX">RDX: 0</div>
+                </div>
+                <div>
+                    <div class="register" id="R8">R8: 0</div>
+                    <div class="register" id="R9">R9: 0</div>
+                    <div class="register" id="R10">R10: 0</div>
+                    <div class="register" id="R11">R11: 0</div>
+                </div>
+                <div>
+                    <div class="register" id="R12">R12: 0</div>
+                    <div class="register" id="R13">R13: 0</div>
+                    <div class="register" id="R14">R14: 0</div>
+                    <div class="register" id="R15">R15: 0</div>
+                </div>
+            </div>
+        </div>
+        <div id="stack">
+            <h4>Stack</h4>
+            <ul></ul>
+        </div>
+        <div id="variables">
+            <h4>Variables</h4>
+        </div>
+    </div>
+    <form onsubmit="e.preventDefault()">
+        <input id="input">
+        <input type="submit">
+    </form>
+</body>
+<script>
+
+    const form = document.querySelector("form")
+    const max = 2 ** 64
+
+    let running = false
+
+    const program = []
+    const stack = []
+    const reg = {
+        rip: 0,
+        rsp: -1,
+        rbp: -1,
+        rdi: 0,
+        rsi: 0,
+        rax: 0,
+        rbx: 0,
+        rcx: 0,
+        rdx: 0,
+        r8: 0,
+        r9: 0,
+        r10: 0,
+        r11: 0,
+        r12: 0,
+        r13: 0,
+        r14: 0,
+        r15: 0,
+    }
+    const variables = {}
+    const flags = {
+        equal: false,
+        less: false,
+        greater: false,
+    }
+
+    function isRegister(address) {
+        return address.slice(0, 1) === "%" && address.slice(1) in reg
+    }
+    function get(address) {
+        let rest = address.slice(1)
+        if (address.slice(0, 1) === "%" && rest in reg) return reg[rest]
+        if (address in variables || rest in variables) return variables[rest]
+        if (address.slice(0, 1) === "$") return Number(rest)
+        if (address.slice(-1) === ")") {
+            let inner = address.match(/\((.*)\)/)[1]
+            if (address.slice(0, 1) === "(") { // Indirect addressing
+                return get(inner)
+            } else { // Indexed addressing
+                return get(inner) + Number(address.match(/(.*)\(/)[1])
+            }
+        }
+    }
+    function setFlags(result) {
+        flags.equal = result === 0
+        flags.less = result < 0
+        flags.greater = result > 0
+    }
+
+    const instr = {
+        // Transfer
+        mov: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to move ${src} into ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src)
+        },
+        movzb: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to move ${src} into ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src) % 2 ** 8
+        },
+        movzw: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to move ${src} into ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src) % 2 ** 16
+        },
+        xchg: async (a, b) => {
+            console.assert(isRegister(a) && isRegister(b), `Attempted to exchange ${src} and ${dst}, but source and destination was not registers`)
+            temp = get(b)
+            reg[a.slice(1)] = get(b)
+            reg[b.slice(1)] = a
+        },
+        push: async (src) => {
+            stack[reg.rsp] = get(src)
+            reg.rsp++
+        },
+        pop: async (dst) => {
+            console.assert(isRegister(dst), `Attempted to pop into ${dst}, but destination was not a register`)
+            reg.rsp--
+            reg[dst.slice(1)] = stack[reg.rsp]
+        },
+
+        // Arithmetic
+        add: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to add ${src} to ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] += get(src)
+            setFlags(get(dst))
+        },
+        sub: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to subtract ${src} from ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] -= get(src)
+            setFlags(get(dst))
+        },
+        mul: async (src) => {
+            reg.rax *= get(src)
+            if (reg.rax > max) {
+                reg.rdx = reg.rax >> 64
+                reg.rax = reg.rax % max
+            }
+            setFlags(get(reg.rdx << 64 + reg.rax))
+        },
+        div: async (src) => {
+            reg.rdx = (reg.rdx << 64 + reg.rax) / get(src)
+            reg.rax = (reg.rdx << 64 + reg.rax) % get(src)
+            setFlags(get(reg.rdx << 64 + reg.rax))
+        },
+        inc: async (dst) => {
+            console.assert(isRegister(dst), `Attempted to increment ${dst}, but destination was not a register`)
+            reg[dst.slice(1)]++
+            setFlags(get(dst))
+        },
+        dec: async (dst) => {
+            console.assert(isRegister(dst), `Attempted to decrement ${dst}, but destination was not a register`)
+            reg[dst.slice(1)]--
+            setFlags(get(dst))
+        },
+
+        // Logic
+        and: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to perform bitwise AND on ${src} and ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src) & get(dst)
+            setFlags(get(dst))
+        },
+        or: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to perform bitwise OR on ${src} and ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src) | get(dst)
+            setFlags(get(dst))
+        },
+        xor: async (src, dst) => {
+            console.assert(isRegister(dst), `Attempted to perform bitwise XOR on ${src} and ${dst}, but destination was not a register`)
+            reg[dst.slice(1)] = get(src) ^ get(dst)
+            setFlags(get(dst))
+        },
+        shl: async (a, dst) => {
+            console.assert(isRegister(dst), `Attempted to shift ${dst} left by ${src}, but destination was not a register`)
+            reg[dst.slice(1)] = get(dst) << get(a)
+            setFlags(get(dst))
+        },
+        shr: async (a, dst) => {
+            console.assert(isRegister(dst), `Attempted to shift ${dst} right by ${src}, but destination was not a register`)
+            reg[dst.slice(1)] = get(dst) >> get(a)
+            setFlags(get(dst))
+        },
+
+        // Branching
+        cmp: async (src, dst) => {
+            setFlags(get(dst) - get(src))
+        },
+        jmp: async (addr) => {
+            reg.rip = get(addr)
+        },
+        je: async (addr) => {
+            if (flags.equal) instr.jmp(addr)
+
+        },
+        jne: async (addr) => {
+            if (!flags.equal) instr.jmp(addr)
+
+        },
+        jl: async (addr) => {
+            if (flags.less) instr.jmp(addr)
+
+        },
+        jle: async (addr) => {
+            if (!flags.greater) instr.jmp(addr)
+
+        },
+        jg: async (addr) => {
+            if (flags.greater) instr.jmp(addr)
+
+        },
+        jge: async (addr) => {
+            if (!flags.less) instr.jmp(addr)
+
+        },
+        call: async (addr) => {
+            if (addr in libC) libC[addr]()
+            else {
+                instr.push("%rip")
+                instr.jmp(addr)
+            }
+        },
+        ret: async () => {
+            instr.pop("%rip")
+        },
+        loop: async (addr) => {
+            await instr.dec("%rcx")
+            await instr.je(addr)
+        },
+    }
+    const libC = {
+        printf: async () => { console.log(reg.rdi, reg.rsi) },
+        scanf: async () => {
+            return new Promise(resolve => {
+                document.querySelector("form").addEventListener("submit", e => {
+                    e.preventDefault()
+                    let value = document.getElementById("input").value.trim()
+                    if (/%d|%ld/.test(reg.rdi)) value = Number(value)
+                    if (isRegister(reg.rsi)) {
+                        reg[reg.rsi] = value
+                    } else {
+                        variables[reg.rsi] = value
+                    }
+                    resolve()
+                })
+            })
+        },
+        exit: async () => { running = false }
+    }
+
+    async function executeNext() {
+        if (running) {
+            let instruction = program[reg.rip]
+            await instr.inc("%rip")
+            await instr[instruction.opcode](...instruction.operands)
+            drawAll()
+        }
+    }
+
+    function assemble(sourceCode) {
+        let schema = ""
+        sourceCode
+            .replace(/#.*/g, "") // Remove comments
+            .split("\n").forEach((line, i) => {
+                line = line.trim()
+                if (line === "") return
+                if (line === ".data" || line === ".text") {
+                    schema = line
+                    return
+                }
+                if (line.slice(0, 1) === ".") return
+                if (schema === ".data") {
+                    let label = line.match(/^([a-zA-Z0-9]*):/)[1]
+                    let dataSchema = line.match(/: (\.[a-z]*)/)[1]
+                    let data = line.match(/: \.\w* (.*)/)[1]
+                    if (dataSchema === ".asciz") variables[label] = data.slice(1, -1).replaceAll("\\n", "\n")
+                    if (dataSchema === ".quad") variables[label] = Number(data)
+                }
+                if (schema === ".text") {
+                    if (line.slice(-1) === ":") { // Label
+                        variables[line.slice(-1)] = `$${program.length}`
+                        return
+                    }
+
+                    let opcode = line.match(/^([a-z]+?)(?:[bwdq])?(?=\s|$)/)?.[1]
+                    if (!opcode) return
+                    if (opcode in instr) {
+                        let operands = line.match(/[a-z] (.*)/)?.[1]?.split(", ")
+                        program.push({ opcode, operands })
+                    }
+                    else console.error(`Unrecognised Instruction ${opcode} on line ${i + 1}`)
+                }
+            })
+
+        // Visuals
+        drawProgram()
+    }
+
+    function drawProgram() {
+        let el = document.querySelector("#program ol")
+        el.innerHTML = ""
+        program.forEach((line, i) => {
+            el.innerHTML += `<li${reg.rip === i + 1 ? style = " style=\"color: blue;\"" : ""}>${reg.rip === i ? "<sup>RIP</sup>→ " : ""}${line.opcode} ${line.operands ? line.operands.join(", ") : ""}</li>`
+        })
+    }
+
+    function drawRegisters() {
+        Object.keys(reg).forEach(register => {
+            if (register !== "rip" && register !== "rsp" && register !== "rbp") {
+                document.querySelector(`#${register.toUpperCase()}`).innerHTML = `${register.toUpperCase()}: ${get(`%${register}`)}`
+            }
+        })
+    }
+
+    function drawStack() {
+        let el = document.querySelector("#stack ul")
+        el.innerHTML = ""
+        stack.forEach((item, i) => {
+            el.innerHTML += `<li>${item}</li>`
+        })
+    }
+
+    function drawVariables() {
+        let el = document.querySelector("#stack ul")
+        el.innerHTML = ""
+        stack.forEach((item, i) => {
+            el.innerHTML += `<li>${item}</li>`
+        })
+    }
+
+    function drawAll() {
+        drawProgram()
+        drawRegisters()
+        drawStack()
+        drawVariables()
+    }
+
+    assemble(`.data
+hello: 
+    .asciz "Hello!\n"
+helloend: 
+    .equ length, helloend - hello
+
+.text
+.global main
+main:
+    # prologue
+    push %rbp
+    movq %rsp, %rbp
+
+    # calling to print the string
+    movq $hello, %rdi
+    call printf
+
+    # Epilogue
+    movq $0, %rdi
+    movq $60, %rax
+    syscall
+
+#
+#
+#
+#   params
+#       pointer to the string in rdi
+#   return
+#       prints the string to the screen
+#
+
+printf:
+    # prologue
+    pushq %rbp
+    movq %rsp, %rbp
+
+    # make local variable for the counter and to store the string pointer
+    subq $16, %rsp       
+    movq $0, -16(%rbp)  # counter
+    movq %rdi, -8(%rbp) # string pointer
+
+    movq $0, %rax
+
+    # iterate through string, counting number of characters
+beginLoop:
+    cmpq -8(%rbp), %rax # check for null byte '\0'
+    je endLoop
+    
+    incq -16(%rbp)  # increment the counter
+    incq -8(%rbp)   # go to the next character
+
+    jmp beginLoop
+endLoop:
+
+    movq $1, %rax
+    movq %rdi, %rsi
+    movq $1, %rdi
+    movq -16(%rbp), %rdx
+    syscall 
+
+    # epilogue
+    movq %rbp, %rsp
+    popq %rbp
+    ret
+`)
+
+</script>
+
+</html>

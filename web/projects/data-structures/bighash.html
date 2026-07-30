@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hash Table | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <a href="./hash.html">
+        <h2>Hash Tables</h2>
+    </a>
+    <form id="addForm" autocomplete="off">
+        <input id="addInput" placeholder="Add an item" required>
+        <input id="addButton" type="submit" value="Add">
+    </form>
+    <form id="queryForm" autocomplete="off">
+        <input id="queryInput" placeholder="Query an item" required>
+        <input id="queryButton" type="submit" value="Query">
+    </form>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="hashTable">
+    </ol>
+    <script>
+        let table = document.getElementById("hashTable")
+        for (let i = 0; i < 128; i++) {
+            table.innerHTML += `<li class="empty"></li>`
+        }
+
+        let hashTable = table.children
+        let probe
+
+        function hash(input) {
+            return String(input).split("").reduce((a, chr) => a + chr.charCodeAt() ** 2, 0) % 128
+        }
+
+        function add(v, i) {
+            hashTable[i].innerHTML = v
+            hashTable[i].className = "success"
+            setTimeout(() => { hashTable[i].className = "" }, 500)
+            clearInterval(probe)
+            document.getElementById("addButton").disabled = false
+        }
+
+        function query(v, i, result) {
+            hashTable[i].className = "success"
+            setTimeout(() => { hashTable[i].className = "" }, 500)
+            document.getElementById("textOutput").innerHTML = result ? "Positive - " + String(v) + " is in the hash table!" : "Negative - " + String(v) + " is not in the hash table!"
+            clearInterval(probe)
+            document.getElementById("queryButton").disabled = false
+        }
+
+        document.getElementById("addForm").addEventListener("submit", e => {
+            e.preventDefault()
+            document.getElementById("addButton").disabled = true
+            let v = document.getElementById("addInput").value
+            let index = hash(v)
+            let i = index
+            document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+            if (hashTable[i].innerHTML) {
+                hashTable[i].className = "failure"
+                i = (i + 1) % 128
+                probe = setInterval(() => {
+                    hashTable[(i + 127) % 128].className = hashTable[(i + 127) % 128].innerHTML ? "" : "empty"
+                    if (hashTable[i].innerHTML) {
+                        if (i === index) {
+                            console.log(i)
+                            hashTable[i].className = ""
+                            document.getElementById("textOutput").innerHTML = "Cannot add " + String(v) + ", hash table is full!"
+                            clearInterval(probe)
+                        } else {
+                            hashTable[i].className = "failure"
+                            i = (i + 1) % 128
+                        }
+                    } else {
+                        add(v, i)
+                    }
+                }, 500)
+            } else {
+                add(v, i)
+            }
+
+            document.getElementById("addForm").reset()
+            document.getElementById("addInput").focus()
+        })
+        document.getElementById("queryForm").addEventListener("submit", e => {
+            e.preventDefault()
+            document.getElementById("queryButton").disabled = true
+            let v = document.getElementById("queryInput").value
+            let index = hash(v)
+            let i = index
+            document.getElementById("textOutput").innerHTML = "Hash: " + String(i + 1)
+            if (hashTable[i].innerHTML) {
+                if (hashTable[i].innerHTML === v) {
+                    query(v, i, true)
+                } else {
+                    hashTable[i].className = "failure"
+                    i = (i + 1) % 128
+                    probe = setInterval(() => {
+                        hashTable[(i + 127) % 128].className = hashTable[(i + 127) % 128].innerHTML ? "" : "empty"
+                        if (hashTable[i].innerHTML) {
+                            if (hashTable[i].innerHTML === v) {
+                                query(v, i, true)
+                            } else {
+                                if (i === index) {
+                                    query(v, i, false)
+                                    hashTable[i].className = ""
+                                } else {
+                                    hashTable[i].className = "failure"
+                                    i = (i + 1) % 128
+                                }
+                            }
+                        } else {
+                            query(v, i, false)
+                        }
+                    }, 500)
+                }
+            } else {
+                query(v, i, false)
+            }
+            document.getElementById("queryForm").reset()
+            document.getElementById("queryInput").focus()
+        })
+    </script>
+</body>
+
+</html>

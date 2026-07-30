@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pac-Man</title>
+    <style>
+        body {
+            background: black;
+            text-align: center;
+        }
+
+        img {
+            position: absolute;
+            display: block;
+            z-index: 2;
+            image-rendering: pixelated;
+        }
+
+        canvas {
+            position: absolute;
+            display: block;
+            z-index: 1;
+            image-rendering: optimizeSpeed
+        }
+
+        h1 {
+            position: relative;
+            color: yellow;
+            font-family: 'Courier New', Courier, monospace;
+            z-index: 4;
+            /* display: inline-block; */
+            margin: 0;
+            cursor: pointer;
+        }
+    </style>
+    <link rel="icon" href="./assets/favicon.png">
+</head>
+
+<body id="body">
+    <img id="map" src="./assets/map0.png">
+    <img id="pacman" src="./assets/pacman2.gif">
+    <img id="blinky" src="./assets/blinky.png">
+    <img id="blinkyeyes" src="./assets/eyes2.png">
+    <img id="pinky" src="./assets/pinky.png">
+    <img id="pinkyeyes" src="./assets/eyes3.png">
+    <img id="inky" src="./assets/inky.png">
+    <img id="inkyeyes" src="./assets/eyes0.png">
+    <img id="clyde" src="./assets/clyde.png">
+    <img id="clydeeyes" src="./assets/eyes1.png">
+    <canvas id="canvas"></canvas>
+    <h1 id="score">Click to Start</h1>
+    <h1 id="highscore"></h1>
+</body>
+<script>
+    //Format: bit 1: wall, bits 2-3: pellet type 
+    const mapData = [
+        "1111111111111111111111111111",
+        "1000000000000110000000000001",
+        "1011110111110110111110111101",
+        "1011110111110110111110111101",
+        "1011110111110110111110111101",
+        "1000000000000000000000000001",
+        "1011110110111111110110111101",
+        "1011110110111111110110111101",
+        "1000000110000110000110000001",
+        "1111110111110110111110111111",
+        "1111110111110110111110111111",
+        "1111110110000000000110111111",
+        "1111110110111111110110111111",
+        "1111110110100000010110111111",
+        "0000000000101111010000000000",
+        "1111110110100000010110111111",
+        "1111110110111111110110111111",
+        "1111110110000000000110111111",
+        "1111110110111111110110111111",
+        "1111110110111111110110111111",
+        "1000000000000110000000000001",
+        "1011110111110110111110111101",
+        "1011110111110110111110111101",
+        "1000110000000000000000110001",
+        "1110110110111111110110110111",
+        "1110110110111111110110110111",
+        "1000000110000110000110000001",
+        "1011111111110110111111111101",
+        "1011111111110110111111111101",
+        "1000000000000000000000000001",
+        "1111111111111111111111111111",
+    ].map((row, y) =>
+        row.split("").map((tile, x) => {
+            return ((tile === "0" && !(x !== 6 && x !== 21 && y > 8 && y < 20)) ? 1 : 0) + Number(tile) * 4
+        })
+    )
+    mapData[3][1]++
+    mapData[3][26]++
+    mapData[23][1]++
+    mapData[23][26]++
+    mapData[12][13]++
+    mapData[12][14]++
+    mapData[23][13]--
+    mapData[23][14]--
+    const sprites = {
+        pacman: {
+            x: 13.5,
+            y: 23,
+            dir: 2,
+            nextDir: 2,
+            speed: 6,
+            moved: 0.5,
+            img: document.getElementById("pacman")
+        },
+        blinky: {
+            name: "blinky",
+            x: 16,
+            y: 13,
+            dir: 2,
+            target: {
+                x: 25,
+                y: 0
+            },
+            speed: 4,
+            moved: 0,
+            caught: false,
+            img: document.getElementById("blinky"),
+            eyes: document.getElementById("blinkyeyes")
+        },
+        pinky: {
+            name: "pinky",
+            x: 16,
+            y: 15,
+            dir: 3,
+            target: {
+                x: 2,
+                y: 0
+            },
+            speed: 4,
+            moved: 0,
+            caught: false,
+            img: document.getElementById("pinky"),
+            eyes: document.getElementById("pinkyeyes")
+        },
+        inky: {
+            name: "inky",
+            x: 11,
+            y: 15,
+            dir: 0,
+            target: {
+                x: 27,
+                y: 30
+            },
+            speed: 4,
+            moved: 0,
+            caught: false,
+            img: document.getElementById("inky"),
+            eyes: document.getElementById("inkyeyes")
+        },
+        clyde: {
+            name: "clyde",
+            x: 11,
+            y: 13,
+            dir: 1,
+            target: {
+                x: 0,
+                y: 30
+            },
+            speed: 4,
+            moved: 0,
+            caught: false,
+            img: document.getElementById("clyde"),
+            eyes: document.getElementById("clydeeyes")
+        }
+    }
+    const ghosts = ["blinky", "pinky", "inky", "clyde"]
+    const canvas = document.getElementById("canvas")
+    const ctx = canvas.getContext("2d")
+    const audio = {
+        start: new Audio("./assets/game_start.wav"),
+        munch0: new Audio("./assets/munch0.wav"),
+        munch1: new Audio("./assets/munch1.wav"),
+        siren: new Audio("./assets/siren_1.wav"),
+        power: new Audio("./assets/power_pellet.mp3"),
+        eat: new Audio("./assets/eat_ghost.wav"),
+        death: new Audio("./assets/death.mp3"),
+    }
+    let ghostMode = 0 // 0: scatter, 1: chase, 2: frightened
+    let frightenedTimeStamp = 0
+    let flashState = 0
+    let gameState = 0 // 0: playing, 1: won, -1: lost
+    let score = 0
+    let highScore = Number(localStorage.getItem("pacmanHighScore") || "0")
+    let remaining = 242
+    let prev = 0
+    let lastTouch = { x: 0, y: 0 }
+    let tileWidth
+    let xOffset
+    function setup() {
+        resize()
+        document.getElementById("map").style.zIndex = "0"
+        document.getElementById("pacman").style.width = `${tileWidth * 1.2}px`
+        document.getElementById("pacman").style.height = `${tileWidth * 1.2}px`
+        setPosition(sprites.pacman)
+        ghosts.forEach(name => {
+            document.getElementById(name).style.width = `${tileWidth * 1.4}px`
+            document.getElementById(name).style.height = `${tileWidth * 1.4}px`
+            document.getElementById(`${name}eyes`).style.width = `${tileWidth * 1.4}px`
+            document.getElementById(`${name}eyes`).style.height = `${tileWidth * 1.4}px`
+            setPosition(sprites[name])
+            setPosition(sprites[name], sprites[name].eyes)
+        })
+        document.getElementById("pacman").style.width = `${tileWidth * 1.2}px`
+        document.getElementById("pacman").style.height = `${tileWidth * 1.2}px`
+        document.getElementById("score").style.top = `${tileWidth * 31}px`
+        document.getElementById("score").style["font-size"] = `${tileWidth}px`
+        document.getElementById("highscore").style.top = `${tileWidth * 32}px`
+        document.getElementById("highscore").style["font-size"] = `${tileWidth}px`
+        drawPellets()
+
+    }
+    function drawPellets() {
+        ctx.clearRect(tileWidth, tileWidth, 26 * tileWidth, 29 * tileWidth)
+        ctx.fillStyle = "#FDB3B0"
+        for (let x = 1; x < 27; x++) {
+            for (let y = 1; y < 30; y++) {
+                const data = mapData[y][x]
+                if (data === 1) { ctx.fillRect((x + 0.375) * tileWidth, (y + 0.375) * tileWidth, tileWidth / 4, tileWidth / 4) }
+                if (data === 2) { ctx.fillRect((x + 0.25) * tileWidth, (y + 0.25) * tileWidth, tileWidth / 2, tileWidth / 2) }
+            }
+        }
+    }
+    function setPosition(pos, element = pos.img, centered = true) {
+        if (centered) {
+            element.style.left = `${pos.x * tileWidth + (tileWidth - element.width) / 2 + xOffset}px`
+            element.style.top = `${pos.y * tileWidth + (tileWidth - element.height) / 2 + 10}px`
+        } else {
+            element.style.left = `${pos.x * tileWidth + xOffset}px`
+            element.style.top = `${pos.y * tileWidth + 10}px`
+        }
+    }
+    function getMapData(pos) { if (pos) { return mapData[pos.y][pos.x] } else return 4 }
+    function ahead(sprite, length = 1, dir = sprite.dir) {
+        switch (dir) {
+            case 0:
+                return { x: Math.floor(sprite.x) + length, y: Math.round(sprite.y) }
+            case 1:
+                return { x: Math.round(sprite.x), y: Math.floor(sprite.y) + length }
+            case 2:
+                return { x: Math.ceil(sprite.x) - length, y: Math.round(sprite.y) }
+            case 3:
+                return { x: Math.round(sprite.x), y: Math.ceil(sprite.y) - length }
+        }
+    }
+    function roundPosition(pos) { return { ...pos, x: Math.round(pos.x), y: Math.round(pos.y) } }
+    function resize() {
+        tileWidth = Math.min((document.documentElement.clientHeight - 20) / 36, (document.documentElement.clientWidth - 20) / 28)
+        xOffset = (document.documentElement.clientWidth - tileWidth * 28) / 2
+        setPosition({ x: 0, y: 0 }, document.getElementById("map"), false)
+        setPosition({ x: 0, y: 0 }, canvas, false)
+        document.getElementById("map").style.width = `${tileWidth * 28}px`
+        document.getElementById("map").style.height = `${tileWidth * 31}px`
+        canvas.width = 28 * tileWidth
+        canvas.height = 30 * tileWidth
+        drawPellets()
+        for (let name in sprites) {
+            setPosition(sprites[name])
+            setPosition(sprites[name], sprites[name].eyes)
+        }
+    }
+    function setTargets() {
+        if (ghostMode === 1) {
+            sprites.blinky.target = sprites.pacman
+            sprites.pinky.target = ahead(sprites.pacman, 4)
+            sprites.inky.target.x = 2 * ahead(sprites.pacman, 2).x - sprites.blinky.x
+            sprites.inky.target.y = 2 * ahead(sprites.pacman, 2).y - sprites.blinky.y
+            if ((sprites.clyde.x - sprites.pacman.x) ** 2 + (sprites.clyde.y - sprites.pacman.y) ** 2 > 64) {
+                sprites.clyde.target = sprites.pacman
+            } else {
+                sprites.clyde.target = { x: 0, y: 30 }
+            }
+        }
+        else {
+            sprites.blinky.target = { x: 25, y: 0 }
+            sprites.pinky.target = { x: 2, y: 0 }
+            sprites.inky.target = { x: 27, y: 30 }
+            sprites.clyde.target = { x: 0, y: 30 }
+        }
+    }
+    function setFrightened() {
+        if (ghostMode === 2) {
+            frightenedTimeStamp = Date.now();
+            ghosts.forEach(name => {
+                sprites[name].speed = 2
+                sprites[name].img.src = "./assets/frightened0.png"
+                sprites[name].eyes.style.display = "none"
+            })
+        } else {
+            ghosts.forEach(name => {
+                sprites[name].speed = 5
+                sprites[name].img.src = `./assets/${name}.png`
+                sprites[name].caught = false
+                sprites[name].eyes.style.display = "block"
+            })
+        }
+
+    }
+    function flash(state) {
+        flashState = state
+        ghosts.forEach(name => {
+            if (!sprites[name].caught) {
+                sprites[name].img.src = `./assets/frightened${state}.png`
+            }
+        })
+    }
+    function move(name, dt) {
+        let step = Math.min(sprites[name].speed * dt / 1000, 1)
+        sprites[name].x += Math.cos(Math.PI * sprites[name].dir / 2) * step
+        sprites[name].y += Math.sin(Math.PI * sprites[name].dir / 2) * step
+        sprites[name].moved += step
+        if (sprites[name].x > 27.5 && sprites[name].dir === 0) sprites[name].x = 0
+        if (sprites[name].x < 0.5 && sprites[name].dir === 2) sprites[name].x = 28
+        if (sprites[name].moved > 1) {
+            const pos = roundPosition(sprites[name])
+            if (getMapData(ahead(pos)) >= 4) {
+                sprites[name] = pos
+            } else {
+                sprites[name].moved--
+            }
+            if (name === "pacman") {
+                if (getMapData(pos) === 1) {
+                    score += 5
+                    document.getElementById("score").innerHTML = `Score: ${score}`
+                    audio[`munch${(pos.x + pos.y) % 2}`].play()
+                    remaining--
+                    if (!remaining) {
+                        gameState = 1
+                        ghostMode = 0
+                        setFrightened()
+                        audio.power.pause()
+                        document.getElementById("score").innerHTML = `You Win! Score: ${score}`
+                        if (score > highScore) {
+                            document.getElementById("highscore").innerHTML = "New High Score!"
+                            localStorage.setItem("pacmanHighScore", String(score))
+                        } else {
+                            document.getElementById("highscore").innerHTML = `High Score: ${highScore}`
+                        }
+
+                        let mapFlash = 0
+                        let mapFlashInterval = setInterval(() => { document.getElementById("map").src = `./assets/map${mapFlash}.png`; mapFlash = (mapFlash + 1) % 2 }, 400)
+                        setTimeout(() => { clearInterval(mapFlashInterval) }, 3000)
+                    }
+                }
+                if (getMapData(pos) === 2) {
+                    ghostMode = 2
+                    setFrightened()
+                    audio.power.play()
+                }
+                mapData[pos.y][pos.x] = 0
+                ctx.clearRect(pos.x * tileWidth, pos.y * tileWidth, tileWidth, tileWidth)
+                if (sprites.pacman.dir !== sprites.pacman.nextDir && getMapData(ahead(pos, 1, sprites.pacman.nextDir)) < 4) {
+                    sprites.pacman = pos
+                    sprites.pacman.dir = sprites.pacman.nextDir
+                    sprites.pacman.moved = 0
+                    sprites.pacman.img.src = `./assets/pacman${sprites.pacman.dir}.gif`
+                }
+            } else {
+                let prevDir = sprites[name].dir
+                if ([13, 14].includes(pos.x) && [12, 13].includes(pos.y)) {
+                    sprites[name].dir = sprites[name].caught ? 0 : 3
+                } else if ([13, 14].includes(pos.x) && sprites[name].y > 11 && sprites[name].y < 12) {
+                    sprites[name].dir = 28 - pos.x * 2
+                } else {
+                    let dirs = [sprites[name].dir, (sprites[name].dir + 1) % 4, (sprites[name].dir + 3) % 4].filter(dir => getMapData(ahead(sprites[name], 1, dir)) !== 4)
+                    if (dirs.length === 1) {
+                        sprites[name].dir = dirs[0]
+                    } else {
+                        let tiles = dirs.map(v => {
+                            let tile = ahead(sprites[name], 1, v)
+                            return (tile.x - (ghostMode === 2 ? sprites.pacman.x : sprites[name].target.x)) ** 2 + (tile.y - (ghostMode === 2 ? sprites.pacman.y : sprites[name].target.y)) ** 2
+
+                        })
+                        sprites[name].dir = dirs[tiles.indexOf(ghostMode === 2 ? Math.max(...tiles) : Math.min(...tiles))]
+                    }
+                }
+                sprites[name] = roundPosition(sprites[name])
+                sprites[name].moved = 0
+                if (sprites[name].dir !== prevDir) sprites[name].eyes.src = `./assets/eyes${sprites[name].dir}.png`
+            }
+        }
+        setPosition(sprites[name])
+        if (ghosts.includes(name)) setPosition(sprites[name], sprites[name].eyes)
+    }
+    function tick(time) {
+        let dt = Math.min((time - prev) || 0, tileWidth * 3)
+        if (ghostMode === 1 || time % 32768 < tileWidth * 3) setTargets()
+        if (ghostMode === 2) {
+            let state = Math.floor(Math.max(0, (Date.now() - frightenedTimeStamp - 7100) / 500) % 2)
+            if (state !== flashState) flash(state)
+        }
+        for (let name in sprites) {
+            move(name, dt)
+            if (name !== "pacman" && Math.abs(sprites[name].x - sprites.pacman.x) + Math.abs(sprites[name].y - sprites.pacman.y) < 1) {
+                if (ghostMode < 2) {
+                    gameState = -1
+                    sprites.pacman.img.style.zIndex = "2"
+                    sprites.pacman.img.src = "./assets/pacman4.gif"
+                    audio.death.play()
+                    document.getElementById("score").innerHTML = `Game Over, Score: ${score}`
+                    if (score > highScore) {
+                        document.getElementById("highscore").innerHTML = "New High Score!"
+                        localStorage.setItem("pacmanHighScore", String(score))
+                    } else {
+                        document.getElementById("highscore").innerHTML = `High Score: ${highScore}`
+                    }
+                    break
+                } else {
+                    sprites[name].caught = true
+                    sprites[name].x = 14
+                    sprites[name].y = 13
+                    sprites[name].moved = 0
+                    sprites[name].dir = 0
+                    sprites[name].img.src = `./assets/${name}.png`
+                    sprites[name].eyes.style.display = "block"
+                    score += 2 ** (ghosts.map(name => sprites[name]).filter(v => v.caught).length) * 100
+                    document.getElementById("score").innerHTML = `Score: ${score}`
+                    audio.eat.play()
+                }
+            }
+        }
+        if (ghostMode === 2) {
+            if (Date.now() - frightenedTimeStamp > 10000) {
+                ghostMode = 0
+                setFrightened()
+            }
+        } else {
+            ghostMode = (time % 32768) >> 14
+        }
+        prev = time
+        if (!gameState) window.requestAnimationFrame(tick)
+    }
+    function play() {
+        document.getElementById("body").removeEventListener("click", play)
+        document.getElementById("score").innerHTML = "Score: 0"
+        audio.start.play()
+        audio.start.onended = tick
+    }
+    window.addEventListener("keydown", e => { e.preventDefault(); sprites.pacman.nextDir = ["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].indexOf(e.key) })
+    window.addEventListener("touchstart", e => { lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY } })
+    window.addEventListener("touchmove", e => {
+        let rel = { x: e.touches[0].clientX - lastTouch.x, y: e.touches[0].clientY - lastTouch.y }
+        sprites.pacman.nextDir = Math.abs(rel.x) > Math.abs(rel.y) ? 1 - Math.sign(rel.x) : 2 - Math.sign(rel.y)
+    })
+    window.addEventListener("resize", resize)
+    setup()
+    document.getElementById("body").addEventListener("click", play)
+</script>
+
+</html>

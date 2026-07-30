@@ -1,0 +1,26 @@
+# Phydeaux Bridge
+Inspired by the work we are currently doing on statics in applied maths, I decided to attempt to make a clone of the game Poly Bridge. The goal is to make a bridge spanning a river, which is strong enough to support a car (or in my case, a dog called Phydeaux) crossing the bridge, as well as being under a specified budget. The bridge is practically a graph, made of joints (nodes), some of which are fixed to the terrain, and materials (edges) that connect the joints.  
+Different materials have different properties:
+- Roads are the only material to extend into the third dimension (you can walk/drive on them)
+- Wood is used to make trusses, but it will snap if too much force is applied
+- Steel is stronger than wood, but also heavier and more expensive
+- Rope is cheap and very strong for its weight, but only under tension. If compressed, it simply slackens, providing no resistive force
+The original game also has hydraulics, which allow you to make lifting bridges, but they're complicated and buggy and have less relevance to mechanics.  
+## Planning
+I'll figure it out as I go along...  
+## Coding
+I started by creating a hash-indexed object to contain the joints. I wrote a hash function which would generate a hash from the current time when new joints were created.
+The joints would be objects, with position and force vectors with x and y components. The position attribute stores the position of the joint on the screen, and the force attribute would be used later for calculating the forces acting on the joint, and subsequently the materials.  
+I then made another hash table for the edges. These store the hashes of the two joints they connect, and a material. Materials are stored in another object which currently just stores the colour of the material, but would also contain information like cost and breaking stress in the future.  
+Next I wrote a function to calculate the length and gradient of every edge, since this would be useful later for resolving forces.  
+I now felt that I could introduce the ability to move joints, to make bridge building easier. I first needed an event listener to track the position of the mouse, and an object to store the value. I stored the x and y position of the mouse, updating when it moved, and a bool to store whether the mouse is down or not.  
+I then needed a function to work out if the mouse was over a joint, and get its hash. I did this by first getting all of the hashes in an array, filtering out joints which are too far away from the mouse, and if there are multiple candidates it chooses only the closest.  
+Next I added a game loop, and with a bit of trial and error, managed to make draggable nodes. I needed to store the hash of the last joint the mouse was over, so the mouse would not drop the joint if it moved too fast. My solution is a bit fiddly and probably not the most efficient way to achieve the desired functionality.  
+I now needed to worry about maximum lengths. In Poly Bridge, roads and wood beams can only be up to 2 units long, while steel can be as long as 4. I stored these lengths (adjusted for pixels) in the materials object. I then added a check to the calculateEdges function which would return true if the bridge was valid.  
+# Fishing Game
+At this point, Louise asked about my changes to her fishing game. We took the opportunity to set up collaboration on her repo, so I could push my bug fixes and image preloading code.  
+Originally, she was initialising a new image and loading the texture inside the game loop, which was slow and buggy, and causing the fish to flicker or not be drawn at all. To fix this, I created an assets object and an array of path names. I then mapped each item of the array to a promise, which would initialise an image and resolve when the source was loaded. I then used the .then method to add the loaded image to the assets object, so it could be reference later. Finally, I used Promise.all to wait for all the images to load, before starting the game loop.
+Since all the code was in a single html file, a git conflict would happen whenever either of us made a change when the other wasn't synced. I tried to find a way around this and discovered git branching.  
+From what I understand, this allows us to work on different copies of the code, without causing conflicts, and then merge our work when it's finished with a pull request.  
+I noticed that the game was taking a few seconds to load with only a handful of assets, and found that the image files were actually really big, around 500KB each! I used paint.net to remove blank space and shrunk the image dimensions down to something similar to the actual size they will be drawn at, reducing the files to more like 4KB. This made the game load significantly faster.  
+I also added a timer and a fishing line which Louise mentioned she had plans for. However, I am somewhat reluctant to take over the project; I just wanted to help fix bugs and optimise the code, not add new content or introduce new ideas.

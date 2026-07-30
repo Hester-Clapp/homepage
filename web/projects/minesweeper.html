@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html>
+<canvas id="mainCanvas" width="1000px" height="800px"></canvas>
+
+</html>
+
+<script>
+    let canvas = document.getElementById("mainCanvas")
+    canvas.width = window.screen.width * .9
+    canvas.height = window.screen.height * .8
+    let ctx = canvas.getContext("2d")
+    let boards = []
+
+    const COLOURS = [null, "blue", "green", "red", "purple", "maroon", "teal", "black", "gray"]
+
+    const TILEWIDTH = 24
+    const BOARDWIDTH = 16
+
+    const MINEDENSITY = 0.16
+
+    const RENDERDISTANCE = Math.ceil(Math.max(canvas.width, canvas.height)) + TILEWIDTH * BOARDWIDTH
+    const SPEED = TILEWIDTH / 2
+
+    let playerX = 0
+    let playerY = 0
+
+    let discoveredX = 4
+    let discoveredY = 4
+
+    let boardMouseX
+    let boardMouseY
+    let tileMouseX
+    let tileMouseY
+
+    let playing = true
+    let rolling = false
+
+    class Tile {
+        constructor(b, x, y) {
+            this.board = b
+
+            this.x = x
+            this.y = y
+
+            this.absX = this.x * TILEWIDTH + this.board.x * BOARDWIDTH * TILEWIDTH
+            this.absY = this.y * TILEWIDTH + this.board.y * BOARDWIDTH * TILEWIDTH
+
+            this.mines = 0
+
+            this.mine = false
+            this.flag = false
+            this.revealed = rolling
+        }
+
+        get nbrs() {
+            let nbrs = []
+
+            for (let i = Math.max(0, this.x - 1); i < Math.min(BOARDWIDTH, this.x + 2); i++) {
+                for (let j = Math.max(0, this.y - 1); j < Math.min(BOARDWIDTH, this.y + 2); j++) {
+                    if (this.board.tiles[i][j] != this) {
+                        nbrs.push(this.board.tiles[i][j])
+                    }
+                }
+            }
+
+            let boardOffsetX = 0
+            let boardOffsetY = 0
+
+            if (this.x == 0 && this.board.x > 0) boardOffsetX = -1
+            if (this.x == BOARDWIDTH - 1 && this.board.x < discoveredX - 1) boardOffsetX = 1
+            if (this.y == 0 && this.board.y > 0) boardOffsetY = -1
+            if (this.y == BOARDWIDTH - 1 && this.board.y < discoveredY - 1) boardOffsetY = 1
+
+            if (boardOffsetX) {
+                for (let i = Math.max(0, this.y - 1); i < Math.min(BOARDWIDTH, this.y + 2); i++) {
+                    nbrs.push(boards[this.board.x + boardOffsetX][this.board.y].tiles[(BOARDWIDTH + Math.min(boardOffsetX, 0)) % BOARDWIDTH][i])
+                }
+            }
+
+            if (boardOffsetY) {
+                for (let i = Math.max(0, this.x - 1); i < Math.min(BOARDWIDTH, this.x + 2); i++) {
+                    nbrs.push(boards[this.board.x][this.board.y + boardOffsetY].tiles[i][(BOARDWIDTH + Math.min(boardOffsetY, 0)) % BOARDWIDTH])
+                }
+            }
+
+            if (boardOffsetX * boardOffsetY) {
+                nbrs.push(boards[this.board.x + boardOffsetX][this.board.y + boardOffsetY].tiles[(BOARDWIDTH + Math.min(boardOffsetX, 0)) % BOARDWIDTH][(BOARDWIDTH + Math.min(boardOffsetY, 0)) % BOARDWIDTH])
+            }
+
+            return nbrs
+        }
+
+        calcMines() {
+            let total = 0
+            for (let nbr of this.nbrs) {
+                if (nbr.mine) total++
+            }
+            this.mines = total
+        }
+
+        reveal() {
+            let flags = 0
+            for (let nbr of this.nbrs) {
+                if (nbr.flag) flags++
+            }
+            if (!this.flag) {
+                this.revealed = true
+                if (this.mines - flags == 0) {
+                    for (let nbr of this.nbrs) {
+                        if (!nbr.revealed) {
+                            nbr.reveal()
+                        }
+                    }
+                } else {
+                    this.board.draw()
+                }
+                if (this.mine) {
+                    this.flag = true
+                    window.location.href = 'https://youtu.be/dQw4w9WgXcQ'
+                }
+            }
+        }
+
+        isVisible() {
+            return (this.absX + TILEWIDTH > 0 && this.absX < canvas.width && this.absY + TILEWIDTH > 0 && this.absY < canvas.height)
+        }
+
+        draw() {
+            this.absX = this.x * TILEWIDTH + this.board.x * BOARDWIDTH * TILEWIDTH - playerX
+            this.absY = this.y * TILEWIDTH + this.board.y * BOARDWIDTH * TILEWIDTH - playerY
+            if (this.isVisible()) {
+                if (!this.revealed) {
+                    ctx.fillStyle = "#ffffff"
+                    ctx.beginPath()
+                    ctx.moveTo(this.absX, this.absY)
+                    ctx.lineTo(this.absX + TILEWIDTH, this.absY)
+                    ctx.lineTo(this.absX, this.absY + TILEWIDTH)
+                    ctx.lineTo(this.absX, this.absY)
+                    ctx.closePath()
+                    ctx.fill()
+
+                    ctx.fillStyle = "#777777"
+                    ctx.beginPath()
+                    ctx.moveTo(this.absX + TILEWIDTH, this.absY + TILEWIDTH)
+                    ctx.lineTo(this.absX + TILEWIDTH, this.absY)
+                    ctx.lineTo(this.absX, this.absY + TILEWIDTH)
+                    ctx.lineTo(this.absX + TILEWIDTH, this.absY + TILEWIDTH)
+                    ctx.closePath()
+                    ctx.fill()
+
+                    ctx.fillStyle = "#bbbbbb"
+                    ctx.fillRect(this.absX + TILEWIDTH / 8, this.absY + TILEWIDTH / 8, 3 * TILEWIDTH / 4, 3 * TILEWIDTH / 4)
+
+                    if (this.flag) {
+                        ctx.fillStyle = "#000000"
+                        ctx.fillRect(this.absX + 7 * TILEWIDTH / 16, this.absY + 4 * TILEWIDTH / 16, TILEWIDTH / 8, TILEWIDTH / 2)
+                        ctx.fillRect(this.absX + 4 * TILEWIDTH / 16, this.absY + 11 * TILEWIDTH / 16, TILEWIDTH / 2, TILEWIDTH / 8)
+                        ctx.fillStyle = "#ff0000"
+                        ctx.beginPath()
+                        ctx.moveTo(this.absX + 3 * TILEWIDTH / 16, this.absY + 6 * TILEWIDTH / 16)
+                        ctx.lineTo(this.absX + 8 * TILEWIDTH / 16, this.absY + 8 * TILEWIDTH / 16)
+                        ctx.lineTo(this.absX + 8 * TILEWIDTH / 16, this.absY + 4 * TILEWIDTH / 16)
+                        ctx.fill()
+                    }
+                } else {
+                    ctx.strokeStyle = "#777777"
+                    ctx.strokeWidth = TILEWIDTH / 32
+                    ctx.fillStyle = "#bbbbbb"
+                    ctx.beginPath();
+                    ctx.rect(this.absX, this.absY, TILEWIDTH, TILEWIDTH);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    if (this.mine) {
+                        ctx.fillStyle = "#000000"
+                        ctx.beginPath()
+                        ctx.arc(this.absX + TILEWIDTH / 2, this.absY + TILEWIDTH / 2, TILEWIDTH / 4, 0, 2 * Math.PI)
+                        ctx.fill()
+                    } else if (this.mines > 0) {
+                        ctx.fillStyle = COLOURS[this.mines]
+                        ctx.textAlign = "center"
+                        ctx.textBaseline = "middle"
+                        ctx.font = `${TILEWIDTH * 3 / 4}px Impact`
+                        ctx.fillText(String(this.mines), this.absX + TILEWIDTH / 2, this.absY + TILEWIDTH / 2)
+                    }
+                }
+            }
+        }
+    }
+
+    class Board {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+            this.tiles = []
+            for (let i = 0; i < BOARDWIDTH; i++) {
+                let arr = []
+                for (let j = 0; j < BOARDWIDTH; j++) {
+                    arr.push(new Tile(this, i, j))
+                }
+                this.tiles.push(arr)
+            }
+            for (let mineCount = MINEDENSITY * BOARDWIDTH ** 2; mineCount > 0; mineCount--) {
+                this.tiles[Math.floor(Math.random() * BOARDWIDTH)][Math.floor(Math.random() * BOARDWIDTH)].mine = true
+            }
+        }
+
+        get nbrs() {
+            let nbrs = []
+            for (let i = Math.max(0, this.x - 1); i < Math.min(boards.length, this.x + 2); i++) {
+                for (let j = Math.max(0, this.y - 1); j < Math.min(boards[i].length, this.y + 2); j++) {
+                    if (boards[i][j] != this) {
+                        nbrs.push(boards[i][j])
+                    }
+                }
+            }
+            return nbrs
+        }
+
+        load() {
+            for (let i = this.x; i < this.x + 2; i++) {
+                for (let j = this.y; j < this.y + 2; j++) {
+                    if (i >= boards.length) {
+                        boards.push([new Board(i, 0)])
+                    }
+                    if (!boards[i]) {
+                        boards[i][j] = new Board(i, j)
+                        console.log(boards[i][j])
+                    }
+                }
+            }
+            this.calcMines()
+            this.draw()
+        }
+
+        calcMines() {
+            for (let i = 0; i < BOARDWIDTH; i++) {
+                for (let j = 0; j < BOARDWIDTH; j++) {
+                    this.tiles[i][j].calcMines()
+                }
+            }
+        }
+
+        draw() {
+            for (let i = 0; i < BOARDWIDTH; i++) {
+                for (let j = 0; j < BOARDWIDTH; j++) {
+                    this.tiles[i][j].draw()
+                }
+            }
+        }
+    }
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key == "ArrowUp") {
+            playerY = Math.max(0, playerY - SPEED)
+        }
+
+        if (e.key == "ArrowDown") {
+            playerY += SPEED
+        }
+
+        if (e.key == "ArrowLeft") {
+            playerX = Math.max(0, playerX - SPEED)
+        }
+
+        if (e.key == "ArrowRight") {
+            playerX += SPEED
+        }
+
+        let viewX = Math.floor((playerX + RENDERDISTANCE) / (BOARDWIDTH * TILEWIDTH))
+        let viewY = Math.floor((playerY + RENDERDISTANCE) / (BOARDWIDTH * TILEWIDTH))
+
+        if (viewX == discoveredX) extendX()
+        if (viewY == discoveredY) extendY()
+
+
+        for (let i = 0; i < boards.length; i++) {
+            for (let j = 0; j < boards[i].length; j++) {
+                let board = boards[i][j]
+                board.draw()
+            }
+        }
+    })
+
+    window.addEventListener("click", (e) => { onClick(e.clientX, e.clientY, false) })
+    window.addEventListener("contextmenu", (e) => {
+        e.preventDefault()
+        onClick(e.clientX, e.clientY, true)
+    })
+
+    function onClick(x, y, right = false) {
+        rect = canvas.getBoundingClientRect()
+        let mouseX = x - rect.left + playerX
+        let mouseY = y - rect.top + playerY
+        if (playing && mouseX > playerX && mouseX < canvas.width + playerX && mouseY > playerY && mouseY < canvas.height + playerY) {
+
+            let boardMouseX = Math.floor(mouseX / (BOARDWIDTH * TILEWIDTH))
+            let boardMouseY = Math.floor(mouseY / (BOARDWIDTH * TILEWIDTH))
+            let tileMouseX = Math.floor((mouseX % (BOARDWIDTH * TILEWIDTH)) / TILEWIDTH)
+            let tileMouseY = Math.floor((mouseY % (BOARDWIDTH * TILEWIDTH)) / TILEWIDTH)
+
+            let tile = boards[boardMouseX][boardMouseY].tiles[tileMouseX][tileMouseY]
+            if (right) {
+                tile.flag = !tile.flag
+                tile.draw()
+            } else {
+                tile.reveal()
+            }
+        }
+    }
+
+    function initialiseBoards(x, y) {
+        for (let i = 0; i < x; i++) {
+            let arr = []
+            for (let j = 0; j < y; j++) {
+                arr.push(new Board(i, j))
+            }
+            boards.push(arr)
+        }
+        for (let i = 0; i < x - 1; i++) {
+            for (let j = 0; j < y - 1; j++) {
+                let board = boards[i][j]
+                board.calcMines()
+                board.draw()
+            }
+        }
+    }
+
+    function extendX() {
+        discoveredX++
+        let arr = []
+        for (let i = 0; i < discoveredY; i++) {
+            arr.push(new Board(discoveredX - 1, i))
+        }
+        boards.push(arr)
+        for (let i = 0; i < discoveredY; i++) {
+            boards[discoveredX - 1][i].calcMines()
+            boards[discoveredX - 2][i].calcMines()
+        }
+        // console.log(boards)
+    }
+
+    function extendY() {
+        discoveredY++
+        for (let i = 0; i < discoveredX; i++) {
+            boards[i].push(new Board(i, discoveredY - 1))
+        }
+        for (let i = 0; i < discoveredX; i++) {
+            boards[i][discoveredY - 1].calcMines()
+            boards[i][discoveredY - 2].calcMines()
+        }
+        // console.log(boards)
+    }
+
+    initialiseBoards(discoveredX, discoveredY)
+
+    if (rolling) window.requestAnimationFrame(gameLoop)
+
+    function gameLoop() {
+        playerX += 2
+        let viewX = Math.floor((playerX + RENDERDISTANCE) / (BOARDWIDTH * TILEWIDTH))
+        let viewY = Math.floor((playerY + RENDERDISTANCE) / (BOARDWIDTH * TILEWIDTH))
+
+        if (viewX == discoveredX) extendX()
+        if (viewY == discoveredY) extendY()
+
+
+        for (let i = 0; i < boards.length; i++) {
+            for (let j = 0; j < boards[i].length; j++) {
+                let board = boards[i][j]
+                board.draw()
+            }
+        }
+        window.requestAnimationFrame(gameLoop)
+    }
+
+</script>

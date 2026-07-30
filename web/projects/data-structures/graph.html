@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Graphs</h2>
+    <p>
+        A graph is a non-linear abstract data structure, consisting of nodes (or vertices), which are connected by edges
+        (or links). Sometimes the edges are directional, in which case the graph is called "directed", and sometimes
+        they have weights (such as distance or cost), which means the graph is "weighted".
+    </p>
+    <p>
+        The graph is implemented with a set of nodes, stored in an array or linked list, and then either an adjacency
+        matrix or adjacency list.
+    </p>
+    <p>
+        An adjacency matrix is a sparse 2D array, meaning not all of the possible spaces are occupied, with dimensions n
+        by n, where n is the number of nodes. If there is a value (for example) at index (2,1), then there is an edge
+        from node 2 to node 1.
+        For a weighted graph, the value here is the weight of the edge, but for a non-directed graph it is simply a true
+        Boolean.
+    </p>
+    <p>
+        Alternatively, an adjacency list is an array or record of length n, which stores a list of all of the other
+        nodes which the node is adjacent to. These nodes are known as the node's children.
+    </p>
+    <p>
+        Graphs can be used to model problems, such as navigating a road network, managing projects, or finding the
+        optimal route through a computer network.
+    </p>
+    <hr>
+    <h2>Graph:</h2>
+    <canvas></canvas>
+    <h2>Adjacency Matrix:</h2>
+    <table id="adjMatrix"></table>
+    <h2>Adjacency List:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Node:</th>
+                <th>Children:</th>
+            </tr>
+        </thead>
+        <tbody id="adjList">
+
+        </tbody>
+    </table>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    canvas.width = 600
+    canvas.height = 400
+    const ctx = canvas.getContext("2d")
+    ctx.strokeStyle = "blue"
+    ctx.lineWidth = 2
+    ctx.textAlign = "center"
+    ctx.textBaseline = "middle"
+    let nodes = []
+    let edges = []
+    let size = 6
+    for (let i = 0; i < size; i++) {
+        nodes[i] = {
+            chr: String.fromCharCode(i + 65),
+            x: 50 + Math.random() * 500,
+            y: 50 + Math.random() * 300
+        }
+    }
+    for (let i = 0; i < Math.floor((0.4 * size) ** 2); i++) {
+        edges[i] = {
+            from: nodes[Math.floor(size * Math.random())],
+            to: nodes[Math.floor(size * Math.random())]
+        }
+    }
+    ctx.beginPath()
+    edges.forEach(edge => {
+        ctx.moveTo(edge.from.x, edge.from.y)
+        if (edge.from === edge.to) {
+            ctx.arc(edge.from.x - 30, edge.from.y, 30, 0, 2 * Math.PI)
+        } else {
+            ctx.lineTo(edge.to.x, edge.to.y)
+        }
+    })
+    ctx.stroke()
+    ctx.fillStyle = "orange"
+    nodes.forEach(node => {
+        ctx.beginPath()
+        ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI)
+        ctx.fill()
+        adjList.innerHTML += `<tr><td>${node.chr}</td><td>${[...new Set(edges.filter(v => v.from === node).map(v => v.to.chr).concat(edges.filter(v => v.to === node).map(v => v.from.chr)))].sort()}</td></tr>`
+    })
+    ctx.fillStyle = "black"
+    nodes.forEach(node => {
+        ctx.fillText(node.chr, node.x, node.y)
+    })
+    adjMatrix.innerHTML += "<thead><tr><th></th>" + nodes.map(v => `<th>${v.chr}</th>`).join("") + "</tr></thead>"
+    let body = document.createElement("tbody")
+    nodes.forEach(node => {
+        let row = document.createElement("tr")
+        let nodeHeading = document.createElement("th")
+        nodeHeading.innerHTML = node.chr
+        row.appendChild(nodeHeading)
+        let children = edges.filter(v => v.from === node).map(v => v.to).concat(edges.filter(v => v.to === node).map(v => v.from))
+        nodes.forEach(v => {
+            let data = document.createElement("td")
+            if (children.includes(v)) data.innerHTML = "1"
+            row.appendChild(data)
+        })
+        body.appendChild(row)
+    })
+    adjMatrix.appendChild(body)
+
+
+</script>
+
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<style>
+
+#across {
+  display: flex;
+  flex-direction: row;
+}
+
+#down {
+  display: flex;
+  flex-direction: column;
+}
+
+#keyDiv {
+    border: 4px gray outset;
+    padding: 10px;
+    width: 160px;
+    margin-top: 10px;
+}
+
+#chrCountDiv {
+    border: 4px gray outset;
+    padding: 10px;
+    width: 220px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#wordCountDiv {
+    border: 4px gray outset;
+    padding: 10px;
+    width: 220px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+#outputDiv {
+    border: 4px gray outset;
+    padding: 10px;
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+table {
+    border: 2px black solid;
+    margin: 10px;
+}
+
+th {
+    width:60px;
+}
+
+h3 {
+    margin: 0px;
+}
+</style>
+
+<html>
+    <label for="ctInput">Input ciphertext:</label>
+
+    <input type="text" id="ctInput" size="20" />
+
+    <div id="across">
+        <div id="keyDiv">
+            <h3>Key:</h3>
+            
+            <button onclick="keyGen()">Generate Key</button>
+
+            <table id="inputKey">
+                <tr>
+                    <th>Cipher:</th>
+                    <th>Message:</th>
+                </tr>
+            </table>
+        </div>
+
+        <div id="down">
+            <div id="chrCountDiv">
+                <h3>Most Frequent Letters:</h3>
+
+                <input type="range" id="numChrs" min="0" max="26" value="5" step="1" onchange="countChrs()"/>
+
+                <button onclick="countChrs()">Count Letters</button>
+
+                <button onclick="autoKeyGen()">Auto Generate Key</button>
+
+                <div id="chrRanks"></div>
+            </div>
+
+            <div id="wordCountDiv">
+                <h3>Most Frequent Words:</h3>
+
+                <input type="range" id="numWords" min="0" max="20" value="5" step="1" onchange="countWords()"/>
+
+                <button onclick="countWords()">Count Words</button>
+                
+                <div id="wordRanks"></div>
+            </div>
+        </div>
+
+        <div id="outputDiv">
+            <h3>Decrypted Message:</h3>
+            
+            <p id="outputText" style="word-wrap: break-word;"></p>
+        </div>
+    </div>
+</html>
+
+<script>
+
+    // class Cookie {
+    // static get(name) {
+    //     const cookieName = `${encodeURIComponent(name)}=`;
+    //     const cookie = document.cookie;
+    //     let value = null;
+
+    //     const startIndex = cookie.indexOf(cookieName);
+    //     if (startIndex > -1) {
+    //     let endIndex = cookie.indexOf(';', startIndex);
+    //     if (endIndex == -1) {
+    //         endIndex = cookie.length;
+    //     }
+    //     value = decodeURIComponent(
+    //         cookie.substring(startIndex + name.length, endIndex)
+    //     );
+    //     }
+    //     return value;
+    // }
+
+    // static set(name, value, expires, path, domain, secure) {
+    //     let cookieText = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+    //     if (expires instanceof Date) {
+    //     cookieText += `; expires=${expires.toGMTString()}`;
+    //     }
+
+    //     if (path) cookieText += `; path=${path}`;
+    //     if (domain) cookieText += `; domain=${domain}`;
+    //     if (secure) cookieText += `; secure`;
+
+    //     document.cookie = cookieText;
+    // }
+
+    // static remove(name, path, domain, secure) {
+    //     Cookie.set(name, '', new Date(0), path, domain, secure);
+    // }
+    // }
+
+
+    let cipherText = ""
+    let key = {}
+    const nonLetters = ["","\n"," ",".",",","!","?","'","-",":","’"]
+    const frequentLetters = ["E","T","A","O","I","N","S","R","H","D","L","U","C","M","F","Y","W","G","P","B","V","K","X","Q","J","Z"]
+    let letters = []
+    
+    for (let i=65; i<91; i++) {
+        let row = document.createElement("tr")
+        row.style.height = "20px"
+        let chr = document.createElement("td")
+        chr.innerHTML = String.fromCharCode(i)
+        row.appendChild(chr)
+        let mapChr = document.createElement("td")
+        let box = document.createElement("input")
+        box.type = "text"
+        box.id = "Box" + String(i)
+        box.size = 1
+        box.onkeydown = (e) => {if (e.keyCode == 13) {
+            keyGen()
+            countWords()
+        }}
+        mapChr.appendChild(box)
+        row.appendChild(mapChr)
+        document.getElementById("inputKey").appendChild(row)
+    }
+
+    document.getElementById("ctInput").onchange = () => {
+        cipherText = document.getElementById("ctInput").value.toUpperCase()
+        // Cookie.set("ciphertext",cipherText)
+    }
+
+    function countChrs () {
+        let fd = cipherText.split("")
+        .reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), {});
+        fd = Object.keys(fd)
+        .map((key) => [key, fd[key]])
+        .sort((a,b) => b[1] - a[1])
+        .filter(v => !nonLetters.includes(v[0]))
+
+        letters = fd
+
+        document.getElementById("chrRanks").innerHTML = ""
+
+        fd
+        .slice(0,document.getElementById("numChrs").value)
+        .forEach((v,i) => {
+            let p = document.createElement("p")
+            p.innerHTML = String(i+1) + ")  " + fd[i][0] + " - " + String(fd[i][1])
+            document.getElementById("chrRanks").appendChild(p)
+        })
+    }
+
+    function countWords () {
+        let fd = cipherText.split(" ")
+        .reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), {});
+        fd = Object.keys(fd)
+        .map((key) => [key, fd[key]])
+        .sort((a,b) => b[1] - a[1])
+        .filter(v => !nonLetters.includes(v[0]))
+
+        document.getElementById("wordRanks").innerHTML = ""
+        let n = 0
+        fd
+        .slice(0,document.getElementById("numWords").value)
+        .forEach((v,i) => {
+            let p = document.createElement("p")
+            let plainWord = fd[i][0].split("").map(v => (key[v]) ? key[v]:"_").reduce((acc,v) => acc + v, "  (")
+            if (plainWord.includes("_")) {
+                p.innerHTML = String(i-n+1) + ")  " + fd[i][0] + " - " + String(fd[i][1])
+            } else {
+                p.innerHTML = String(i-n+1) + ")  " + fd[i][0] + plainWord + ") " + " - " + String(fd[i][1])
+            }
+            // p.innerHTML = String(i-n+1) + ")  " + fd[i][0] + (!plainWord.includes("_")) ? plainWord + ") ": "" + " - " + String(fd[i][1])
+            document.getElementById("wordRanks").appendChild(p)
+        })
+    }
+
+    function resetKey () {key = {
+            " ":" ",
+            "\n":"\n",
+            ".":".",
+            ",":",",
+            "?":"?",
+            "!":"!",
+            "'":"'",
+            "-":"-",
+            ":":":",
+            "’":"’",
+        }
+    }
+
+    function decipher () {
+        document.getElementById("outputText").innerHTML = cipherText.split("").map(v => (key[v]) ? key[v]:"_").reduce((acc,v) => acc + v, "")
+    }
+
+    function detectDuplicates () {
+        let values = []
+        for (let i=65; i<91; i++) {
+            values[i] = document.getElementById("Box" + String(i)).value
+        }
+        let dupes = values.reduce((c, v) => (c[v] = (c[v] || 0) + 1, c), {});
+        dupes = Object.keys(dupes)
+        .map(key => [key, dupes[key]])
+        .sort((a,b) => b[1] - a[1])
+        .filter(v => v[1] > 1)
+        .map(v => v[0])
+        for (let i=65; i<91; i++) {
+            let box = document.getElementById("Box" + String(i))
+            box.style = (dupes.includes(box.value) && box.value) ? "background-color: pink":"background-color: white"
+        }
+    }
+
+    function keyGen () {
+        resetKey()
+
+        for (let i=65; i<91; i++) {
+            let v = document.getElementById("Box" + String(i)).value
+            if (v) key[String.fromCharCode(i)] = v.toUpperCase()
+        }
+
+        detectDuplicates()
+
+        // Cookie.set("key",key)
+
+        decipher()
+    }
+
+    function autoKeyGen () {
+        if (letters.length) {
+            resetKey()
+
+            letters.forEach((v,i) => {
+                let n = frequentLetters[i]
+                key[v[0]] = n
+                document.getElementById("Box" + v[0].charCodeAt(0)).value = n
+            })
+
+            detectDuplicates()
+
+            decipher()
+        }
+    }
+</script>

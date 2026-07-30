@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSET - Cambridge Southeast Transport</title>
+    <style>
+        * {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+        }
+
+        html,
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        header,
+        section {
+            padding: 1rem 4rem;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            background-color: #17A6E7;
+            margin-bottom: 1rem;
+        }
+
+        header * {
+            margin: 0.5rem;
+        }
+
+        section.imagebanner {
+            height: 12rem;
+            padding: 0;
+        }
+
+        section.image {
+            /* height: 12rem; */
+            padding: 0;
+        }
+
+        section.imagebanner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        section.image img {
+            display: block;
+            max-width: 100%;
+            max-height: 24rem;
+            margin: 0 auto;
+            object-fit: cover;
+        }
+
+        section.image sup {
+            display: block;
+        }
+
+        sup {
+            text-align: center;
+            margin: 2px auto;
+        }
+
+        div.point {
+            text-align: center;
+            margin: 2rem;
+            font-size: large;
+            color: red;
+            font-weight: bold;
+        }
+
+        iframe {
+            width: 100%;
+            height: 64rem;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>CSET - Cambridge Southeast Transport</h1>
+        <h6>and like ethics and stuff</h6>
+    </header>
+    <section class="imagebanner">
+        <img src="./assets/granta.jpg">
+    </section>
+    <section>
+        <h2>What is CSET?</h2>
+        <ul>
+            <li>Cambridge is expected to grow significantly in the coming decades</li>
+            <li>New homes need to be built in the surrounding area</li>
+            <li>A new transport project is planned to connect these new communities to the Cambridge Biomedical Campus
+            </li>
+        </ul>
+        <p>
+            The Greater Cambridge Partnership is proposing a bus-only road to connect the CBC with the villages of
+            Shelford, Stapleford, Sawston and Babraham, as well as the Babraham Research Institute and Granta Park. The
+            route will end at a park-and-ride site near the A11 and A1307 for onward travel to Linton and Haverhill.
+        </p>
+    </section>
+    <section class="image">
+        <img src="./assets/Busway-Route-Map.jpg">
+        <sup>Proposed route of the CSET busway. Source: <a
+                href="https://www.greatercambridge.org.uk/asset-library/Sustainable-Transport/Public-Transport/Cambridge-South-East-Transport/Consultations-and-engagement/CSET-Ph2-2019-consultation-leaflet.pdf">Greater
+                Cambridge Partnership</a></sup>
+    </section>
+    <section>
+        <h2>Technology used by the CSET</h2>
+        <p>Unlike the Cambridgeshire Guided Busway to St Ives, the CSET will not make use of physical guidance
+            technology. Instead, buses will be optically guided by markings in the road.</p>
+        <section class="image"><img src="./assets/trackless tram.jpeg">
+            <sup>Optical guided buses (trackless trams) in <ruby>宜<rt>Yí</rt></ruby><ruby>宾<rt>bīn</rt></ruby>,
+                China. Source: <a
+                    href="https://commons.wikimedia.org/wiki/File:Yibin_ART_System_10_12_11_905000.jpeg">Wikimedia</a></sup>
+        </section>
+        <h4>Benefits of optical guidance</h4>
+        <ul>
+            <li>Reduced infrastructure cost</li>
+            <li>Route can be used by service and emergency vehicles</li>
+            <li>Higher precision than normal buses</li>
+            <li>Reduced need for driver intervention</li>
+        </ul>
+        <h4>Drawbacks of optical guidance</h4>
+        <ul>
+            <li>More expensive onboard technology</li>
+            <li>More road maintenance required</li>
+            <li>Poor reliability in snow, rain and fog</li>
+            <li>Cannot handle unexpected circumstances such as roadworks</li>
+        </ul>
+        <p>but the real reason optical guidance is being used is:</p>
+        <ul>
+            <li>
+                The GCP is using the <i>Transport and Works Act 1992</i>, which is designed for (re)building railways
+                and
+                tram systems. If the system were to just use a normal road, the scheme would not be eligible for
+                government approval and funding of land aquisition, construction and operation.
+            </li>
+        </ul>
+    </section>
+    <section class="image">
+        <img src="./assets/twa1992.png">
+        <sup>AI-generated and self-edited infographic demonstrating the powers and features of the Transport and
+            Works Act of 1992</sup>
+    </section>
+    <section>
+        <div class="point">
+            Legal Issue - Legal loopholes may encourage unnecessary use of technology. This costs more money to the
+            taxpayer for little benefit.
+        </div>
+        <h2>Cambridgeshire Autonomous Metro</h2>
+        <p>A large portion of the CSET plan is carried over from a scheme proposed by the GCP in 2017 and subsequently
+            cancelled. This scheme (called the Cambridgeshire Autonomous Metro or CAM) was to be much more ambitious,
+            featuring level 4 autonomy which gives buses the ability to operate without human intervention. Furthermore,
+            these buses would run further into the city, serving the rail station and city centre.</p>
+    </section>
+    <section class="imagebanner"><img src="./assets/CAM.jpg"></section>
+    <section>
+        <h2>Dangers of autonomous vehicles</h2>
+        <p>Elaine Herzberg was the first person to be killed by a driverless vehicle, in March 2018.<sup><a
+                    target="_blank" href="./assets/har1903.pdf">1</a></sup> She walking across a road in Tempe Arizona
+            where there was
+            no crosswalk, and pushing a bicycle by her side.<sup><a target="_blank"
+                    href="./assets/har1903.pdf#page=8">1</a></sup> There
+            is no established walkway from the nearest
+            crosswalk to
+            the brick median where Elaine was crossing,<sup><a target="_blank"
+                    href="./assets/har1903.pdf#page=17">1</a></sup> and the
+            route was overgrown with bushes and cacti.
+        </p>
+    </section>
+    <section class="image"><img src="./assets/crashsite.png"><sup>The site of the collision on North Mill Avenue, Tempe
+            Arizona. Source: <a href="./assets/har1903.pdf#page=14">NTSB Crash Report</a></sup></section>
+    <section>
+        <p>Elaine was detected by the car's sensors 5.6 seconds before the collision, but the software struggled to make
+            sense of the data it was receiving and failed to evaluate what she was and whether she was in the path of
+            the car. She was classified at various points as a vehicle, a bicycle, and "other", and only at 1.2 seconds
+            to impact was she correctly identified as crossing the vehicle's path.<sup><a target="_blank"
+                    href="./assets/har1903.pdf#page=27">1</a></sup> The car's passenger was not paying attention and
+            only took control of steering just 0.02 seconds before the vehicle collided with Elaine at 39mph.<sup><a
+                    target="_blank" href="./assets/har1903.pdf#page=28">1</a></sup></p>
+        <div class="point">Social Issue - While driverless cars may be better at detecting hazards than human drivers,
+            they may not take correct action to avoid them.</div>
+        <h2>Algorithmic Bias</h2>
+        <p>Traffic collisions similar to Elaine's example may be amplified by algorithmic bias. For example, AI systems
+            have previously failed to identify darker skin colours due to their absence in the training data used. What
+            would it mean for society if our traffic classifies members of BAME communities as "other"?</p>
+        <p>Furthermore, driverless cars are largely being tested in the United States of America for a variety of
+            reasons, but this could have unexpected impacts on their adoption elsewhere. Urban planning and street
+            layout vary all across the world, and American streets are designed to prioritise cars and road traffic. If
+            driverless cars are "growing up" in a place where the car is king, what are they going to do when they have
+            to share the road with other pedestrians and cyclists? Furthermore, driverless cars are unlikely to be
+            tested extensively in less developed countries, where driving is more difficult and profits are lower.</p>
+        <div class="point">Ethical Issue - Algorithms are as biased as the data they are given, and these biases can be
+            very difficult to change.</div>
+    </section>
+    <section class="image"><img src="./assets/streets.png"><sup>A comparison of street layouts in 4 cities across the
+            world to show the differences that driverless cars will have to adapt to. Sources: <a
+                href="https://maps.app.goo.gl/ANfwS9ddzaeBWG6p8">Google</a>, <a
+                href="https://maps.app.goo.gl/kY3zfowDMNUrKa9H7">Google</a>, <a
+                href="https://maps.app.goo.gl/93MfbNRZczegtsc89">Google</a>, <a
+                href="https://maps.app.goo.gl/yfnqHsjy1BNPMGd38">Google</a></sup></section>
+    <section>
+        <h2>Cyber Attacks on autonomous vehicles</h2>
+        <p>In June 2019, experts from Regulus Cyber managed to hack the GPS navigation system of a Tesla Model 3
+            to demonstrate the vulnerability of driverless car technologies.<sup><a
+                    href="https://blog.httpcs.com/en/autonomous-cars-cyber-risks/">2</a></sup> Using a method known as
+            spoofing where false GPS signals were sent to the car, they were able to force the car to head to a
+            different destination than the one chosen by the driver. <sup><a
+                    href="https://blog.httpcs.com/en/autonomous-cars-cyber-risks/">2</a></sup> They were also able to
+            track the driver's location, compromising their privacy and safety.
+        </p>
+        <p>This has severe implications for a driverless bus. A hacker could potentially re-route the bus or
+            purposefully cause road nuissance with such a large vehicle. This could seriously disrupt significant parts
+            of the transport system - if a bus was hacked on the CSET, it could block the whole busway for all other
+            vehicles</p>
+    </section>
+    <section>
+        <h2>What does this mean for Cambridge?</h2>
+        <p>As Cambridge looks to the future of its transportation infrastructure, the introduction of autonomous buses
+            and cars could present serious safety concerns. In a city known for its narrow streets, a high volume of
+            cyclists and unpredictable pedestrian traffic, it provides a challenging environment for autonomous vehicles
+            to be tested in. But Cambridge wouldn't be the first city in the world, or even the UK to trial autonomous
+            buses.</p>
+        <p>In Edinburgh, the CAVForth scheme was launched in May 2023, connecting Edinburgh and Fife with level 4
+            autonomous buses.<sup><a href="https://www.cavforth.com/service-route-timetable/">3</a></sup> However, this
+            route runs primarily along major roads, and has at several points required manual intervention.<sup><a
+                    href="https://www.forbes.com/sites/nicolekobie/2024/12/19/worlds-first-driverless-bus-route-cancelled-and-often-needed-a-driver/">4</a></sup>
+            Furthermore, the service was discontinued in February 2025 due to low ridership,<sup><a
+                    href="https://www.forbes.com/sites/nicolekobie/2024/12/19/worlds-first-driverless-bus-route-cancelled-and-often-needed-a-driver/">4</a></sup>
+            perhaps suggesting that our cities and their residents are not ready for driverless buses.
+        </p>
+        <section class="image"><img src="https://www.cavforth.com/wp-content/uploads/2021/11/Cav-bus-3_PNG.png"><sup>One
+                of the autonomous buses used on the CAVForth service</sup></section>
+        <p>While it could be seen as preparation for the future, this does raise the question of whether Cambridge needs
+            driverless buses after all, if they are not currently the best option. While AV investment has largely come
+            from the private sector up until now, public transport projects like CSET are funded mainly by the
+            government and local councils, using money raised from residents' taxes. Their purpose is not to make the
+            most profit, but provide the best service to the majority of residents at the lowest cost, and proprietary
+            technology does not offer this level of certainty and quality.</p>
+        <div class="point">Social Issue - Funding for emerging technology from the public sector is at the detriment of
+            taxpayers</div>
+    </section>
+    <section class="imagebanner">
+        <img src="./assets/hobson.jpg">
+    </section>
+    <section>
+        <h2>A better solution?</h2>
+        <p>This section is about my opinion on the CSET specifically; you do not have to agree. No one who knows me will
+            be surprised to hear that I like trains. But in this case, I passionately believe that high-tech bus roads
+            are simply an inferior solution compared to simply rebuilding the lost railway to Haverhill. While doing
+            this would cost more money, the benefits it would provide are far more long-term and sustainable than the
+            CSET busway.</p>
+        <p>Firstly, trains have a higher passenger capacity than buses, and can easily be scaled to carry more people.
+            After the construction of Northstowe, the Cambridgeshire Guided Busway is already struggling with
+            capacity-related issues,<sup><a
+                    href="https://www.stagecoachbus.com/news/east/2024/october/busway-to-gain-extra-buses-in-bid-to-meet-unprecedented-growth-in-demand?utm_source=chatgpt.com">5</a></sup>
+            and there is little that can be done to aleviate these. If the plan truly is to
+            develop the commuter belt along the A1307 corridor, a busway is simply not going to be able to cope.</p>
+        <p>Secondly trains are simply faster. The predicted scheme predicts a journey time from Sawston to Cambridge of
+            30 minutes,<sup><a
+                    href="https://www.greatercambridge.org.uk/asset-library/Sustainable-Transport/Public-Transport/Cambridge-South-East-Transport/Consultations-and-engagement/CSET-Ph2-2019-consultation-leaflet.pdf#page=2">6</a></sup>
+            while the train from Pampisford in 1948 took just 18.<sup><a
+                    href="http://www.disused-stations.org.uk/s/sudbury/lner_ttimetable.gif">7</a></sup> The
+            Cambridgeshire Guided Busway has also failed to decrease journey times, with Cambridge to Huntingdon taking
+            85 minutes in spite of the busway. <sup><a
+                    href="https://tiscon-maps-stagecoachbus.s3.amazonaws.com/Timetables/East/FENSTANTON/FN-BUSWAY-031124.pdf">8</a></sup>
+        </p>
+        <p>Thirdly, railways are heavily standardised, and a new railway will be compatible with existing tracks. If a
+            railway is built, trains can access it from the existing tracks so no work needs to be done in the most
+            expensive part of Cambridge. If the busway was built and then an extension to the city centre was needed,
+            the optical guideway would need to be built and maintained all the way into Cambridge, regularly costing the
+            council a lot of money.</p>
+        <p>Leading on from the previous point, the proposed bus stops are not conveniently located for the villages they
+            serve, often being located on the very edge. While it may spur development, the existing station at Shelford
+            is conveniently located within walking distance of Great Shelford, Little Shelford and Stapleford, and
+            millions have already been spent on a new Cambridge South station at the biomedical campus.</p>
+        <p>Fifthly, transport by rail is much more energy efficient and sustainable. In the context of the climate
+            crisis, we must consider the CO2 emissions of our transportation choices, and trains are by far the best
+            option on this front. Even electric buses lose significant amounts of energy from tyre deformation.</p>
+    </section>
+    <section class="image"><img src="./assets/linton.png"><sup>Linton station in 1914 (left) and 2005 (right). Source:
+            <a href="http://www.disused-stations.org.uk/l/linton/index.shtml">Disused Stations</a></sup></section>
+    <section>
+        <h2>This is completely optional</h2>
+        <p>If you would like to <a
+                href="https://app.sheepcrm.com/cambridgeppf/appeals/65c253001550a0510fcbf06f/donate/">donate to
+                Cambridge Past Present and Future</a> to encourage the GCP to hold a public
+            consultation, you may optionally do so below:</p>
+        <iframe src="https://app.sheepcrm.com/cambridgeppf/appeals/65c253001550a0510fcbf06f/donate/"></iframe>
+    </section>
+</body>
+
+</html>

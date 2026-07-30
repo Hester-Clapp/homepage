@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue | Data Structures</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="./index.html">
+        <h1>Data Structures</h1>
+    </a>
+    <h2>Queues</h2>
+    <p>A queue is an abstract data structure based on an array, that operates on a first-in, first-out basis
+        (FIFO). Items are
+        added (enqueued) at the back of the queue, and removed (dequeued) from the front.
+    </p>
+    <p>Queues are used to
+        schedule tasks to be executed by the CPU, handle requests to servers, and traverse <a
+            href="./graph.html">graphs</a> breadth-first.
+    </p>
+    <p>In a real-life queue, people move forwards when the person at the front is served/dequeued. While this is
+        possible to implement on a computer, it is very inefficient and scales poorly as the queue gets
+        longer. Instead of moving the items forwards, it is much easier and faster to move the front of the
+        queue backwards, and loop around if it runs out of space. For this reason, queues have two pointers, one
+        to the back of the queue for adding items, and one to the front for removing them.</p>
+    <hr>
+    <form id="enqueueForm" autocomplete="off">
+        <input id="enqueueInput" placeholder="Enqueue an item" required>
+        <input id="enqueueButton" type="submit" value="Enqueue">
+    </form>
+    <button id="dequeueButton" type="submit" disabled>Dequeue the front item</button>
+    <p id="textOutput">&zwnj;</p>
+    <ol id="queueElements">
+        <li class="back"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+        <li class="empty"></li>
+    </ol>
+</body>
+<script>
+    ; (() => {
+        let queue = document.getElementById("queueElements").children
+        let back = 0
+        let front = -1
+        let length = 0
+
+        document.getElementById("enqueueForm").addEventListener("submit", e => {
+            e.preventDefault()
+            document.getElementById("dequeueButton").disabled = false
+
+            if (length < 8) {
+                queue[back].innerHTML = document.getElementById("enqueueInput").value
+                queue[back].className = ""
+                back = (back + 1) % 8
+                length++
+            }
+            if (length > 6) {
+                document.getElementById("enqueueButton").disabled = true
+            }
+            queue[back].className = "back"
+            document.getElementById("enqueueForm").reset()
+            document.getElementById("enqueueInput").focus()
+
+        })
+        document.getElementById("dequeueButton").addEventListener("click", e => {
+            document.getElementById("enqueueButton").disabled = false
+
+            if (length > 0) {
+                if (front >= 0) queue[front].className = (length === 7) ? "back" : "empty"
+                front = (front + 1) % 8
+                length--
+                queue[front].className = "front"
+                document.getElementById("textOutput").innerHTML = queue[front].innerHTML
+            }
+            if (length < 1) {
+                document.getElementById("dequeueButton").disabled = true
+            }
+        })
+    })()
+</script>
+
+</html>

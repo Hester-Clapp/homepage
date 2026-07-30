@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phydeaux Bridge</title>
+    <style>
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        canvas {
+            background: lightblue;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas></canvas>
+</body>
+<script>
+    const canvas = document.querySelector("canvas")
+    const ctx = canvas.getContext("2d")
+    canvas.width = document.body.clientWidth
+    canvas.height = document.body.clientHeight
+    const jointRadius = 10
+    const materials = {
+        "Road": { colour: "grey", maxlength: 100 },
+        "Wood": { colour: "orange", maxlength: 100 },
+        "Steel": { colour: "red", maxlength: 200 },
+        "Rope": { colour: "brown", maxlength: canvas.width + canvas.height },
+    }
+
+    let joints = {
+        0: { pos: { x: 50, y: 150 }, force: { x: 0, y: 0 } },
+        0.1: { pos: { x: 100, y: 80 }, force: { x: 0, y: 0 } },
+        0.2: { pos: { x: 150, y: 150 }, force: { x: 0, y: 0 } },
+    }
+    let edges = {
+        0: { from: 0, to: 0.1, material: "Wood" },
+        0.1: { from: 0.1, to: 0.2, material: "Wood" },
+        0.2: { from: 0.2, to: 0, material: "Wood" },
+    }
+
+    let mouse = { x: 0, y: 0, down: false, clickx: 0, clicky: 0, jointHash: -1 }
+    window.addEventListener("mousemove", e => { mouse = { ...mouse, x: e.clientX, y: e.clientY } })
+    window.addEventListener("mousedown", () => { mouse = { ...mouse, down: true, clickx: mouse.x, clicky: mouse.y } })
+    window.addEventListener("mouseup", () => { mouse.down = false })
+
+    function hash(n) {
+        const hash = Math.exp(Math.log2((n - 1700000000000) / 1000000)) % 1
+        if (joints[hash] || edges[hash]) {
+            return hash(n + 1)
+        } else {
+            return String(hash)
+        }
+    }
+
+    function deepCopy(obj) {
+        return JSON.parse(JSON.stringify(obj))
+    }
+
+    function getJointHash(pos) {
+        let candidates = Object.keys(joints).filter(hash => (joints[hash].pos.x - pos.x) ** 2 + (joints[hash].pos.y - pos.y) ** 2 < jointRadius ** 2)
+        if (candidates.length === 0) return "-1"
+        else if (candidates.length === 1) return candidates[0]
+        else return candidates.sort((h0, h1) => Math.hypot(joints[h0].pos.x - pos.x, joints[h0].pos.y - pos.y) - Math.hypot(joints[h1].pos.x - pos.x, joints[h1].pos.y - pos.y))
+    }
+
+    function calculateEdges() {
+        let valid = true
+        for (const edge of Object.values(edges)) {
+            const dx = joints[edge.from].pos.x - joints[edge.to].pos.x
+            const dy = joints[edge.from].pos.y - joints[edge.to].pos.y
+            edge.length = Math.hypot(dx, dy)
+            if (edge.length > materials[edge.material].maxlength) valid = false
+            edge.grad = { x: Math.abs(dx / edge.length), y: Math.sign(dx) * dy / edge.length }
+        }
+        return valid
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        ctx.lineWidth = 4
+        for (const edge of Object.values(edges)) {
+            ctx.strokeStyle = materials[edge.material].colour
+            ctx.beginPath()
+            ctx.moveTo(joints[edge.from].pos.x, joints[edge.from].pos.y)
+            ctx.lineTo(joints[edge.to].pos.x, joints[edge.to].pos.y)
+            ctx.stroke()
+        }
+        ctx.fillStyle = "black"
+        for (const joint of Object.values(joints)) {
+            ctx.moveTo(joint.pos.x + jointRadius, joint.pos.y)
+            ctx.arc(joint.pos.x, joint.pos.y, jointRadius, 0, 2 * Math.PI)
+        }
+        ctx.fill()
+    }
+
+    function loop() {
+        if (mouse.down) {
+            if (mouse.jointHash === "-1") mouse.jointHash = getJointHash(mouse)
+            if (joints[mouse.jointHash]) {
+                joints[mouse.jointHash].pos = mouse
+                if (joints[getJointHash(mouse)]) mouse.jointHash = getJointHash(mouse)
+            }
+            calculateEdges()
+
+            draw()
+        } else {
+            mouse.jointHash = "-1"
+        }
+        window.requestAnimationFrame(loop)
+    }
+
+    calculateEdges()
+    draw()
+    loop()
+</script>
+
+</html>
