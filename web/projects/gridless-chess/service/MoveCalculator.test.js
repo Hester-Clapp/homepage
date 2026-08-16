@@ -362,9 +362,8 @@ Deno.test("calculateMoves() blocks entirely, without reaching backward, when a n
     const calculator = new MoveCalculator(board)
     const piece = makePiece(500, 500, true, new MoveSet(0, 1000, [new Vector(1, 0)]))
 
-    const [move] = calculator.calculateMoves(piece)
-    assertAlmostEquals(move.from.x, 500)
-    assertAlmostEquals(move.to.x, 500)
+    const moves = calculator.calculateMoves(piece)
+    assertEquals(moves.length, 0)
 })
 
 Deno.test("calculateMoves() resumes a jumping piece's line at the obstruction's far edge when it starts inside it", () => {
@@ -376,11 +375,9 @@ Deno.test("calculateMoves() resumes a jumping piece's line at the obstruction's 
     const calculator = new MoveCalculator(board)
     const piece = makePiece(500, 500, true, new MoveSet(0, 1000, [new Vector(1, 0)], true))
 
-    const [nearSide, farSide] = calculator.calculateMoves(piece)
-    // Blocked immediately at the mover's own position, never before it.
-    assertAlmostEquals(nearSide.from.x, 500)
-    assertAlmostEquals(nearSide.to.x, 500)
-    // The line picks back up exactly where the obstruction's circle ends.
+    const moves = calculator.calculateMoves(piece)
+    assertEquals(moves.length, 1)
+    const farSide = moves[0]
     assertAlmostEquals(farSide.from.x, 584)
     assertAlmostEquals(farSide.to.x, 1500)
 })
@@ -434,6 +431,35 @@ Deno.test("calculateMoves() blocks a knight-shaped jump on a friendly piece sitt
     assertAlmostEquals(move.to.y, 571.3783298880027)
 })
 
+// ---------------------------------------------------------------------------
+// closestLegalPoint()
+// ---------------------------------------------------------------------------
+
+Deno.test("closestLegalPoint() snaps to the nearest point on the single line given", () => {
+    const calculator = new MoveCalculator(makeBoard())
+    const line = new Line({ x: 0, y: 0 }, { x: 10, y: 0 })
+
+    const point = calculator.closestLegalPoint([line], { x: 4, y: 3 })
+    assertAlmostEquals(point.x, 4)
+    assertAlmostEquals(point.y, 0)
+})
+
+Deno.test("closestLegalPoint() picks whichever line is actually closest", () => {
+    const calculator = new MoveCalculator(makeBoard())
+    const near = new Line({ x: 0, y: 0 }, { x: 10, y: 0 })
+    const far = new Line({ x: 0, y: 100 }, { x: 10, y: 100 })
+
+    const point = calculator.closestLegalPoint([far, near], { x: 4, y: 1 })
+    assertAlmostEquals(point.x, 4)
+    assertAlmostEquals(point.y, 0)
+})
+
+Deno.test("closestLegalPoint() returns null when given no lines", () => {
+    const calculator = new MoveCalculator(makeBoard())
+
+    assertEquals(calculator.closestLegalPoint([], { x: 4, y: 1 }), null)
+})
+
 Deno.test("calculateMoves() blocks a knight-shaped jump on a friendly piece overlapping the start of its line, even though the piece itself sits beyond the raw maxDistance", () => {
     // This friendly sits exactly on the boundary of the jump's real starting
     // point (minDistance out along the (2, 1) direction), covering the rest
@@ -447,11 +473,8 @@ Deno.test("calculateMoves() blocks a knight-shaped jump on a friendly piece over
     const calculator = new MoveCalculator(board)
     const knight = makePiece(500, 500, true, new MoveSet(50, 100, [new Vector(2, 1)], true))
 
-    const [move] = calculator.calculateMoves(knight)
+    const moves = calculator.calculateMoves(knight)
     // Blocked right at the line's own start - never left unobstructed as it
     // would be if the obstruction had gone undetected.
-    assertAlmostEquals(move.from.x, 600)
-    assertAlmostEquals(move.from.y, 550)
-    assertAlmostEquals(move.to.x, 600)
-    assertAlmostEquals(move.to.y, 550)
+    assertEquals(moves.length, 0)
 })
